@@ -1,0 +1,26 @@
+[package]
+name = "webzjs"
+version = "0.1.0"
+authors = ["ChainSafe Systems"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O4", "-O4"]
+
+[dependencies]
+wasm-bindgen = "0.2.84"
+
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.7", optional = true }
