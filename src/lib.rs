@@ -1,6 +1,8 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+//! This is the top level documentation!
+
 use wasm_bindgen::prelude::*;
 
 pub fn set_panic_hook() {
@@ -17,4 +19,10 @@ pub fn set_panic_hook() {
 #[wasm_bindgen(start)]
 pub fn start() {
     set_panic_hook();
+}
+
+#[wasm_bindgen]
+/// Doc string for this function
+pub fn example_function() {
+
 }
