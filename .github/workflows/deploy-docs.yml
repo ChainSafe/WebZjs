@@ -17,6 +17,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       # 👇 Build steps
+      - name: install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: latest
+      - name: build pkg
+        run: wasm-pack build --target web
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
