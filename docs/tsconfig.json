@@ -2,5 +2,6 @@
 	"extends": "@docusaurus/tsconfig",
 	"compilerOptions": {
 	  "baseUrl": "."
-	}
+	},
+	"include": ["../pkg/**/*"]
 }
