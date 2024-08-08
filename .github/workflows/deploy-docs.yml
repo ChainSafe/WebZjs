@@ -24,11 +24,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: yarn
+          cache: 'npm'
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+        run: npm install --frozen-lockfile --non-interactive
       - name: Build
-        run: yarn build
+        run: npm build
       # 👆 Build steps
       - name: Setup Pages
         uses: actions/configure-pages@v3
