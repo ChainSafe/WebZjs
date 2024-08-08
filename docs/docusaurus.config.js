@@ -12,8 +12,8 @@ const projectName = "WebZjs";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'WebZjs Documentation',
+  tagline: 'WebZjs is a JavaScript library for interacting with the Zcash blockchain',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
