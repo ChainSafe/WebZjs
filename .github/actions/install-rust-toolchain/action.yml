@@ -1,0 +1,25 @@
+name: 'Install Rust Toolchain'
+description: 'Installs the toolchain defined in the rust-toolchain.toml file. Errors if that file is not present'
+
+inputs:
+  components:
+    description: Comma-separated list of components to be additionally installed
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    
+    - name: Read toolchain file
+      id: rust-toolchain
+      run: |
+        RUST_TOOLCHAIN=$(sed -n 's/^channel *= *"\(.*\)"$/\1/p' rust-toolchain.toml)
+        echo "RUST_TOOLCHAIN=$RUST_TOOLCHAIN" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Install toolchain
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ steps.rust-toolchain.outputs.RUST_TOOLCHAIN }}
+        components: ${{ inputs.components }}
