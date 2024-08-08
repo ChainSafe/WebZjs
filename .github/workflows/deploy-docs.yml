@@ -13,9 +13,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./docs
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,8 +24,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './docs/package-lock.json'
       - name: Install dependencies
+        working-directory: ./docs
         run: npm install --frozen-lockfile --non-interactive
       - name: Build
+        working-directory: ./docs
         run: npm run build
       # 👆 Build steps
       - name: Setup Pages
@@ -37,7 +36,7 @@ jobs:
         uses: actions/upload-pages-artifact@v2
         with:
           # 👇 Specify build output path
-          path: build
+          path: ./docs/build
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2

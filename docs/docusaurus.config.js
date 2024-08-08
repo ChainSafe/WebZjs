@@ -52,6 +52,7 @@ const config = {
 				debug: true,
 				changelogs: true,
 				readmes: false,
+        tsconfigName: 'docs/tsconfig.json',
 				typedocOptions: {
 					plugin: [
 						'typedoc-monorepo-link-types',
