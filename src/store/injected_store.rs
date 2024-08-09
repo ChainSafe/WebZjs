@@ -14,15 +14,15 @@ interface IWalletStore {
     /**
      * Update the value for a given key in store (or set it for the first time)
      */
-    update(key: string, value: Uint8Array): void;
+    update(key: string, value: Uint8Array): Promise<void>;
     /**
      * Get the value at a given key
      */
-    get(key: string): Uint8Array;
+    get(key: string): Promise<Uint8Array>;
     /**
      * Clear the value at a given key
      */
-    clear(key: string): void;
+    clear(key: string): Promise<void>;
 }
 "#;
 
@@ -46,7 +46,7 @@ extern "C" {
 
 impl WalletStore for InjectedStore {
     async fn update(&mut self, key: &str, value: &[u8]) -> Result<(), Error> {
-        InjectedStore::update(self, key, value);
+        InjectedStore::update(self, key, value).await?;
         Ok(())
     }
 
@@ -56,7 +56,7 @@ impl WalletStore for InjectedStore {
     }
 
     async fn clear(&mut self, key: &str) -> Result<(), Error> {
-        InjectedStore::clear(self, key);
+        InjectedStore::clear(self, key).await?;
         Ok(())
     }
 }

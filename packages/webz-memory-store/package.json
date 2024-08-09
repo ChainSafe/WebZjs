@@ -1,8 +1,8 @@
 {
-  "name": "webz-indexdb-store",
+  "name": "webz-memory-store",
   "version": "1.0.0",
   "description": "Simple wrapper to allow using indexdb as the wallet store for WebZjs",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/ChainSafe/WebZjs/issues"
   },
-  "homepage": "https://github.com/ChainSafe/WebZjs#readme"
+  "homepage": "https://github.com/ChainSafe/WebZjs#readme",
+  "dependencies": {
+    "webz-core": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
 }

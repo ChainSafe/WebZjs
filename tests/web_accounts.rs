@@ -1,7 +1,7 @@
 use wasm_bindgen_test::*;
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
-use webzjs::account::Account;
+use webz_core::account::Account;
 
 #[wasm_bindgen_test]
 fn test_account_from_seed() {
