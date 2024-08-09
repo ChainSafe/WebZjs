@@ -1414,6 +1414,7 @@ dependencies = [
  "thiserror",
  "tonic-build",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "which",
  "zcash_keys",

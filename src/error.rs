@@ -11,10 +11,18 @@ pub enum Error {
     // DerivationError(#[from] zcash_keys::keys::DerivationError),
     // #[error("Failed to derive key from seed")] // doesn't implement std::error. Should probably fix this upstream
     // DecodingError(#[from] zcash_keys::keys::DecodingError),
+    #[error("Javascript error")]
+    JsError(JsValue),
 }
 
 impl From<Error> for JsValue {
     fn from(e: Error) -> Self {
         js_sys::Error::new(&e.to_string()).into()
+    }
+}
+
+impl From<JsValue> for Error {
+    fn from(e: JsValue) -> Self {
+        Error::JsError(e)
     }
 }

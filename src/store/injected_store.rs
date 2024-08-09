@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use crate::store::WalletStore;
+use crate::error::Error;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
@@ -33,26 +34,29 @@ extern "C" {
     /// or Snap Storage to store data for the wallet
     pub type InjectedStore;
 
-    #[wasm_bindgen(method)]
-    pub fn update(this: &InjectedStore, index: &str, value: &[u8]);
+    #[wasm_bindgen(method, catch)]
+    pub async fn update(this: &InjectedStore, index: &str, value: &[u8]) -> Result<(), JsValue>;
 
-    #[wasm_bindgen(method)]
-    pub fn get(this: &InjectedStore, index: &str) -> Vec<u8>;
+    #[wasm_bindgen(method, catch)]
+    pub async fn get(this: &InjectedStore, index: &str) -> Result<JsValue, JsValue>;
 
-    #[wasm_bindgen(method)]
-    pub fn clear(this: &InjectedStore, index: &str);
+    #[wasm_bindgen(method, catch)]
+    pub async fn clear(this: &InjectedStore, index: &str) -> Result<(), JsValue>;
 }
 
 impl WalletStore for InjectedStore {
-    fn update(&mut self, key: &str, value: &[u8]) {
+    async fn update(&mut self, key: &str, value: &[u8]) -> Result<(), Error> {
         InjectedStore::update(self, key, value);
+        Ok(())
     }
 
-    fn get(&self, key: &str) -> Vec<u8> {
-        InjectedStore::get(self, key)
+    async fn get(&self, key: &str) -> Result<Vec<u8>, Error> {
+        let result = InjectedStore::get(self, key).await?;
+        Ok(js_sys::Uint8Array::new(&result).to_vec())
     }
 
-    fn clear(&mut self, key: &str) {
+    async fn clear(&mut self, key: &str) -> Result<(), Error> {
         InjectedStore::clear(self, key);
+        Ok(())
     }
 }
