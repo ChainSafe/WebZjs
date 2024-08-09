@@ -8,6 +8,8 @@ use zcash_primitives::zip32::AccountId;
 
 use crate::error::Error;
 
+pub type AccountIndex = u32;
+
 #[wasm_bindgen]
 pub struct Account {
     usk: UnifiedSpendingKey,
@@ -18,7 +20,7 @@ impl Account {
     #[wasm_bindgen]
     /// Derive a Zcash unified account from a seed and index for a given network configuration.
     /// This will throw an error if the seed does not have at least 32 bits or if the account index is invalid
-    pub fn from_seed(seed: &[u8], account_index: u32) -> Result<Account, Error> {
+    pub fn from_seed(seed: &[u8], account_index: AccountIndex) -> Result<Account, Error> {
         Ok(Account {
             usk: UnifiedSpendingKey::from_seed(
                 &MAIN_NETWORK,

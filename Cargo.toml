@@ -2,6 +2,9 @@
 name = "webzjs"
 version = "0.1.0"
 authors = ["ChainSafe Systems"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ChainSafe/WebZjs"
+description = "A browser client-side library for implementing Zcash wallets"
 edition = "2021"
 
 [lib]
