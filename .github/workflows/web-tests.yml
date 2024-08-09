@@ -8,7 +8,6 @@ on:
 jobs:
   wasm-pack-test:
     runs-on: ubuntu-latest
-    name: fmt-clippy
     steps:
       - name: Checkout
         uses: actions/checkout@v3
