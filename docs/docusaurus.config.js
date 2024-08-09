@@ -45,8 +45,8 @@ const config = {
 				projectRoot: join(__dirname, '..'),
 				// Monorepo
 				packages: [    {
-          path: 'packages/webz',
-          entry: 'webzjs.d.ts',
+          path: 'packages/webz-core',
+          entry: 'webz_core.d.ts',
         },],
 				minimal: false,
 				debug: true,
