@@ -1,8 +1,8 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use wasm_bindgen::prelude::*;
 use crate::store::WalletStore;
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
 const IWALLET_STORAGE: &'static str = r#"

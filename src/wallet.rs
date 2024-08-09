@@ -3,9 +3,9 @@
 
 use wasm_bindgen::prelude::*;
 
-use crate::store::{InjectedStore, WalletStore};
-use crate::error::Error;
 use crate::account::{Account, AccountIndex};
+use crate::error::Error;
+use crate::store::{InjectedStore, WalletStore};
 
 /// A wallet is a collection of a number of accounts that can be synchronized together.
 struct Wallet<S: WalletStore> {
@@ -14,13 +14,10 @@ struct Wallet<S: WalletStore> {
 
 impl<S: WalletStore> Wallet<S> {
     pub fn new(store: S) -> Self {
-        Wallet {
-            store
-        }
+        Wallet { store }
     }
 
-    pub fn add(&self, _account: Account) {
-    }
+    pub fn add(&self, _account: Account) {}
 
     pub fn get(&self, _index: AccountIndex) -> Result<Account, Error> {
         Account::from_bytes(&self.store.get("yer"))
