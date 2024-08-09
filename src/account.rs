@@ -9,7 +9,7 @@ use zcash_primitives::zip32::AccountId;
 use crate::error::Error;
 
 #[wasm_bindgen]
-struct Account {
+pub struct Account {
     usk: UnifiedSpendingKey,
 }
 
