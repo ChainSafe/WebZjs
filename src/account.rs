@@ -1,6 +1,7 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use sha2::{Digest, Sha256};
 use wasm_bindgen::prelude::*;
 use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::{Era, UnifiedAddressRequest, UnifiedSpendingKey};
@@ -8,8 +9,6 @@ use zcash_primitives::consensus::MAIN_NETWORK;
 use zcash_primitives::legacy::keys::pubkey_to_address;
 use zcash_primitives::legacy::TransparentAddress;
 use zcash_primitives::zip32::{AccountId, DiversifierIndex};
-use sha2::{Digest, Sha256};
-
 
 use crate::error::Error;
 
@@ -73,5 +72,4 @@ impl Account {
         );
         Ok(t_address.encode(&MAIN_NETWORK))
     }
- }
-
+}
