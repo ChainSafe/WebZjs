@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use wasm_bindgen::prelude::*;
+use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::{Era, UnifiedAddressRequest, UnifiedSpendingKey};
 use zcash_primitives::consensus::MAIN_NETWORK;
+use zcash_primitives::legacy::keys::pubkey_to_address;
+use zcash_primitives::legacy::TransparentAddress;
 use zcash_primitives::zip32::{AccountId, DiversifierIndex};
+use sha2::{Digest, Sha256};
+
 
 use crate::error::Error;
 
@@ -46,7 +51,7 @@ impl Account {
 
     #[wasm_bindgen]
     /// Return the string encoded address for this account. This returns a unified address with all address subtypes (orchard, sapling, p2pkh)
-    /// The diversifier index can be used to derive different valid addresses for the same account
+    /// The diversifier index can be used to derive different valid addresses for the same account. Diversifier index must be > 0
     pub fn unified_address(&self, diversifier_index: u64) -> Result<String, Error> {
         Ok(self
             .usk
@@ -60,15 +65,13 @@ impl Account {
 
     #[wasm_bindgen]
     /// Return the string encoded address for this accounts transparent address
-    /// The diversifier index can be used to derive different valid addresses for the same account
-    pub fn transparent_address(&self, diversifier_index: u64) -> Result<String, Error> {
-        Ok(self
-            .usk
-            .to_unified_full_viewing_key()
-            .address(
-                DiversifierIndex::from(diversifier_index),
-                UnifiedAddressRequest::new(false, false, true).unwrap(),
-            )?
-            .encode(&MAIN_NETWORK))
+    /// Should this also support a diversifier?
+    pub fn transparent_address(&self) -> Result<String, Error> {
+        let pubkey = self.usk.transparent().to_account_pubkey();
+        let t_address = TransparentAddress::PublicKeyHash(
+            *ripemd::Ripemd160::digest(Sha256::digest(pubkey.serialize())).as_ref(),
+        );
+        Ok(t_address.encode(&MAIN_NETWORK))
     }
  }
+

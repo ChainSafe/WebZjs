@@ -1411,6 +1411,8 @@ dependencies = [
  "console_error_panic_hook",
  "getrandom",
  "js-sys",
+ "ripemd",
+ "sha2",
  "thiserror",
  "tonic-build",
  "wasm-bindgen",
