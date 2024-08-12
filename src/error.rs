@@ -13,6 +13,12 @@ pub enum Error {
     // DecodingError(#[from] zcash_keys::keys::DecodingError),
     #[error("Javascript error")]
     JsError(JsValue),
+    #[error("DomException {name} ({code}): {message}")]
+    DomException {
+        name: String,
+        message: String,
+        code: u16,
+    },
 }
 
 impl From<Error> for JsValue {
@@ -24,5 +30,15 @@ impl From<Error> for JsValue {
 impl From<JsValue> for Error {
     fn from(e: JsValue) -> Self {
         Error::JsError(e)
+    }
+}
+
+impl From<indexed_db_futures::web_sys::DomException> for Error {
+    fn from(e: indexed_db_futures::web_sys::DomException) -> Self {
+        Self::DomException {
+            name: e.name(),
+            message: e.message(),
+            code: e.code(),
+        }
     }
 }
