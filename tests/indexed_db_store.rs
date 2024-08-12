@@ -1,11 +1,6 @@
 use wasm_bindgen_test::*;
-use web_sys::console;
 wasm_bindgen_test_configure!(run_in_browser);
 use webz_core::store::{self, WalletStore as _};
-#[wasm_bindgen_test]
-fn pass() {
-    assert_eq!(1, 1);
-}
 
 #[wasm_bindgen_test]
 async fn idb() {

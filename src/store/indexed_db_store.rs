@@ -45,7 +45,7 @@ impl WalletStore for IdbStore {
             .inner
             .transaction_on_one_with_mode(KV_STORE, IdbTransactionMode::Readwrite)?;
         let store = tx.object_store(KV_STORE)?;
-        store.delete_owned(&JsValue::from_str(key))?;
+        store.delete_owned(JsValue::from_str(key))?;
         tx.await.into_result()?;
         Ok(())
     }
@@ -58,12 +58,12 @@ impl IdbStore {
         db_req.set_on_upgrade_needed(Some(|evt: &IdbVersionChangeEvent| -> Result<(), JsValue> {
             let create_store_if_needed =
                 |evt: &IdbVersionChangeEvent, store_key: &'static str| -> Result<(), JsValue> {
-                    if let None = evt.db().object_store_names().find(|n| n == store_key) {
+                    if !evt.db().object_store_names().any(|n| n == store_key) {
                         evt.db().create_object_store(store_key)?;
                     }
                     Ok(())
                 };
-            create_store_if_needed(evt, &KV_STORE)?;
+            create_store_if_needed(evt, KV_STORE)?;
             Ok(())
         }));
         Ok(Self {
