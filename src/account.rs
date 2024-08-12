@@ -6,7 +6,6 @@ use wasm_bindgen::prelude::*;
 use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::{Era, UnifiedAddressRequest, UnifiedSpendingKey};
 use zcash_primitives::consensus::MAIN_NETWORK;
-use zcash_primitives::legacy::keys::pubkey_to_address;
 use zcash_primitives::legacy::TransparentAddress;
 use zcash_primitives::zip32::{AccountId, DiversifierIndex};
 
