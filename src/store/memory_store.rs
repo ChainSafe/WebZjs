@@ -1,8 +1,8 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use crate::store::WalletStore;
 use crate::error::Error;
+use crate::store::WalletStore;
 
 /// A simple in-memory store for wallet data. Useful for testing
 pub struct MemoryStore {
