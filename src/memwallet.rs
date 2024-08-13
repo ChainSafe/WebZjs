@@ -16,6 +16,7 @@ use zip32::{fingerprint::SeedFingerprint, DiversifierIndex, Scope};
 use zcash_primitives::{
     block::BlockHash,
     consensus::{BlockHeight, Network},
+    legacy::TransparentAddress,
     transaction::{Transaction, TxId},
     zip32::AccountId,
 };
@@ -28,21 +29,15 @@ use zcash_protocol::{
 use zcash_client_backend::{
     address::UnifiedAddress,
     keys::{UnifiedAddressRequest, UnifiedFullViewingKey, UnifiedSpendingKey},
-    wallet::{NoteId, WalletSpend, WalletTransparentOutput, WalletTx},
+    wallet::{NoteId, TransparentAddressMetadata, WalletSpend, WalletTransparentOutput, WalletTx},
 };
 
 use zcash_client_backend::data_api::{
     chain::ChainState, chain::CommitmentTreeRoot, scanning::ScanRange, Account, AccountBirthday,
     AccountPurpose, AccountSource, BlockMetadata, DecryptedTransaction, NullifierQuery,
     ScannedBlock, SeedRelevance, SentTransaction, WalletCommitmentTrees, WalletRead, WalletSummary,
-    WalletWrite, SAPLING_SHARD_HEIGHT,
+    WalletWrite, ORCHARD_SHARD_HEIGHT, SAPLING_SHARD_HEIGHT,
 };
-
-#[cfg(feature = "transparent-inputs")]
-use {crate::wallet::TransparentAddressMetadata, zcash_primitives::legacy::TransparentAddress};
-
-#[cfg(feature = "orchard")]
-use super::ORCHARD_SHARD_HEIGHT;
 
 struct MemoryWalletBlock {
     height: BlockHeight,
@@ -87,19 +82,18 @@ pub struct MemoryWalletDb {
     accounts: BTreeMap<u32, MemoryWalletAccount>,
     blocks: BTreeMap<BlockHeight, MemoryWalletBlock>,
     tx_idx: BTreeMap<TxId, BlockHeight>,
+    // (txid, spent)
     sapling_spends: BTreeMap<sapling::Nullifier, (TxId, bool)>,
-    #[cfg(feature = "orchard")]
     orchard_spends: BTreeMap<orchard::note::Nullifier, (TxId, bool)>,
     sapling_tree: ShardTree<
         MemoryShardStore<sapling::Node, BlockHeight>,
         { SAPLING_SHARD_HEIGHT * 2 },
         SAPLING_SHARD_HEIGHT,
     >,
-    #[cfg(feature = "orchard")]
     orchard_tree: ShardTree<
         MemoryShardStore<orchard::tree::MerkleHashOrchard, BlockHeight>,
         { ORCHARD_SHARD_HEIGHT * 2 },
-        ORCHARD_SHARD_HEIGHT,
+        { ORCHARD_SHARD_HEIGHT },
     >,
 }
 
@@ -111,10 +105,8 @@ impl MemoryWalletDb {
             blocks: BTreeMap::new(),
             tx_idx: BTreeMap::new(),
             sapling_spends: BTreeMap::new(),
-            #[cfg(feature = "orchard")]
             orchard_spends: BTreeMap::new(),
             sapling_tree: ShardTree::new(MemoryShardStore::empty(), max_checkpoints),
-            #[cfg(feature = "orchard")]
             orchard_tree: ShardTree::new(MemoryShardStore::empty(), max_checkpoints),
         }
     }
@@ -127,6 +119,7 @@ pub enum Error {
     MemoDecryption(memo::Error),
     KeyDerivation(DerivationError),
     AddressGeneration(AddressGenerationError),
+    TxUnknown(TxId),
 }
 
 impl From<DerivationError> for Error {
@@ -324,8 +317,12 @@ impl WalletRead for MemoryWalletDb {
         todo!()
     }
 
-    fn get_tx_height(&self, _txid: TxId) -> Result<Option<BlockHeight>, Self::Error> {
-        todo!()
+    fn get_tx_height(&self, txid: TxId) -> Result<Option<BlockHeight>, Self::Error> {
+        self.tx_idx
+            .get(&txid)
+            .copied()
+            .map(Some)
+            .ok_or(Error::TxUnknown(txid))
     }
 
     fn get_unified_full_viewing_keys(
@@ -350,34 +347,46 @@ impl WalletRead for MemoryWalletDb {
 
     fn get_sapling_nullifiers(
         &self,
-        _query: NullifierQuery,
+        query: NullifierQuery,
     ) -> Result<Vec<(Self::AccountId, sapling::Nullifier)>, Self::Error> {
-        Ok(Vec::new())
+        // self.sapling_spends
+        //     .iter()
+        //     .filter(|s| match query {
+        //         NullifierQuery::All => true,
+        //         NullifierQuery::Unspent => !s.1 .1,
+        //     })
+        //     .map(|(nullifier, (txid, _))| {
+        //         self.accounts.iter().find_map(|(id, acct)| {
+        //             let dfvk = acct.ufvk.sapling().ok()?;
+        //             let nk = dfvk.to_nk(Scope::External);
+        //             let note = nk.to_note_from_nullifier(*nullifier);
+        //             Some((*id, note))
+        //         })
+        //     })
+        //     .collect()
+        todo!()
     }
 
-    #[cfg(feature = "orchard")]
     fn get_orchard_nullifiers(
         &self,
         _query: NullifierQuery,
     ) -> Result<Vec<(Self::AccountId, orchard::note::Nullifier)>, Self::Error> {
-        Ok(Vec::new())
+        todo!()
     }
 
-    #[cfg(feature = "transparent-inputs")]
     fn get_transparent_receivers(
         &self,
         _account: Self::AccountId,
     ) -> Result<HashMap<TransparentAddress, Option<TransparentAddressMetadata>>, Self::Error> {
-        Ok(HashMap::new())
+        todo!()
     }
 
-    #[cfg(feature = "transparent-inputs")]
     fn get_transparent_balances(
         &self,
         _account: Self::AccountId,
         _max_height: BlockHeight,
     ) -> Result<HashMap<TransparentAddress, Zatoshis>, Self::Error> {
-        Ok(HashMap::new())
+        todo!()
     }
 
     fn transaction_data_requests(
@@ -477,7 +486,6 @@ impl WalletWrite for MemoryWalletDb {
                         }
                     });
 
-                    #[cfg(feature = "orchard")]
                     transaction.orchard_outputs().iter().map(|o| {
                         // Insert the Orchard nullifiers of the spent notes into the `orchard_spends` map.
                         if let Some(nullifier) = o.nf() {
@@ -507,13 +515,12 @@ impl WalletWrite for MemoryWalletDb {
                         },
                     );
 
-                    #[cfg(feature = "orchard")]
                     // Add frontier to the orchard tree
                     self.orchard_tree.insert_frontier(
                         from_state.final_orchard_tree().clone(),
                         Retention::Checkpoint {
                             id: from_state.block_height(),
-                            is_marked: false,
+                            marking: Marking::Reference,
                         },
                     );
 
@@ -525,7 +532,6 @@ impl WalletWrite for MemoryWalletDb {
                         }
                     });
 
-                    #[cfg(feature = "orchard")]
                     // Mark the Orchard nullifiers of the spent notes as spent in the `orchard_spends` map.
                     transaction.orchard_spends().iter().map(|s| {
                         let nullifier = s.nf();
@@ -558,7 +564,6 @@ impl WalletWrite for MemoryWalletDb {
             self.sapling_tree
                 .batch_insert(start_position, block_commitments.sapling.into_iter());
 
-            #[cfg(feature = "orchard")]
             {
                 // Add the Orchard commitments to the orchard tree.
                 let start_position = from_state
@@ -660,17 +665,15 @@ impl WalletCommitmentTrees for MemoryWalletDb {
         Ok(())
     }
 
-    #[cfg(feature = "orchard")]
     type OrchardShardStore<'a> = MemoryShardStore<orchard::tree::MerkleHashOrchard, BlockHeight>;
 
-    #[cfg(feature = "orchard")]
     fn with_orchard_tree_mut<F, A, E>(&mut self, mut callback: F) -> Result<A, E>
     where
         for<'a> F: FnMut(
             &'a mut ShardTree<
                 Self::OrchardShardStore<'a>,
                 { ORCHARD_SHARD_HEIGHT * 2 },
-                ORCHARD_SHARD_HEIGHT,
+                { ORCHARD_SHARD_HEIGHT },
             >,
         ) -> Result<A, E>,
         E: From<ShardTreeError<Self::Error>>,
@@ -679,7 +682,6 @@ impl WalletCommitmentTrees for MemoryWalletDb {
     }
 
     /// Adds a sequence of note commitment tree subtree roots to the data store.
-    #[cfg(feature = "orchard")]
     fn put_orchard_subtree_roots(
         &mut self,
         start_index: u64,

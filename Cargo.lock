@@ -1665,8 +1665,10 @@ version = "0.12.1"
 dependencies = [
  "base64",
  "bech32",
+ "bip32",
  "bls12_381",
  "bs58",
+ "byteorder",
  "crossbeam-channel",
  "document-features",
  "group",
@@ -1675,6 +1677,7 @@ dependencies = [
  "memuse",
  "nom",
  "nonempty",
+ "orchard",
  "percent-encoding",
  "prost",
  "rand_core",

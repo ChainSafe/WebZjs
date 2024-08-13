@@ -37,7 +37,7 @@ shardtree = "0.3"
 
 zcash_keys = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf", features = [ "transparent-inputs", "orchard", "sapling", "unstable"] }
 zcash_primitives = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf" }
-zcash_client_backend = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf" }
+zcash_client_backend = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf", features = ["transparent-inputs", "orchard",  "unstable"] }
 zcash_protocol = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf" }
 secrecy = "0.8.0"
 
