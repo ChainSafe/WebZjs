@@ -34,12 +34,12 @@ sapling = { package = "sapling-crypto", version = "0.1" }
 orchard = "0.8.0"
 zip32 = "0.1.1"
 shardtree = "0.3"
-
-zcash_keys = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf", features = [ "transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_primitives = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf" }
-zcash_client_backend = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf", features = ["transparent-inputs", "orchard",  "unstable"] }
-zcash_protocol = { git = "https://github.com/zcash/librustzcash", rev = "05887be9622fbc68ff901b05e04321627618d3bf" }
 secrecy = "0.8.0"
+
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0", features = [ "transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0" }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0", features = ["transparent-inputs", "orchard",  "unstable"] }
+zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0" }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
@@ -50,12 +50,12 @@ tonic-build = { version = "0.12", default-features = false, features = [
 ] }
 which = "4"
 
-[patch."https://github.com/zcash/librustzcash"]
-zcash_keys = { path = "../librustzcash/zcash_keys" }
-zcash_primitives = { path = "../librustzcash/zcash_primitives" }
-zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
-zcash_protocol = {  path = "../librustzcash/components/zcash_protocol" }
-
 [patch.crates-io]
 incrementalmerkletree = { git = "https://github.com/zcash/incrementalmerkletree", rev = "337f59179eda51261e9ddfc6b18e8fb84ea277c9" }
 shardtree = { git = "https://github.com/zcash/incrementalmerkletree", rev = "337f59179eda51261e9ddfc6b18e8fb84ea277c9" }
+
+# [patch."https://github.com/ChainSafe/librustzcash"]
+# zcash_keys = { path = "../librustzcash/zcash_keys" }
+# zcash_primitives = { path = "../librustzcash/zcash_primitives" }
+# zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
+# zcash_protocol = {  path = "../librustzcash/components/zcash_protocol" }
