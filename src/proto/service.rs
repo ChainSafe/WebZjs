@@ -61,11 +61,11 @@ pub struct SendResponse {
 }
 /// Chainspec is a placeholder to allow specification of a particular chain fork.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct ChainSpec {}
 /// Empty is for gRPCs that take no arguments, currently only GetLightdInfo.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Empty {}
 /// LightdInfo returns various information about this lightwalletd instance
 /// and the state of the blockchain.
@@ -125,7 +125,7 @@ pub struct TransparentAddressBlockFilter {
 /// can simulate a delay, to create many simultaneous connections. Units
 /// are microseconds.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Duration {
     #[prost(int64, tag = "1")]
     pub interval_us: i64,
@@ -134,7 +134,7 @@ pub struct Duration {
 /// are executing upon entry and upon exit (after the delay).
 /// This rpc is used for testing only.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct PingResponse {
     #[prost(int64, tag = "1")]
     pub entry: i64,
@@ -154,7 +154,7 @@ pub struct AddressList {
     pub addresses: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Balance {
     #[prost(int64, tag = "1")]
     pub value_zat: i64,
@@ -189,7 +189,7 @@ pub struct TreeState {
     pub orchard_tree: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GetSubtreeRootsArg {
     /// Index identifying where to start returning subtree roots
     #[prost(uint32, tag = "1")]

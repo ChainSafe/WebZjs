@@ -7,5 +7,6 @@
 pub mod account;
 pub mod error;
 pub mod init;
+pub mod memwallet;
 pub mod store;
 pub mod wallet;
