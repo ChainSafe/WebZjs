@@ -19,6 +19,8 @@ pub enum Error {
         message: String,
         code: u16,
     },
+    #[error("Address generation error")]
+    AddressGenerationError(#[from] zcash_keys::keys::AddressGenerationError),
 }
 
 impl From<Error> for JsValue {

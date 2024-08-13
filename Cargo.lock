@@ -1522,6 +1522,8 @@ dependencies = [
  "getrandom",
  "indexed_db_futures",
  "js-sys",
+ "ripemd",
+ "sha2",
  "thiserror",
  "tonic-build",
  "wasm-bindgen",

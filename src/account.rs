@@ -1,10 +1,13 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use sha2::{Digest, Sha256};
 use wasm_bindgen::prelude::*;
-use zcash_keys::keys::{Era, UnifiedSpendingKey};
+use zcash_keys::encoding::AddressCodec;
+use zcash_keys::keys::{Era, UnifiedAddressRequest, UnifiedSpendingKey};
 use zcash_primitives::consensus::MAIN_NETWORK;
-use zcash_primitives::zip32::AccountId;
+use zcash_primitives::legacy::TransparentAddress;
+use zcash_primitives::zip32::{AccountId, DiversifierIndex};
 
 use crate::error::Error;
 
@@ -12,7 +15,8 @@ pub type AccountIndex = u32;
 
 #[wasm_bindgen]
 pub struct Account {
-    usk: UnifiedSpendingKey,
+    #[wasm_bindgen(skip)]
+    pub usk: UnifiedSpendingKey,
 }
 
 #[wasm_bindgen]
@@ -41,5 +45,30 @@ impl Account {
         Ok(Account {
             usk: UnifiedSpendingKey::from_bytes(Era::Orchard, encoded).unwrap(),
         })
+    }
+
+    #[wasm_bindgen]
+    /// Return the string encoded address for this account. This returns a unified address with all address subtypes (orchard, sapling, p2pkh)
+    /// The diversifier index can be used to derive different valid addresses for the same account. Diversifier index must be > 0
+    pub fn unified_address(&self, diversifier_index: u64) -> Result<String, Error> {
+        Ok(self
+            .usk
+            .to_unified_full_viewing_key()
+            .address(
+                DiversifierIndex::from(diversifier_index),
+                UnifiedAddressRequest::all().unwrap(),
+            )?
+            .encode(&MAIN_NETWORK))
+    }
+
+    #[wasm_bindgen]
+    /// Return the string encoded address for this accounts transparent address
+    /// Should this also support a diversifier?
+    pub fn transparent_address(&self) -> Result<String, Error> {
+        let pubkey = self.usk.transparent().to_account_pubkey();
+        let t_address = TransparentAddress::PublicKeyHash(
+            *ripemd::Ripemd160::digest(Sha256::digest(pubkey.serialize())).as_ref(),
+        );
+        Ok(t_address.encode(&MAIN_NETWORK))
     }
 }
