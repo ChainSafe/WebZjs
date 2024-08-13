@@ -20,7 +20,7 @@ impl<S: WalletStore> Wallet<S> {
     pub fn add(&self, _account: Account) {}
 
     pub async fn get(&self, _index: AccountIndex) -> Result<Account, Error> {
-        Account::from_bytes(&self.store.get("yer").await?)
+        Account::from_bytes(&self.store.get("yer").await?.unwrap())
     }
 }
 

@@ -15,8 +15,8 @@ impl WalletStore for MemoryStore {
         Ok(())
     }
 
-    async fn get(&self, key: &str) -> Result<Vec<u8>, Error> {
-        Ok(self.inner.get(key).unwrap().to_vec())
+    async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, Error> {
+        Ok(self.inner.get(key).cloned())
     }
 
     async fn clear(&mut self, key: &str) -> Result<(), Error> {

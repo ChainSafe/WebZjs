@@ -50,9 +50,12 @@ impl WalletStore for InjectedStore {
         Ok(())
     }
 
-    async fn get(&self, key: &str) -> Result<Vec<u8>, Error> {
+    async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, Error> {
         let result = InjectedStore::get(self, key).await?;
-        Ok(js_sys::Uint8Array::new(&result).to_vec())
+        if result.is_null() {
+            return Ok(None);
+        }
+        Ok(Some(js_sys::Uint8Array::new(&result).to_vec()))
     }
 
     async fn clear(&mut self, key: &str) -> Result<(), Error> {
