@@ -1,42 +1,26 @@
 // #![allow(unused)]
-use incrementalmerkletree::{Address, Marking, Retention};
-use sapling::NullifierDerivingKey;
+use incrementalmerkletree::{Marking, Retention};
 use secrecy::{ExposeSecret, SecretVec};
-use shardtree::{error::ShardTreeError, store::memory::MemoryShardStore, ShardTree};
-use std::{
-    cmp::Ordering,
-    collections::{BTreeMap, HashMap, HashSet},
-    convert::Infallible,
-    hash::Hash,
-    num::NonZeroU32,
-};
-use zcash_keys::keys::{AddressGenerationError, DerivationError, UnifiedIncomingViewingKey};
-use zip32::{fingerprint::SeedFingerprint, DiversifierIndex, Scope};
+use std::collections::{BTreeMap, HashSet};
+use zip32::{fingerprint::SeedFingerprint, Scope};
 
 use zcash_primitives::{
-    block::BlockHash,
-    consensus::{BlockHeight, Network},
-    legacy::TransparentAddress,
-    transaction::{Transaction, TxId},
+    consensus::BlockHeight,
+    transaction::TxId,
     zip32::AccountId,
 };
-use zcash_protocol::{
-    memo::{self, Memo, MemoBytes},
-    value::Zatoshis,
-    ShieldedProtocol::{Orchard, Sapling},
-};
+use zcash_protocol::ShieldedProtocol::{Orchard, Sapling};
 
 use zcash_client_backend::{
     address::UnifiedAddress,
     keys::{UnifiedAddressRequest, UnifiedFullViewingKey, UnifiedSpendingKey},
-    wallet::{NoteId, TransparentAddressMetadata, WalletSpend, WalletTransparentOutput, WalletTx},
+    wallet::{NoteId, WalletTransparentOutput},
 };
 
 use zcash_client_backend::data_api::{
-    chain::ChainState, chain::CommitmentTreeRoot, scanning::ScanRange, Account, AccountBirthday,
-    AccountPurpose, AccountSource, BlockMetadata, DecryptedTransaction, NullifierQuery,
-    ScannedBlock, SeedRelevance, SentTransaction, WalletCommitmentTrees, WalletRead, WalletSummary,
-    WalletWrite, ORCHARD_SHARD_HEIGHT, SAPLING_SHARD_HEIGHT,
+    chain::ChainState, Account, AccountBirthday, DecryptedTransaction,
+    ScannedBlock, SentTransaction, WalletRead,
+    WalletWrite,
 };
 
 use super::*;
@@ -194,7 +178,7 @@ impl WalletWrite for MemoryWalletDb {
                 height: block.height(),
                 hash: block.block_hash(),
                 block_time: block.block_time(),
-                transactions: transactions,
+                transactions,
                 memos,
             };
 

@@ -1,43 +1,32 @@
 // #![allow(unused)]
-use incrementalmerkletree::{Address, Marking, Retention};
-use sapling::NullifierDerivingKey;
-use secrecy::{ExposeSecret, SecretVec};
-use shardtree::{error::ShardTreeError, store::memory::MemoryShardStore, ShardTree};
+use secrecy::SecretVec;
 use std::{
-    cmp::Ordering,
-    collections::{BTreeMap, HashMap, HashSet},
-    convert::Infallible,
+    collections::HashMap,
     hash::Hash,
     num::NonZeroU32,
 };
-use zcash_keys::keys::{AddressGenerationError, DerivationError, UnifiedIncomingViewingKey};
-use zip32::{fingerprint::SeedFingerprint, DiversifierIndex, Scope};
+use zip32::fingerprint::SeedFingerprint;
 
 use zcash_primitives::{
     block::BlockHash,
-    consensus::{BlockHeight, Network},
+    consensus::BlockHeight,
     legacy::TransparentAddress,
     transaction::{Transaction, TxId},
-    zip32::AccountId,
 };
 use zcash_protocol::{
-    memo::{self, Memo, MemoBytes},
+    memo::{Memo},
     value::Zatoshis,
-    ShieldedProtocol::{Orchard, Sapling},
 };
 
 use zcash_client_backend::{
     address::UnifiedAddress,
-    keys::{UnifiedAddressRequest, UnifiedFullViewingKey, UnifiedSpendingKey},
-    wallet::{NoteId, TransparentAddressMetadata, WalletSpend, WalletTransparentOutput, WalletTx},
+    keys::{UnifiedAddressRequest, UnifiedFullViewingKey},
+    wallet::{NoteId, TransparentAddressMetadata},
 };
 
 use super::*;
 use zcash_client_backend::data_api::{
-    chain::ChainState, chain::CommitmentTreeRoot, scanning::ScanRange, Account, AccountBirthday,
-    AccountPurpose, AccountSource, BlockMetadata, DecryptedTransaction, NullifierQuery,
-    ScannedBlock, SeedRelevance, SentTransaction, WalletCommitmentTrees, WalletRead, WalletSummary,
-    WalletWrite, ORCHARD_SHARD_HEIGHT, SAPLING_SHARD_HEIGHT,
+    scanning::ScanRange, Account, BlockMetadata, NullifierQuery, SeedRelevance, WalletRead, WalletSummary,
 };
 
 impl WalletRead for MemoryWalletDb {
@@ -122,7 +111,7 @@ impl WalletRead for MemoryWalletDb {
         self.accounts
             .get(&account)
             .map(|account| account.birthday.height())
-            .ok_or_else(|| Error::AccountUnknown(account))
+            .ok_or(Error::AccountUnknown(account))
     }
 
     fn get_wallet_birthday(&self) -> Result<Option<BlockHeight>, Self::Error> {
