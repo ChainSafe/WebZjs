@@ -36,10 +36,10 @@ zip32 = "0.1.1"
 shardtree = "0.3"
 secrecy = "0.8.0"
 
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0", features = [ "transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0" }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0", features = ["transparent-inputs", "orchard",  "unstable"] }
-zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "109c808e88b7eaa8133960abfd5c10ea64a707f0" }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc", features = [ "transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc", features = ["transparent-inputs", "orchard",  "unstable"] }
+zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
