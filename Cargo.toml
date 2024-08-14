@@ -22,11 +22,12 @@ wasm-opt = ["-O4", "-O4"]
 [dependencies]
 wasm-bindgen = "0.2.84"
 js-sys = "0.3.69"
-zcash_keys = { git = "https://github.com/zcash/librustzcash", rev = "5a4a3e06dcd2cf5bdf79a7cd48709b58693c65f0", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_primitives = { git = "https://github.com/zcash/librustzcash", rev = "5a4a3e06dcd2cf5bdf79a7cd48709b58693c65f0" }
-zip321 = { git = "https://github.com/zcash/librustzcash", rev = "5a4a3e06dcd2cf5bdf79a7cd48709b58693c65f0" }
-zcash_address = { git = "https://github.com/zcash/librustzcash", rev = "5a4a3e06dcd2cf5bdf79a7cd48709b58693c65f0" }
-zcash_protocol = { git = "https://github.com/zcash/librustzcash", rev = "5a4a3e06dcd2cf5bdf79a7cd48709b58693c65f0" }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
+zip321 = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
+zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -46,3 +47,7 @@ tonic-build = { version = "0.11", default-features = false, features = [
     "prost",
 ] }
 which = "4"
+
+[patch.crates-io]
+incrementalmerkletree = { git = "https://github.com/zcash/incrementalmerkletree", rev = "337f59179eda51261e9ddfc6b18e8fb84ea277c9" }
+shardtree = { git = "https://github.com/zcash/incrementalmerkletree", rev = "337f59179eda51261e9ddfc6b18e8fb84ea277c9" }

@@ -3,6 +3,9 @@
 
 //! Wrappers around librustzcash types.
 //! Provides a js-friendly interface for creating and manipulating payments and transaction requests.
+//!
+//! Typically a request will be generated either by the user using the interface, or via a URI provided by the receiver.
+//!
 
 use js_sys::Reflect;
 use wasm_bindgen::prelude::*;
@@ -12,7 +15,10 @@ use zcash_protocol::memo::MemoBytes;
 use zcash_protocol::value::Zatoshis;
 
 #[wasm_bindgen]
-/// A payment is a single transfer of zatoshis from one account to another
+pub struct TxId([u8; 32]);
+
+#[wasm_bindgen]
+/// A payment is a single transfer of zatoshis to another account
 pub struct Payment(pub(crate) zip321::Payment);
 
 #[wasm_bindgen(getter_with_clone)]

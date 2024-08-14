@@ -8,5 +8,6 @@ pub mod account;
 pub mod error;
 pub mod init;
 pub mod store;
+pub mod transaction_proposal;
 pub mod transaction_request;
 pub mod wallet;

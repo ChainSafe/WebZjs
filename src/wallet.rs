@@ -6,6 +6,8 @@ use wasm_bindgen::prelude::*;
 use crate::account::{Account, AccountIndex};
 use crate::error::Error;
 use crate::store::{InjectedStore, WalletStore};
+use crate::transaction_proposal::TransactionProposal;
+use crate::transaction_request::{TransactionRequest, TxId};
 
 /// A wallet is a collection of a number of accounts that can be synchronized together.
 struct Wallet<S: WalletStore> {
@@ -21,6 +23,21 @@ impl<S: WalletStore> Wallet<S> {
 
     pub async fn get(&self, _index: AccountIndex) -> Result<Account, Error> {
         Account::from_bytes(&self.store.get("yer").await?.unwrap())
+    }
+
+    /// Given a request, create a proposal of how funds can be spent from the given account to realize it
+    pub fn propose_transfer(
+        &self,
+        _spend_from_account: AccountIndex,
+        _request: TransactionRequest,
+    ) -> TransactionProposal {
+        todo!();
+    }
+
+    /// Given a proposal, build, sign, and prove the transaction, then store it in the wallet transaction store
+    /// Returns the transaction id
+    pub fn create_proposed_transaction(&self, _proposal: TransactionProposal) -> Vec<TxId> {
+        todo!();
     }
 }
 
@@ -41,5 +58,20 @@ impl WalletInjectedStore {
 
     pub async fn get(&self, index: AccountIndex) -> Result<Account, Error> {
         self.0.get(index).await
+    }
+
+    /// Given a request, create a proposal of how funds can be spent from the given account to realize it
+    pub fn propose_transfer(
+        &self,
+        spend_from_account: AccountIndex,
+        request: TransactionRequest,
+    ) -> TransactionProposal {
+        self.0.propose_transfer(spend_from_account, request)
+    }
+
+    /// Given a proposal, build, sign, and prove the transaction, then store it in the wallet transaction store
+    /// Returns the transaction id
+    pub fn create_proposed_transaction(&self, proposal: TransactionProposal) -> Vec<TxId> {
+        self.0.create_proposed_transaction(proposal)
     }
 }
