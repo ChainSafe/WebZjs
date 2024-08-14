@@ -21,6 +21,8 @@ pub enum Error {
     },
     #[error("Address generation error")]
     AddressGenerationError(#[from] zcash_keys::keys::AddressGenerationError),
+    #[error("Transaction request error")]
+    TransactionRequestError(#[from] zip321::Zip321Error),
 }
 
 impl From<Error> for JsValue {
