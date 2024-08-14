@@ -15,9 +15,6 @@ use zcash_protocol::memo::MemoBytes;
 use zcash_protocol::value::Zatoshis;
 
 #[wasm_bindgen]
-pub struct TxId([u8; 32]);
-
-#[wasm_bindgen]
 /// A payment is a single transfer of zatoshis to another account
 pub struct Payment(pub(crate) zip321::Payment);
 

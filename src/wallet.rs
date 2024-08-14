@@ -7,7 +7,7 @@ use crate::account::{Account, AccountIndex};
 use crate::error::Error;
 use crate::store::{InjectedStore, WalletStore};
 use crate::transaction_proposal::TransactionProposal;
-use crate::transaction_request::{TransactionRequest, TxId};
+use crate::transaction_request::TransactionRequest;
 
 /// A wallet is a collection of a number of accounts that can be synchronized together.
 struct Wallet<S: WalletStore> {
@@ -36,7 +36,7 @@ impl<S: WalletStore> Wallet<S> {
 
     /// Given a proposal, build, sign, and prove the transaction, then store it in the wallet transaction store
     /// Returns the transaction id
-    pub fn create_proposed_transaction(&self, _proposal: TransactionProposal) -> Vec<TxId> {
+    pub fn create_proposed_transaction(&self, _proposal: TransactionProposal) -> Vec<JsValue> {
         todo!();
     }
 }
@@ -71,7 +71,7 @@ impl WalletInjectedStore {
 
     /// Given a proposal, build, sign, and prove the transaction, then store it in the wallet transaction store
     /// Returns the transaction id
-    pub fn create_proposed_transaction(&self, proposal: TransactionProposal) -> Vec<TxId> {
+    pub fn create_proposed_transaction(&self, proposal: TransactionProposal) -> Vec<JsValue> {
         self.0.create_proposed_transaction(proposal)
     }
 }
