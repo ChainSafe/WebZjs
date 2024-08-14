@@ -54,8 +54,8 @@ which = "4"
 incrementalmerkletree = { git = "https://github.com/zcash/incrementalmerkletree", rev = "337f59179eda51261e9ddfc6b18e8fb84ea277c9" }
 shardtree = { git = "https://github.com/zcash/incrementalmerkletree", rev = "337f59179eda51261e9ddfc6b18e8fb84ea277c9" }
 
-# [patch."https://github.com/ChainSafe/librustzcash"]
-# zcash_keys = { path = "../librustzcash/zcash_keys" }
-# zcash_primitives = { path = "../librustzcash/zcash_primitives" }
-# zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
-# zcash_protocol = {  path = "../librustzcash/components/zcash_protocol" }
+[patch."https://github.com/ChainSafe/librustzcash"]
+zcash_keys = { path = "../librustzcash/zcash_keys" }
+zcash_primitives = { path = "../librustzcash/zcash_primitives" }
+zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
+zcash_protocol = {  path = "../librustzcash/components/zcash_protocol" }

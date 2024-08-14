@@ -5,7 +5,6 @@ use std::convert::Infallible;
 
 use zcash_primitives::consensus::BlockHeight;
 
-
 use zcash_client_backend::data_api::{
     chain::CommitmentTreeRoot, WalletCommitmentTrees, ORCHARD_SHARD_HEIGHT, SAPLING_SHARD_HEIGHT,
 };

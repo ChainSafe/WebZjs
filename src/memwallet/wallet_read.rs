@@ -1,22 +1,15 @@
 // #![allow(unused)]
 use secrecy::SecretVec;
-use std::{
-    collections::HashMap,
-    hash::Hash,
-    num::NonZeroU32,
-};
+use std::{collections::HashMap, num::NonZeroU32};
 use zip32::fingerprint::SeedFingerprint;
 
 use zcash_primitives::{
     block::BlockHash,
     consensus::BlockHeight,
     legacy::TransparentAddress,
-    transaction::{Transaction, TxId},
+    transaction::{Transaction, TransactionData, TxId},
 };
-use zcash_protocol::{
-    memo::{Memo},
-    value::Zatoshis,
-};
+use zcash_protocol::{consensus::BranchId, memo::Memo, value::Zatoshis};
 
 use zcash_client_backend::{
     address::UnifiedAddress,
@@ -26,11 +19,13 @@ use zcash_client_backend::{
 
 use super::*;
 use zcash_client_backend::data_api::{
-    scanning::ScanRange, Account, BlockMetadata, NullifierQuery, SeedRelevance, WalletRead, WalletSummary,
+    scanning::ScanRange, Account, BlockMetadata, NullifierQuery, SeedRelevance, WalletRead,
+    WalletSummary,
 };
 
 impl WalletRead for MemoryWalletDb {
     type Error = Error;
+
     type AccountId = u32;
     type Account = MemAccount;
 
@@ -131,7 +126,7 @@ impl WalletRead for MemoryWalletDb {
     }
 
     fn chain_height(&self) -> Result<Option<BlockHeight>, Self::Error> {
-        todo!()
+        Ok(Some(self.chain_tip))
     }
 
     fn get_block_hash(&self, block_height: BlockHeight) -> Result<Option<BlockHash>, Self::Error> {
@@ -153,7 +148,10 @@ impl WalletRead for MemoryWalletDb {
     }
 
     fn get_max_height_hash(&self) -> Result<Option<(BlockHeight, BlockHash)>, Self::Error> {
-        todo!()
+        Ok(self
+            .blocks
+            .get(&self.chain_tip)
+            .map(|block| (self.chain_tip, block.hash)))
     }
 
     fn block_max_scanned(&self) -> Result<Option<BlockMetadata>, Self::Error> {
@@ -199,8 +197,40 @@ impl WalletRead for MemoryWalletDb {
             .map_err(Error::from)
     }
 
-    fn get_transaction(&self, _id_tx: TxId) -> Result<Option<Transaction>, Self::Error> {
-        todo!()
+    fn get_transaction(&self, id_tx: TxId) -> Result<Option<Transaction>, Self::Error> {
+        let MemoryWalletTransaction {
+            expiry_height,
+            height,
+            tx_bytes,
+        } = self.raw_txs.get(&id_tx).ok_or(Error::TxUnknown(id_tx))?;
+        // This is taken from zcash_client_sqlite
+        if let Some(height) = height.or_else(|| expiry_height.filter(|h| h > &BlockHeight::from(0)))
+        {
+            Transaction::read(&tx_bytes[..], BranchId::for_height(&self.network, height))
+                .map(Some)
+                .map_err(Error::from)
+        } else {
+            let tx_data = Transaction::read(&tx_bytes[..], BranchId::Sprout)?.into_data();
+
+            let expiry_height = tx_data.expiry_height();
+            if expiry_height > BlockHeight::from(0) {
+                TransactionData::from_parts(
+                    tx_data.version(),
+                    BranchId::for_height(&self.network, expiry_height),
+                    tx_data.lock_time(),
+                    expiry_height,
+                    tx_data.transparent_bundle().cloned(),
+                    tx_data.sprout_bundle().cloned(),
+                    tx_data.sapling_bundle().cloned(),
+                    tx_data.orchard_bundle().cloned(),
+                )
+                .freeze()
+                .map(Some)
+                .map_err(Error::from)
+            } else {
+                Err(Error::Other("Consensus branch ID not known, cannot parse this transaction until it is mined".to_string()))
+            }
+        }
     }
 
     fn get_sapling_nullifiers(
@@ -214,12 +244,13 @@ impl WalletRead for MemoryWalletDb {
         //         NullifierQuery::Unspent => !s.1 .1,
         //     })
         //     .map(|(nullifier, (txid, _))| {
-        //         self.accounts.iter().find_map(|(id, acct)| {
-        //             let dfvk = acct.ufvk.sapling().ok()?;
-        //             let nk = dfvk.to_nk(Scope::External);
-        //             let note = nk.to_note_from_nullifier(*nullifier);
-        //             Some((*id, note))
-        //         })
+        //         let matching_tx = self.
+        //         // self.accounts.iter().find_map(|(id, acct)| {
+        //         //     let dfvk = acct.ufvk.sapling().ok()?;
+        //         //     let nk = dfvk.to_nk(Scope::External);
+        //         //     let note = nk.to_note_from_nullifier(*nullifier);
+        //         //     Some((*id, note))
+        //         // })
         //     })
         //     .collect()
         todo!()
@@ -232,20 +263,20 @@ impl WalletRead for MemoryWalletDb {
         todo!()
     }
 
-    fn get_transparent_receivers(
-        &self,
-        _account: Self::AccountId,
-    ) -> Result<HashMap<TransparentAddress, Option<TransparentAddressMetadata>>, Self::Error> {
-        todo!()
-    }
+    // fn get_transparent_receivers(
+    //     &self,
+    //     _account: Self::AccountId,
+    // ) -> Result<HashMap<TransparentAddress, Option<TransparentAddressMetadata>>, Self::Error> {
+    //     todo!()
+    // }
 
-    fn get_transparent_balances(
-        &self,
-        _account: Self::AccountId,
-        _max_height: BlockHeight,
-    ) -> Result<HashMap<TransparentAddress, Zatoshis>, Self::Error> {
-        todo!()
-    }
+    // fn get_transparent_balances(
+    //     &self,
+    //     _account: Self::AccountId,
+    //     _max_height: BlockHeight,
+    // ) -> Result<HashMap<TransparentAddress, Zatoshis>, Self::Error> {
+    //     todo!()
+    // }
 
     fn transaction_data_requests(
         &self,

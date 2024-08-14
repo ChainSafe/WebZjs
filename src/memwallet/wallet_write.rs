@@ -4,23 +4,19 @@ use secrecy::{ExposeSecret, SecretVec};
 use std::collections::{BTreeMap, HashSet};
 use zip32::{fingerprint::SeedFingerprint, Scope};
 
-use zcash_primitives::{
-    consensus::BlockHeight,
-    transaction::TxId,
-    zip32::AccountId,
-};
+use zcash_primitives::{consensus::BlockHeight, transaction::TxId, zip32::AccountId};
 use zcash_protocol::ShieldedProtocol::{Orchard, Sapling};
 
 use zcash_client_backend::{
     address::UnifiedAddress,
+    data_api::chain,
     keys::{UnifiedAddressRequest, UnifiedFullViewingKey, UnifiedSpendingKey},
-    wallet::{NoteId, WalletTransparentOutput},
+    wallet::{Note, NoteId, Recipient, WalletTransparentOutput},
 };
 
 use zcash_client_backend::data_api::{
-    chain::ChainState, Account, AccountBirthday, DecryptedTransaction,
-    ScannedBlock, SentTransaction, WalletRead,
-    WalletWrite,
+    chain::ChainState, Account, AccountBirthday, DecryptedTransaction, ScannedBlock,
+    SentTransaction, WalletRead, WalletWrite,
 };
 
 use super::*;
@@ -48,7 +44,7 @@ impl WalletWrite for MemoryWalletDb {
                 ufvk,
                 birthday: birthday.clone(),
                 addresses: BTreeMap::new(),
-                notes: HashSet::new(),
+                notes: BTreeSet::new(),
             },
         );
 
@@ -63,8 +59,9 @@ impl WalletWrite for MemoryWalletDb {
         todo!()
     }
 
-    fn update_chain_tip(&mut self, _tip_height: BlockHeight) -> Result<(), Self::Error> {
-        todo!()
+    fn update_chain_tip(&mut self, tip_height: BlockHeight) -> Result<(), Self::Error> {
+        self.chain_tip = tip_height;
+        Ok(())
     }
 
     /// Adds a sequence of blocks to the data store.
@@ -96,7 +93,7 @@ impl WalletWrite for MemoryWalletDb {
                         .ok_or(Error::ViewingKeyNotFound(account_id))?;
                     let nk = dfvk.to_nk(Scope::External);
 
-                    transaction.sapling_outputs().iter().map(|o| {
+                    for o in transaction.sapling_outputs().iter() {
                         // Insert the Sapling nullifiers of the spent notes into the `sapling_spends` map.
                         let nullifier = o.note().nf(&nk, o.note_commitment_tree_position().into());
                         self.sapling_spends
@@ -113,9 +110,9 @@ impl WalletWrite for MemoryWalletDb {
                         if let Ok(Some(memo)) = self.get_memo(note_id) {
                             memos.insert(note_id, memo.encode());
                         }
-                    });
+                    }
 
-                    transaction.orchard_outputs().iter().map(|o| {
+                    for o in transaction.orchard_outputs().iter() {
                         // Insert the Orchard nullifiers of the spent notes into the `orchard_spends` map.
                         if let Some(nullifier) = o.nf() {
                             self.orchard_spends
@@ -133,7 +130,7 @@ impl WalletWrite for MemoryWalletDb {
                         if let Ok(Some(memo)) = self.get_memo(note_id) {
                             memos.insert(note_id, memo.encode());
                         }
-                    });
+                    }
 
                     // Add frontier to the sapling tree
                     self.sapling_tree.insert_frontier(
@@ -142,7 +139,7 @@ impl WalletWrite for MemoryWalletDb {
                             id: from_state.block_height(),
                             marking: Marking::Reference,
                         },
-                    );
+                    )?;
 
                     // Add frontier to the orchard tree
                     self.orchard_tree.insert_frontier(
@@ -151,23 +148,23 @@ impl WalletWrite for MemoryWalletDb {
                             id: from_state.block_height(),
                             marking: Marking::Reference,
                         },
-                    );
+                    )?;
 
                     // Mark the Sapling nullifiers of the spent notes as spent in the `sapling_spends` map.
-                    transaction.sapling_spends().iter().map(|s| {
+                    for s in transaction.sapling_spends() {
                         let nullifier = s.nf();
                         if let Some((txid, spent)) = self.sapling_spends.get_mut(nullifier) {
                             *spent = true;
                         }
-                    });
+                    }
 
                     // Mark the Orchard nullifiers of the spent notes as spent in the `orchard_spends` map.
-                    transaction.orchard_spends().iter().map(|s| {
+                    for s in transaction.orchard_spends() {
                         let nullifier = s.nf();
                         if let Some((txid, spent)) = self.orchard_spends.get_mut(nullifier) {
                             *spent = true;
                         }
-                    });
+                    }
 
                     self.tx_idx.insert(txid, block.height());
                     transactions.insert(txid, transaction.clone());
@@ -178,11 +175,12 @@ impl WalletWrite for MemoryWalletDb {
                 height: block.height(),
                 hash: block.block_hash(),
                 block_time: block.block_time(),
-                transactions,
+                transactions: transactions.keys().copied().collect(),
                 memos,
             };
 
             self.blocks.insert(block.height(), memory_block);
+            self.transactions.extend(transactions);
 
             // Add the Sapling commitments to the sapling tree.
             let block_commitments = block.into_commitments();
@@ -191,7 +189,7 @@ impl WalletWrite for MemoryWalletDb {
                 .value()
                 .map_or(0.into(), |t| t.position() + 1);
             self.sapling_tree
-                .batch_insert(start_position, block_commitments.sapling.into_iter());
+                .batch_insert(start_position, block_commitments.sapling.into_iter())?;
 
             {
                 // Add the Orchard commitments to the orchard tree.
@@ -200,7 +198,7 @@ impl WalletWrite for MemoryWalletDb {
                     .value()
                     .map_or(0.into(), |t| t.position() + 1);
                 self.orchard_tree
-                    .batch_insert(start_position, block_commitments.orchard.into_iter());
+                    .batch_insert(start_position, block_commitments.orchard.into_iter())?;
             }
         }
 
@@ -212,7 +210,7 @@ impl WalletWrite for MemoryWalletDb {
         &mut self,
         _output: &WalletTransparentOutput,
     ) -> Result<Self::UtxoRef, Self::Error> {
-        Ok(0)
+        todo!()
     }
 
     fn store_decrypted_tx(
@@ -248,7 +246,85 @@ impl WalletWrite for MemoryWalletDb {
         &mut self,
         transactions: &[SentTransaction<Self::AccountId>],
     ) -> Result<(), Self::Error> {
-        todo!()
+        for txns in transactions {
+            // TODO: I think we need to save the transaciton somewhere
+            // Mark sapling inputs as spent
+            if let Some(bundle) = txns.tx().sapling_bundle() {
+                for spend in bundle.shielded_spends() {
+                    self.sapling_spends
+                        .insert(*spend.nullifier(), (txns.tx().txid(), true));
+                }
+            }
+            // Mark orchard inputs as spent
+            if let Some(bundle) = txns.tx().orchard_bundle() {
+                for action in bundle.actions() {
+                    self.orchard_spends
+                        .insert(*action.nullifier(), (txns.tx().txid(), true));
+                }
+            }
+            // // Mark transparent inputs as spent
+            // for outpoint in txns.utxos_spent() {
+            //     self.transparent_spends
+            //         .insert(outpoint.clone(), (txns.tx().txid(), true));
+            // }
+
+            // Save relevant output notes ids
+            for output in txns.outputs() {
+                let recipient = output.recipient();
+                match recipient {
+                    Recipient::InternalAccount {
+                        receiving_account,
+                        note: Note::Sapling(note),
+                        ..
+                    } => {
+                        let note_id = NoteId::new(
+                            txns.tx().txid(),
+                            Sapling,
+                            u16::try_from(output.output_index())
+                                .expect("output indices are representable as u16"),
+                        );
+                        self.accounts
+                            .get_mut(receiving_account.into())
+                            .unwrap()
+                            .notes
+                            .insert(note_id);
+                    }
+                    Recipient::InternalAccount {
+                        receiving_account,
+                        note: Note::Orchard(note),
+                        ..
+                    } => {
+                        let note_id = NoteId::new(
+                            txns.tx().txid(),
+                            Orchard,
+                            u16::try_from(output.output_index())
+                                .expect("output indices are representable as u16"),
+                        );
+                        self.accounts
+                            .get_mut(receiving_account.into())
+                            .unwrap()
+                            .notes
+                            .insert(note_id);
+                    }
+                    Recipient::EphemeralTransparent {
+                        receiving_account,
+                        ephemeral_address,
+                        outpoint_metadata,
+                    } => {
+                        todo!("Dont know how to handle ephemeral transparent outputs");
+                        // let note_id = NoteId::new(
+                        //     txns.tx().txid(),
+                        //     Transparent,
+                        //     u16::try_from(output.output_index())
+                        //         .expect("output indices are representable as u16"),
+                        // );
+                    }
+                    _ => {}
+                }
+            }
+        }
+        // TODO: Add txns to be detected via scanning?
+        Ok(())
     }
 
     fn set_transaction_status(
@@ -258,4 +334,8 @@ impl WalletWrite for MemoryWalletDb {
     ) -> Result<(), Self::Error> {
         todo!()
     }
+}
+
+impl MemoryWalletDb {
+    pub fn put_tx_data(&mut self, tx: &Transaction) -> Result<(), Error> {}
 }
