@@ -12,9 +12,11 @@ use zcash_protocol::memo::MemoBytes;
 use zcash_protocol::value::Zatoshis;
 
 #[wasm_bindgen]
+/// A payment is a single transfer of zatoshis from one account to another
 pub struct Payment(pub(crate) zip321::Payment);
 
 #[wasm_bindgen(getter_with_clone)]
+/// Args passed to the constructor for Payment
 pub struct PaymentArgs {
     /// The recipient's address string formatted
     pub recipient_address: String,
@@ -71,6 +73,8 @@ impl Payment {
 }
 
 #[wasm_bindgen]
+/// A transaction request is a collection of payments to be sent in a single transaction
+/// This can be passed to `propose_transfer`` to have the solver attempt to find UTXOs in this wallet that can be used to fulfill the request
 pub struct TransactionRequest(pub(crate) zip321::TransactionRequest);
 
 #[wasm_bindgen]
