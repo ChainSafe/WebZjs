@@ -28,6 +28,8 @@ zip321 = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692
 zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
 zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
 zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc", features = ["transparent-inputs", "orchard"] }
+zcash_note_encryption = "0.4"
+zip32 = "0.1"
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"

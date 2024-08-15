@@ -1794,8 +1794,10 @@ dependencies = [
  "zcash_client_backend",
  "zcash_encoding 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "zcash_keys",
+ "zcash_note_encryption",
  "zcash_primitives",
  "zcash_protocol",
+ "zip32",
  "zip321",
 ]
 

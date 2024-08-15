@@ -6,18 +6,70 @@
 
 use std::collections::HashMap;
 
-use crate::transaction_record::TransactionRecord;
+use crate::wallet::transaction_record::TransactionRecord;
+use orchard::note_encryption::OrchardDomain;
+use sapling_crypto::note_encryption::SaplingDomain;
 use zcash_client_backend::{
-    data_api::InputSource,
-    wallet::{NoteId, WalletTransparentOutput},
+    data_api::{InputSource, SpendableNotes},
+    wallet::{NoteId, ReceivedNote, WalletTransparentOutput},
 };
 use zcash_primitives::{
-    legacy::TransparentAddress, transaction::components::OutPoint, transaction::TxId,
+    legacy::TransparentAddress,
+    transaction::{
+        components::{amount::NonNegativeAmount, OutPoint},
+        fees::zip317::MARGINAL_FEE,
+        TxId,
+    },
 };
-use zcash_protocol::consensus::BlockHeight;
+use zcash_protocol::{
+    consensus::BlockHeight,
+    value::{BalanceError, Zatoshis},
+};
 
 pub struct MemoryTransactionStore {
     transactions: HashMap<TxId, TransactionRecord>,
+}
+
+impl MemoryTransactionStore {
+    /// get a list of spendable NoteIds with associated note values
+    #[allow(clippy::type_complexity)]
+    pub(crate) fn get_spendable_note_ids_and_values(
+        &self,
+        sources: &[zcash_client_backend::ShieldedProtocol],
+        anchor_height: zcash_primitives::consensus::BlockHeight,
+        exclude: &[NoteId],
+    ) -> Result<Vec<(NoteId, u64)>, Vec<(TxId, BlockHeight)>> {
+        let mut missing_output_index = vec![];
+        let ok = self
+            .transactions
+            .values()
+            .flat_map(|transaction_record| {
+                if transaction_record
+                    .status
+                    .is_confirmed_before_or_at(&anchor_height)
+                {
+                    if let Ok(notes_from_tx) =
+                        transaction_record.get_spendable_note_ids_and_values(sources, exclude)
+                    {
+                        notes_from_tx
+                    } else {
+                        missing_output_index.push((
+                            transaction_record.txid,
+                            transaction_record.status.get_height(),
+                        ));
+                        vec![]
+                    }
+                } else {
+                    vec![]
+                }
+            })
+            .collect();
+        if missing_output_index.is_empty() {
+            Ok(ok)
+        } else {
+            Err(missing_output_index)
+        }
+    }
 }
 
 impl InputSource for MemoryTransactionStore {
@@ -32,9 +84,9 @@ impl InputSource for MemoryTransactionStore {
     /// is not spendable.
     fn get_spendable_note(
         &self,
-        txid: &zcash_primitives::transaction::TxId,
-        protocol: zcash_protocol::ShieldedProtocol,
-        index: u32,
+        _txid: &zcash_primitives::transaction::TxId,
+        _protocol: zcash_protocol::ShieldedProtocol,
+        _index: u32,
     ) -> Result<
         Option<
             zcash_client_backend::wallet::ReceivedNote<
@@ -59,7 +111,85 @@ impl InputSource for MemoryTransactionStore {
         anchor_height: zcash_protocol::consensus::BlockHeight,
         exclude: &[Self::NoteRef],
     ) -> Result<zcash_client_backend::data_api::SpendableNotes<Self::NoteRef>, Self::Error> {
-        todo!()
+        let mut unselected = self
+            .get_spendable_note_ids_and_values(sources, anchor_height, exclude)
+            .map_err(MemoryStoreError::MissingOutputIndexes)?
+            .into_iter()
+            .map(|(id, value)| NonNegativeAmount::from_u64(value).map(|value| (id, value)))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(MemoryStoreError::InvalidValue)?;
+        unselected.sort_by_key(|(_id, value)| *value); // from smallest to largest
+        let dust_spendable_index = unselected.partition_point(|(_id, value)| *value < MARGINAL_FEE);
+        let _dust_notes: Vec<_> = unselected.drain(..dust_spendable_index).collect();
+        let mut selected = vec![];
+        let mut index_of_unselected = 0;
+
+        loop {
+            // if no unselected notes are available, return the currently selected notes even if the target value has not been reached
+            if unselected.is_empty() {
+                break;
+            }
+            // update target value for further note selection
+            let selected_notes_total_value = selected
+                .iter()
+                .try_fold(NonNegativeAmount::ZERO, |acc, (_id, value)| acc + *value)
+                .ok_or(MemoryStoreError::InvalidValue(BalanceError::Overflow))?;
+            let updated_target_value =
+                match calculate_remaining_needed(target_value, selected_notes_total_value) {
+                    RemainingNeeded::Positive(updated_target_value) => updated_target_value,
+                    RemainingNeeded::GracelessChangeAmount(_change) => {
+                        //println!("{:?}", change);
+                        break;
+                    }
+                };
+
+            match unselected.get(index_of_unselected) {
+                Some(smallest_unselected) => {
+                    // selected a note to test if it has enough value to complete the transaction on its own
+                    if smallest_unselected.1 >= updated_target_value {
+                        selected.push(*smallest_unselected);
+                        unselected.remove(index_of_unselected);
+                    } else {
+                        // this note is not big enough. try the next
+                        index_of_unselected += 1;
+                    }
+                }
+                None => {
+                    // the iterator went off the end of the vector without finding a note big enough to complete the transaction
+                    // add the biggest note and reset the iteraton
+                    selected.push(unselected.pop().expect("should be nonempty")); // TODO:  Add soundness proving unit-test
+                    index_of_unselected = 0;
+                }
+            }
+        }
+
+        // Note: Zingo implementation has commented out code here for dust sweeping. Investigate this further in the future
+
+        let mut selected_sapling = Vec::<ReceivedNote<NoteId, sapling_crypto::Note>>::new();
+        let mut selected_orchard = Vec::<ReceivedNote<NoteId, orchard::Note>>::new();
+
+        // transform each NoteId to a ReceivedNote
+        selected.iter().try_for_each(|(id, _value)| {
+            let transaction_record = self.transactions
+                .get(id.txid())
+                .expect("should exist as note_id is created from the record itself");
+            let output_index = id.output_index() as u32;
+            match id.protocol() {
+                zcash_client_backend::ShieldedProtocol::Sapling => transaction_record
+                    .get_received_note::<SaplingDomain>(output_index)
+                    .map(|received_note| {
+                        selected_sapling.push(received_note);
+                    }),
+                zcash_client_backend::ShieldedProtocol::Orchard => transaction_record
+                    .get_received_note::<OrchardDomain>(output_index)
+                    .map(|received_note| {
+                        selected_orchard.push(received_note);
+                    }),
+            }
+            .ok_or(MemoryStoreError::WitnessPositionNotFound(*id))
+        })?;
+
+        Ok(SpendableNotes::new(selected_sapling, selected_orchard))
     }
 
     /// Fetches the transparent output corresponding to the provided `outpoint`.
@@ -91,5 +221,49 @@ impl InputSource for MemoryTransactionStore {
     }
 }
 
-#[derive(thiserror::Error, Debug)]
-pub enum MemoryStoreError {}
+enum RemainingNeeded {
+    Positive(NonNegativeAmount),
+    GracelessChangeAmount(NonNegativeAmount),
+}
+
+// Calculate remaining difference between target and selected.
+// There are two mutually exclusive cases:
+//    (Change) There's no more needed so we've selected 0 or more change
+//    (Positive) We need > 0 more value.
+// This function represents the NonPositive case as None, which
+// then serves to signal a break in the note selection for where
+// this helper is uniquely called.
+fn calculate_remaining_needed(
+    target_value: NonNegativeAmount,
+    selected_value: NonNegativeAmount,
+) -> RemainingNeeded {
+    if let Some(amount) = target_value - selected_value {
+        if amount == NonNegativeAmount::ZERO {
+            // Case (Change) target_value == total_selected_value
+            RemainingNeeded::GracelessChangeAmount(NonNegativeAmount::ZERO)
+        } else {
+            // Case (Positive) target_value > total_selected_value
+            RemainingNeeded::Positive(amount)
+        }
+    } else {
+        // Case (Change) target_value < total_selected_value
+        // Return the non-zero change quantity
+        RemainingNeeded::GracelessChangeAmount(
+            (selected_value - target_value).expect("This is guaranteed positive"),
+        )
+    }
+}
+
+/// Error type used by InputSource trait
+#[derive(thiserror::Error, Debug, PartialEq)]
+pub enum MemoryStoreError {
+    /// No witness position found for note. Note cannot be spent.
+    #[error("No witness position found for note. Note cannot be spent: {0:?}")]
+    WitnessPositionNotFound(NoteId),
+    /// Value outside the valid range of zatoshis
+    #[error("Value outside valid range of zatoshis. {0:?}")]
+    InvalidValue(BalanceError),
+    /// Wallet data is out of date
+    #[error("Output index data is missing! Wallet data is out of date, please rescan.")]
+    MissingOutputIndexes(Vec<(TxId, zcash_primitives::consensus::BlockHeight)>),
+}

@@ -21,6 +21,7 @@ pub mod extended_transparent;
 pub mod notes;
 pub mod traits;
 pub mod transaction_record;
+pub mod memory_transaction_store;
 
 /// A wallet is a collection of a number of accounts that can be synchronized together.
 struct Wallet<S: WalletStore> {
