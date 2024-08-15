@@ -7,6 +7,5 @@
 pub mod account;
 pub mod bindgen;
 pub mod error;
-pub mod init;
 pub mod store;
 pub mod wallet;

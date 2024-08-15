@@ -8,3 +8,4 @@
 pub mod transaction_proposal;
 pub mod transaction_request;
 mod wallet;
+mod init;
