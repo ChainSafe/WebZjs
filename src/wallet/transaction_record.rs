@@ -14,6 +14,8 @@ use crate::wallet::notes::{
     OrchardNote, SaplingNote, TransparentOutput,
 };
 
+/// A transaction record is the primary data structure used to store and persist information about a transaction.
+/// This includes transactions sent by the wallet and also those decrypted from a scanning the blockchain.
 #[derive(Debug)]
 pub struct TransactionRecord {
     /// the relationship of the transaction to the blockchain. can be either Broadcast (to mempool}, or Confirmed.

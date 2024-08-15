@@ -1,3 +1,6 @@
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 //! All things needed to create, manage, and use notes
 
 pub mod interface;

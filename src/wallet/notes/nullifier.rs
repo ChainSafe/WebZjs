@@ -1,10 +1,12 @@
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use crate::wallet::traits::{FromBytes, ToBytes};
 use crate::wallet::transaction_record::TransactionRecord;
 
 pub trait Nullifier:
     PartialEq + Copy + Sized + ToBytes<32> + FromBytes<32> + Send + Into<PoolNullifier>
 {
-    /// TODO: Add Doc Comment Here!
     fn get_nullifiers_spent_in_transaction(transaction: &TransactionRecord) -> &Vec<Self>;
 }
 
@@ -24,9 +26,7 @@ impl Nullifier for orchard::note::Nullifier {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PoolNullifier {
-    /// TODO: Add Doc Comment Here!
     Sapling(sapling_crypto::Nullifier),
-    /// TODO: Add Doc Comment Here!
     Orchard(orchard::note::Nullifier),
 }
 

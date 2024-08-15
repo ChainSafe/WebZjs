@@ -1,4 +1,6 @@
-//! TODO: Add Mod Description Here!
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use incrementalmerkletree::Position;
 use zcash_client_backend::{PoolType, ShieldedProtocol};
 use zcash_primitives::{memo::Memo, transaction::TxId};
@@ -8,12 +10,9 @@ use crate::wallet::transaction_record::TransactionRecord;
 
 use super::{query::OutputSpendStatusQuery, OutputInterface, ShieldedNoteInterface};
 
-/// TODO: Add Doc Comment Here!
 #[derive(Clone)]
 pub struct SaplingNote {
-    /// TODO: Add Doc Comment Here!
     pub diversifier: sapling_crypto::Diversifier,
-    /// TODO: Add Doc Comment Here!
     pub sapling_crypto_note: sapling_crypto::Note,
 
     // The position of this note's value commitment in the global commitment tree
@@ -23,17 +22,14 @@ pub struct SaplingNote {
     // The note's index in its containing transaction
     pub(crate) output_index: Option<u32>,
 
-    /// TODO: Add Doc Comment Here!
     pub nullifier: Option<sapling_crypto::Nullifier>,
 
-    /// TODO: Add Doc Comment Here!
     pub spent: Option<(TxId, u32)>, // If this note was confirmed spent. Todo: as related to pending spent, this is potential data incoherence
 
     /// If this note was spent in a send, but has not yet been confirmed.
     /// Contains the transaction id and height at which it was broadcast
     pub pending_spent: Option<(TxId, u32)>,
 
-    /// TODO: Add Doc Comment Here!
     pub memo: Option<Memo>,
 
     /// DEPRECATED

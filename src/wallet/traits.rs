@@ -1,3 +1,8 @@
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
+//! Traits used throughout the implementations in the wallet module
+
 use crate::wallet::capability::WalletCapability;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use incrementalmerkletree::{Hashable, Level};

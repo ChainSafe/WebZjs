@@ -1,4 +1,6 @@
-//! TODO: Add Mod Description Here!
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use std::io::Write;
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
@@ -10,19 +12,12 @@ use crate::wallet::notes::{
     interface::OutputConstructor, query::OutputSpendStatusQuery, OutputInterface,
 };
 use crate::wallet::transaction_record::TransactionRecord;
-
-/// TODO: Add Doc Comment Here!
 #[derive(Clone, Debug, PartialEq)]
 pub struct TransparentOutput {
-    /// TODO: Add Doc Comment Here!
     pub address: String,
-    /// TODO: Add Doc Comment Here!
     pub txid: TxId,
-    /// TODO: Add Doc Comment Here!
     pub output_index: u64,
-    /// TODO: Add Doc Comment Here!
     pub script: Vec<u8>,
-    /// TODO: Add Doc Comment Here!
     pub value: u64,
 
     spent: Option<(TxId, u32)>, // If this utxo was confirmed spent Todo: potential data incoherence with pending_spent
@@ -87,7 +82,6 @@ impl OutputConstructor for TransparentOutput {
 }
 
 impl TransparentOutput {
-    /// TODO: Add Doc Comment Here!
     pub fn from_parts(
         address: String,
         txid: TxId,
@@ -108,7 +102,6 @@ impl TransparentOutput {
         }
     }
 
-    /// TODO: Add Doc Comment Here!
     pub fn to_outpoint(&self) -> OutPoint {
         OutPoint::new(*self.txid.as_ref(), self.output_index as u32)
     }
@@ -118,7 +111,6 @@ impl TransparentOutput {
         4
     }
 
-    /// TODO: Add Doc Comment Here!
     pub fn write<W: Write>(&self, mut writer: W) -> std::io::Result<()> {
         writer.write_u64::<byteorder::LittleEndian>(Self::serialized_version())?;
 
@@ -150,7 +142,6 @@ impl TransparentOutput {
         Ok(())
     }
 
-    /// TODO: Add Doc Comment Here!
     pub fn read<R: std::io::Read>(mut reader: R) -> std::io::Result<Self> {
         let version = reader.read_u64::<byteorder::LittleEndian>()?;
 

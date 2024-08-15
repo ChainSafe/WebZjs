@@ -1,4 +1,7 @@
-//! Contains structs for querying a database about notes.
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
+//! Contains structs for querying a store about notes.
 
 use getset::Getters;
 

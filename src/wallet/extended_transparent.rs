@@ -1,3 +1,6 @@
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use std::io;
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
@@ -64,9 +67,7 @@ impl From<u32> for KeyIndex {
 /// See [secp256k1 crate documentation](https://docs.rs/secp256k1) for SecretKey signatures usage.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtendedPrivKey {
-    /// TODO: Add Doc Comment Here!
     pub private_key: SecretKey,
-    /// TODO: Add Doc Comment Here!
     pub chain_code: ChainCode,
 }
 
@@ -88,7 +89,6 @@ impl ExtendedPrivKey {
         })
     }
 
-    /// TODO: Add Doc Comment Here!
     // pub fn get_ext_taddr_from_bip39seed(
     //     config: &ZingoConfig,
     //     bip39_seed: &[u8],
@@ -187,9 +187,7 @@ impl ReadableWriteable<()> for ExtendedPrivKey {
 /// ExtendedPubKey is used for child pub key derivation in watch-only mode
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtendedPubKey {
-    /// TODO: Add Doc Comment Here!
     pub public_key: PublicKey,
-    /// TODO: Add Doc Comment Here!
     pub chain_code: ChainCode,
 }
 

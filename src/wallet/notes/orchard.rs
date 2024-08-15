@@ -1,4 +1,6 @@
-//! TODO: Add Mod Description Here!
+// Copyright 2024 ChainSafe Systems
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use incrementalmerkletree::Position;
 use zcash_client_backend::{PoolType, ShieldedProtocol};
 use zcash_primitives::{memo::Memo, transaction::TxId};
@@ -7,13 +9,9 @@ use crate::wallet::notes::interface::OutputConstructor;
 use crate::wallet::transaction_record::TransactionRecord;
 
 use super::{query::OutputSpendStatusQuery, OutputInterface, ShieldedNoteInterface};
-
-/// TODO: Add Doc Comment Here!
 #[derive(Clone, Debug)]
 pub struct OrchardNote {
-    /// TODO: Add Doc Comment Here!
     pub diversifier: orchard::keys::Diversifier,
-    /// TODO: Add Doc Comment Here!
     pub orchard_crypto_note: orchard::note::Note,
 
     /// The position of this note's value commitment in the global commitment tree
@@ -32,7 +30,6 @@ pub struct OrchardNote {
     /// Contains the transaction id and height at which it was broadcast
     pub pending_spent: Option<(TxId, u32)>,
 
-    /// TODO: Add Doc Comment Here!
     pub memo: Option<Memo>,
 
     /// DEPRECATED
