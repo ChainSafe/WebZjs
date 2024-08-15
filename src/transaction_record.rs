@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use zcash_primitives::transaction::TxId;
-use zcash_protocol::consensus::BlockHeight;
+use zcash_protocol::{consensus::BlockHeight, memo::Memo};
+
+use crate::notes::{OrchardNote, SaplingNote, TransparentOutput};
 
 #[derive(Debug)]
 pub struct TransactionRecord {
@@ -39,7 +41,6 @@ pub struct TransactionRecord {
 
     /// Total value of all the orchard nullifiers that were spent by this wallet in this Tx
     pub total_orchard_value_spent: u64,
-
     /// All outgoing sends
     pub outgoing_tx_data: Vec<OutgoingTxData>,
 }
@@ -52,4 +53,18 @@ pub enum ConfirmationStatus {
     /// The transaction has been included in at-least one block mined to the zcash blockchain.
     /// The height of a confirmed block that contains the transaction.
     Confirmed(BlockHeight),
+}
+
+/// Only for TransactionRecords *from* "this" capability
+#[derive(Clone, Debug)]
+pub struct OutgoingTxData {
+    /// TODO: Add Doc Comment Here!
+    pub recipient_address: String,
+    /// Amount to this receiver
+    pub value: u64,
+    /// Note to the receiver, why not an option?
+    pub memo: Memo,
+    /// What if it wasn't provided?  How does this relate to
+    /// recipient_address?
+    pub recipient_ua: Option<String>,
 }

@@ -6,10 +6,14 @@ use zcash_client_backend::{PoolType, ShieldedProtocol};
 use zcash_primitives::{memo::Memo, merkle_tree::HashSer, transaction::TxId};
 
 use crate::{
-    keys::unified::WalletCapability,
-    notes::query::{OutputPoolQuery, OutputQuery, OutputSpendStatusQuery},
-    traits::{FromBytes, FromCommitment, Nullifier, ReadableWriteable, ToBytes},
+    // keys::unified::WalletCapability,
+    notes::{
+        nullifier::Nullifier,
+        query::{OutputPoolQuery, OutputQuery, OutputSpendStatusQuery},
+    },
+    traits::{FromBytes, FromCommitment, ReadableWriteable, ToBytes},
     transaction_record::TransactionRecord,
+    wallet_capability::WalletCapability,
 };
 
 /// Trait methods of Outputs that aren't static (i.e. don't take self)
