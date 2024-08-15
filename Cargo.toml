@@ -27,7 +27,7 @@ zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "0
 zip321 = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
 zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
 zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc" }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "048c1cb4692fd35b3138746e2c813f2e2edea8fc", features = ["transparent-inputs", "orchard"] }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -38,6 +38,12 @@ web-sys = { version  = "0.3.69", features = ["console"] }
 sha2 = "0.10"
 ripemd = "0.1"
 orchard = "0.8.0"
+sapling-crypto = "0.2.0"
+enum_dispatch = "0.3.13"
+incrementalmerkletree = "0.6.0"
+byteorder = "1.5.0"
+zcash_encoding = "0.2.0"
+getset = "0.1.2"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
