@@ -16,11 +16,11 @@ use crate::store::{InjectedStore, WalletStore};
 use crate::transaction_proposal::TransactionProposal;
 use crate::transaction_request::TransactionRequest;
 
-mod capability;
-mod extended_transparent;
-mod notes;
-mod traits;
-mod transaction_record;
+pub mod capability;
+pub mod extended_transparent;
+pub mod notes;
+pub mod traits;
+pub mod transaction_record;
 
 /// A wallet is a collection of a number of accounts that can be synchronized together.
 struct Wallet<S: WalletStore> {

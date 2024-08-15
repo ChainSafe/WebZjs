@@ -46,11 +46,11 @@ pub struct WalletCapability {
     >,
     pub orchard: Capability<orchard::keys::FullViewingKey, orchard::keys::SpendingKey>,
 
-    transparent_child_addresses: Arc<append_only_vec::AppendOnlyVec<(usize, TransparentAddress)>>,
-    addresses: append_only_vec::AppendOnlyVec<UnifiedAddress>,
+    pub transparent_child_addresses: Arc<append_only_vec::AppendOnlyVec<(usize, TransparentAddress)>>,
+    pub addresses: append_only_vec::AppendOnlyVec<UnifiedAddress>,
     // Not all diversifier indexes produce valid sapling addresses.
     // Because of this, the index isn't necessarily equal to addresses.len()
-    addresses_write_lock: AtomicBool,
+    pub addresses_write_lock: AtomicBool,
 }
 impl Default for WalletCapability {
     fn default() -> Self {

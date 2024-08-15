@@ -6,7 +6,6 @@ use std::io::{self, Read, Write};
 use subtle::CtOption;
 
 pub trait ToBytes<const N: usize> {
-    /// TODO: Add Doc Comment Here!
     fn to_bytes(&self) -> [u8; N];
 }
 
@@ -35,7 +34,6 @@ impl ToBytes<11> for orchard::keys::Diversifier {
 }
 
 pub trait FromBytes<const N: usize> {
-    /// TODO: Add Doc Comment Here!
     fn from_bytes(bytes: [u8; N]) -> Self;
 }
 
@@ -65,16 +63,12 @@ impl FromBytes<11> for orchard::keys::Diversifier {
 }
 
 pub trait ReadableWriteable<Input>: Sized {
-    /// TODO: Add Doc Comment Here!
     const VERSION: u8;
 
-    /// TODO: Add Doc Comment Here!
     fn read<R: Read>(reader: R, input: Input) -> io::Result<Self>;
 
-    /// TODO: Add Doc Comment Here!
     fn write<W: Write>(&self, writer: W) -> io::Result<()>;
 
-    /// TODO: Add Doc Comment Here!
     fn get_version<R: Read>(mut reader: R) -> io::Result<u8> {
         let external_version = reader.read_u8()?;
         if external_version > Self::VERSION {
@@ -95,13 +89,13 @@ impl ReadableWriteable<(sapling_crypto::Diversifier, &WalletCapability)> for sap
     const VERSION: u8 = 1;
 
     fn read<R: Read>(
-        reader: R,
-        (diversifier, wallet_capability): (sapling_crypto::Diversifier, &WalletCapability),
+        _reader: R,
+        (_diversifier, _wallet_capability): (sapling_crypto::Diversifier, &WalletCapability),
     ) -> io::Result<Self> {
         todo!();
     }
 
-    fn write<W: Write>(&self, writer: W) -> io::Result<()> {
+    fn write<W: Write>(&self, _writer: W) -> io::Result<()> {
         todo!();
     }
 }
@@ -110,8 +104,8 @@ impl ReadableWriteable<(orchard::keys::Diversifier, &WalletCapability)> for orch
     const VERSION: u8 = 1;
 
     fn read<R: Read>(
-        reader: R,
-        (diversifier, wallet_capability): (orchard::keys::Diversifier, &WalletCapability),
+        _reader: R,
+        (_diversifier, _wallet_capability): (orchard::keys::Diversifier, &WalletCapability),
     ) -> io::Result<Self> {
         todo!();
     }
@@ -129,7 +123,6 @@ pub trait FromCommitment
 where
     Self: Sized,
 {
-    /// TODO: Add Doc Comment Here!
     fn from_commitment(from: &[u8; 32]) -> CtOption<Self>;
 }
 
