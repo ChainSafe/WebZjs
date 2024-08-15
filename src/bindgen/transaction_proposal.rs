@@ -7,7 +7,7 @@
 
 use wasm_bindgen::prelude::*;
 
-use crate::transaction_request::TransactionRequest;
+use crate::bindgen::transaction_request::TransactionRequest;
 
 use zcash_client_backend::proposal::{self, Proposal};
 use zcash_client_backend::wallet::NoteId;

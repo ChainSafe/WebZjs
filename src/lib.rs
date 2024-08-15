@@ -5,9 +5,8 @@
 #![allow(async_fn_in_trait)]
 
 pub mod account;
+pub mod bindgen;
 pub mod error;
 pub mod init;
 pub mod store;
-pub mod transaction_proposal;
-pub mod transaction_request;
 pub mod wallet;

@@ -19,10 +19,7 @@ use zcash_primitives::{
         TxId,
     },
 };
-use zcash_protocol::{
-    consensus::BlockHeight,
-    value::BalanceError,
-};
+use zcash_protocol::{consensus::BlockHeight, value::BalanceError};
 
 use super::notes::{OrchardNote, SaplingNote};
 
@@ -103,9 +100,9 @@ impl InputSource for MemoryTransactionStore {
     /// Returns a list of spendable notes sufficient to cover the specified target value, if
     /// possible. Only spendable notes from the given account, corresponding to the specified shielded protocol will
     /// be included.
-    /// 
+    ///
     /// TODO: Zingo doesn't support multiple accounts but we do. Ensure only notes from the specified account are included
-    /// 
+    ///
     fn select_spendable_notes(
         &self,
         _account: Self::AccountId,
