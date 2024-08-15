@@ -4,7 +4,7 @@
 //! Data types and traits that relate to a wallet,
 //! which is a collection of accounts and historical transactions
 //! These can be used to build new transactions.
-//! 
+//!
 //! A wallet is defined without regard to how it is stored or synchronized.
 //!
 
@@ -18,10 +18,10 @@ use crate::transaction_request::TransactionRequest;
 
 pub mod capability;
 pub mod extended_transparent;
+pub mod memory_transaction_store;
 pub mod notes;
 pub mod traits;
 pub mod transaction_record;
-pub mod memory_transaction_store;
 
 /// A wallet is a collection of a number of accounts that can be synchronized together.
 struct Wallet<S: WalletStore> {

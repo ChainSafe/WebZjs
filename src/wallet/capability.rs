@@ -46,7 +46,8 @@ pub struct WalletCapability {
     >,
     pub orchard: Capability<orchard::keys::FullViewingKey, orchard::keys::SpendingKey>,
 
-    pub transparent_child_addresses: Arc<append_only_vec::AppendOnlyVec<(usize, TransparentAddress)>>,
+    pub transparent_child_addresses:
+        Arc<append_only_vec::AppendOnlyVec<(usize, TransparentAddress)>>,
     pub addresses: append_only_vec::AppendOnlyVec<UnifiedAddress>,
     // Not all diversifier indexes produce valid sapling addresses.
     // Because of this, the index isn't necessarily equal to addresses.len()

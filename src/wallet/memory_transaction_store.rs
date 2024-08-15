@@ -7,8 +7,6 @@
 use std::collections::HashMap;
 
 use crate::wallet::transaction_record::TransactionRecord;
-use orchard::note_encryption::OrchardDomain;
-use sapling_crypto::note_encryption::SaplingDomain;
 use zcash_client_backend::{
     data_api::{InputSource, SpendableNotes},
     wallet::{NoteId, ReceivedNote, WalletTransparentOutput},
@@ -23,8 +21,10 @@ use zcash_primitives::{
 };
 use zcash_protocol::{
     consensus::BlockHeight,
-    value::{BalanceError, Zatoshis},
+    value::BalanceError,
 };
+
+use super::notes::{OrchardNote, SaplingNote};
 
 pub struct MemoryTransactionStore {
     transactions: HashMap<TxId, TransactionRecord>,
@@ -103,9 +103,12 @@ impl InputSource for MemoryTransactionStore {
     /// Returns a list of spendable notes sufficient to cover the specified target value, if
     /// possible. Only spendable notes from the given account, corresponding to the specified shielded protocol will
     /// be included.
+    /// 
+    /// TODO: Zingo doesn't support multiple accounts but we do. Ensure only notes from the specified account are included
+    /// 
     fn select_spendable_notes(
         &self,
-        account: Self::AccountId,
+        _account: Self::AccountId,
         target_value: zcash_protocol::value::Zatoshis,
         sources: &[zcash_protocol::ShieldedProtocol],
         anchor_height: zcash_protocol::consensus::BlockHeight,
@@ -170,18 +173,19 @@ impl InputSource for MemoryTransactionStore {
 
         // transform each NoteId to a ReceivedNote
         selected.iter().try_for_each(|(id, _value)| {
-            let transaction_record = self.transactions
+            let transaction_record = self
+                .transactions
                 .get(id.txid())
                 .expect("should exist as note_id is created from the record itself");
             let output_index = id.output_index() as u32;
             match id.protocol() {
                 zcash_client_backend::ShieldedProtocol::Sapling => transaction_record
-                    .get_received_note::<SaplingDomain>(output_index)
+                    .get_received_note::<SaplingNote>(output_index)
                     .map(|received_note| {
                         selected_sapling.push(received_note);
                     }),
                 zcash_client_backend::ShieldedProtocol::Orchard => transaction_record
-                    .get_received_note::<OrchardDomain>(output_index)
+                    .get_received_note::<OrchardNote>(output_index)
                     .map(|received_note| {
                         selected_orchard.push(received_note);
                     }),

@@ -54,16 +54,11 @@ pub struct TransactionRecord {
 }
 
 impl TransactionRecord {
-    pub fn get_received_note<D: DomainWalletExt>(
+    pub fn get_received_note<SN: ShieldedNoteInterface>(
         &self,
         index: u32,
-    ) -> Option<
-        zcash_client_backend::wallet::ReceivedNote<
-            NoteId,
-            <D as zcash_note_encryption::Domain>::Note,
-        >,
-    > {
-        let note = D::WalletNote::get_record_outputs(self)
+    ) -> Option<zcash_client_backend::wallet::ReceivedNote<NoteId, SN::Note>> {
+        let note = SN::get_record_outputs(self)
             .into_iter()
             .find(|note| *note.output_index() == Some(index));
         note.and_then(|note| {
