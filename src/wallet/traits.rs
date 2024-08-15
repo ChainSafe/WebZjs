@@ -95,13 +95,13 @@ impl ReadableWriteable<(sapling_crypto::Diversifier, &WalletCapability)> for sap
     const VERSION: u8 = 1;
 
     fn read<R: Read>(
-        mut reader: R,
+        reader: R,
         (diversifier, wallet_capability): (sapling_crypto::Diversifier, &WalletCapability),
     ) -> io::Result<Self> {
         todo!();
     }
 
-    fn write<W: Write>(&self, mut writer: W) -> io::Result<()> {
+    fn write<W: Write>(&self, writer: W) -> io::Result<()> {
         todo!();
     }
 }
@@ -110,7 +110,7 @@ impl ReadableWriteable<(orchard::keys::Diversifier, &WalletCapability)> for orch
     const VERSION: u8 = 1;
 
     fn read<R: Read>(
-        mut reader: R,
+        reader: R,
         (diversifier, wallet_capability): (orchard::keys::Diversifier, &WalletCapability),
     ) -> io::Result<Self> {
         todo!();
