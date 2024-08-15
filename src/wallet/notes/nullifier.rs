@@ -1,5 +1,5 @@
-use crate::traits::{FromBytes, ToBytes};
-use crate::transaction_record::TransactionRecord;
+use crate::wallet::traits::{FromBytes, ToBytes};
+use crate::wallet::transaction_record::TransactionRecord;
 
 pub trait Nullifier:
     PartialEq + Copy + Sized + ToBytes<32> + FromBytes<32> + Send + Into<PoolNullifier>

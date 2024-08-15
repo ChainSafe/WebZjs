@@ -3,31 +3,30 @@ use incrementalmerkletree::Position;
 use zcash_client_backend::{PoolType, ShieldedProtocol};
 use zcash_primitives::{memo::Memo, transaction::TxId};
 
-use crate::notes::interface::OutputConstructor;
-use crate::transaction_record::TransactionRecord;
+use crate::wallet::notes::interface::OutputConstructor;
+use crate::wallet::transaction_record::TransactionRecord;
 
 use super::{query::OutputSpendStatusQuery, OutputInterface, ShieldedNoteInterface};
 
 /// TODO: Add Doc Comment Here!
-#[derive(Clone)]
-pub struct SaplingNote {
+#[derive(Clone, Debug)]
+pub struct OrchardNote {
     /// TODO: Add Doc Comment Here!
-    pub diversifier: sapling_crypto::Diversifier,
+    pub diversifier: orchard::keys::Diversifier,
     /// TODO: Add Doc Comment Here!
-    pub sapling_crypto_note: sapling_crypto::Note,
+    pub orchard_crypto_note: orchard::note::Note,
 
-    // The position of this note's value commitment in the global commitment tree
-    // We need to create a witness to it, to spend
-    pub(crate) witnessed_position: Option<Position>,
+    /// The position of this note's value commitment in the global commitment tree
+    /// We need to create a witness to it, to spend
+    pub witnessed_position: Option<Position>,
 
-    // The note's index in its containing transaction
+    /// The note's index in its containing transaction
     pub(crate) output_index: Option<u32>,
 
-    /// TODO: Add Doc Comment Here!
-    pub nullifier: Option<sapling_crypto::Nullifier>,
+    pub(crate) nullifier: Option<orchard::note::Nullifier>,
 
-    /// TODO: Add Doc Comment Here!
-    pub spent: Option<(TxId, u32)>, // If this note was confirmed spent. Todo: as related to pending spent, this is potential data incoherence
+    /// If this note was confirmed spent
+    pub spent: Option<(TxId, u32)>, // Todo: as related to pending spent, this is potential data incoherence
 
     /// If this note was spent in a send, but has not yet been confirmed.
     /// Contains the transaction id and height at which it was broadcast
@@ -39,37 +38,17 @@ pub struct SaplingNote {
     /// DEPRECATED
     pub is_change: bool,
 
-    /// If the spending key is available in the wallet (i.e., whether to keep witness up-to-date) Todo should this data point really be here?
+    /// If the spending key is available in the wallet (i.e., whether to keep witness up-to-date)
     pub have_spending_key: bool,
 }
 
-impl std::fmt::Debug for SaplingNote {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("SaplingNoteData")
-            .field("diversifier", &self.diversifier)
-            .field("note", &self.sapling_crypto_note)
-            .field("nullifier", &self.nullifier)
-            .field("spent", &self.spent)
-            .field("pending_spent", &self.pending_spent)
-            .field("memo", &self.memo)
-            .field("diversifier", &self.diversifier)
-            .field("note", &self.sapling_crypto_note)
-            .field("nullifier", &self.nullifier)
-            .field("spent", &self.spent)
-            .field("pending_spent", &self.pending_spent)
-            .field("memo", &self.memo)
-            .field("is_change", &self.is_change)
-            .finish_non_exhaustive()
-    }
-}
-
-impl OutputInterface for SaplingNote {
+impl OutputInterface for OrchardNote {
     fn pool_type(&self) -> PoolType {
-        PoolType::Shielded(ShieldedProtocol::Sapling)
+        PoolType::Shielded(ShieldedProtocol::Orchard)
     }
 
     fn value(&self) -> u64 {
-        self.sapling_crypto_note.value().inner()
+        self.orchard_crypto_note.value().inner()
     }
 
     fn spent(&self) -> &Option<(TxId, u32)> {
@@ -88,40 +67,40 @@ impl OutputInterface for SaplingNote {
         &mut self.pending_spent
     }
 }
-impl OutputConstructor for SaplingNote {
+impl OutputConstructor for OrchardNote {
     fn get_record_outputs(transaction_record: &TransactionRecord) -> Vec<&Self> {
-        transaction_record.sapling_notes.iter().collect()
+        transaction_record.orchard_notes.iter().collect()
     }
     fn get_record_query_matching_outputs(
         transaction_record: &TransactionRecord,
         spend_status_query: OutputSpendStatusQuery,
     ) -> Vec<&Self> {
         transaction_record
-            .sapling_notes
+            .orchard_notes
             .iter()
             .filter(|output| output.spend_status_query(spend_status_query))
             .collect()
     }
     fn get_record_to_outputs_mut(transaction_record: &mut TransactionRecord) -> Vec<&mut Self> {
-        transaction_record.sapling_notes.iter_mut().collect()
+        transaction_record.orchard_notes.iter_mut().collect()
     }
     fn get_record_query_matching_outputs_mut(
         transaction_record: &mut TransactionRecord,
         spend_status_query: OutputSpendStatusQuery,
     ) -> Vec<&mut Self> {
         transaction_record
-            .sapling_notes
+            .orchard_notes
             .iter_mut()
             .filter(|output| output.spend_status_query(spend_status_query))
             .collect()
     }
 }
 
-impl ShieldedNoteInterface for SaplingNote {
-    type Diversifier = sapling_crypto::Diversifier;
-    type Note = sapling_crypto::Note;
-    type Node = sapling_crypto::Node;
-    type Nullifier = sapling_crypto::Nullifier;
+impl ShieldedNoteInterface for OrchardNote {
+    type Diversifier = orchard::keys::Diversifier;
+    type Note = orchard::note::Note;
+    type Node = orchard::tree::MerkleHashOrchard;
+    type Nullifier = orchard::note::Nullifier;
 
     fn diversifier(&self) -> &Self::Diversifier {
         &self.diversifier
@@ -132,10 +111,10 @@ impl ShieldedNoteInterface for SaplingNote {
     }
 
     fn from_parts(
-        diversifier: sapling_crypto::Diversifier,
-        sapling_crypto_note: sapling_crypto::Note,
+        diversifier: Self::Diversifier,
+        orchard_crypto_note: Self::Note,
         witnessed_position: Option<Position>,
-        nullifier: Option<sapling_crypto::Nullifier>,
+        nullifier: Option<Self::Nullifier>,
         spent: Option<(TxId, u32)>,
         pending_spent: Option<(TxId, u32)>,
         memo: Option<Memo>,
@@ -145,7 +124,7 @@ impl ShieldedNoteInterface for SaplingNote {
     ) -> Self {
         Self {
             diversifier,
-            sapling_crypto_note,
+            orchard_crypto_note,
             witnessed_position,
             nullifier,
             spent,
@@ -158,13 +137,12 @@ impl ShieldedNoteInterface for SaplingNote {
     }
 
     fn get_deprecated_serialized_view_key_buffer() -> Vec<u8> {
-        vec![0u8; 169]
+        vec![0u8; 96]
     }
 
     fn have_spending_key(&self) -> bool {
         self.have_spending_key
     }
-
     fn is_change(&self) -> bool {
         self.is_change
     }
@@ -182,7 +160,7 @@ impl ShieldedNoteInterface for SaplingNote {
     }
 
     fn note(&self) -> &Self::Note {
-        &self.sapling_crypto_note
+        &self.orchard_crypto_note
     }
 
     fn nullifier(&self) -> Option<Self::Nullifier> {
@@ -190,17 +168,17 @@ impl ShieldedNoteInterface for SaplingNote {
     }
 
     fn pool() -> PoolType {
-        PoolType::Shielded(ShieldedProtocol::Sapling)
+        PoolType::Shielded(ShieldedProtocol::Orchard)
     }
 
     fn transaction_metadata_notes(wallet_transaction: &TransactionRecord) -> &Vec<Self> {
-        &wallet_transaction.sapling_notes
+        &wallet_transaction.orchard_notes
     }
 
     fn transaction_metadata_notes_mut(
         wallet_transaction: &mut TransactionRecord,
     ) -> &mut Vec<Self> {
-        &mut wallet_transaction.sapling_notes
+        &mut wallet_transaction.orchard_notes
     }
 
     fn value_from_note(note: &Self::Note) -> u64 {
@@ -224,6 +202,6 @@ impl ShieldedNoteInterface for SaplingNote {
     }
 
     fn to_zcb_note(&self) -> zcash_client_backend::wallet::Note {
-        zcash_client_backend::wallet::Note::Sapling(self.note().clone())
+        zcash_client_backend::wallet::Note::Orchard(*self.note())
     }
 }

@@ -6,7 +6,7 @@ use ring::hmac::{self, Context, Key};
 use secp256k1::{Error, PublicKey, Secp256k1, SecretKey, SignOnly};
 use zcash_encoding::Vector;
 
-use crate::traits::ReadableWriteable;
+use crate::wallet::traits::ReadableWriteable;
 
 /// Random entropy, part of extended key.
 type ChainCode = Vec<u8>;

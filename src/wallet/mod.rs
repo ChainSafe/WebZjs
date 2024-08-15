@@ -1,6 +1,13 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+//! Data types and traits that relate to a wallet,
+//! which is a collection of accounts and historical transactions
+//! These can be used to build new transactions.
+//! 
+//! A wallet is defined without regard to how it is stored or synchronized.
+//!
+
 use wasm_bindgen::prelude::*;
 
 use crate::account::{Account, AccountIndex};
@@ -8,6 +15,12 @@ use crate::error::Error;
 use crate::store::{InjectedStore, WalletStore};
 use crate::transaction_proposal::TransactionProposal;
 use crate::transaction_request::TransactionRequest;
+
+mod capability;
+mod extended_transparent;
+mod notes;
+mod traits;
+mod transaction_record;
 
 /// A wallet is a collection of a number of accounts that can be synchronized together.
 struct Wallet<S: WalletStore> {

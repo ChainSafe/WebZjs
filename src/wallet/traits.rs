@@ -1,8 +1,7 @@
-use crate::wallet_capability::WalletCapability;
+use crate::wallet::capability::WalletCapability;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use incrementalmerkletree::{Hashable, Level};
-use orchard::{note_encryption::OrchardDomain, tree::MerkleHashOrchard};
-use sapling_crypto::note_encryption::SaplingDomain;
+use orchard::tree::MerkleHashOrchard;
 use std::io::{self, Read, Write};
 use subtle::CtOption;
 
@@ -100,28 +99,10 @@ impl ReadableWriteable<(sapling_crypto::Diversifier, &WalletCapability)> for sap
         (diversifier, wallet_capability): (sapling_crypto::Diversifier, &WalletCapability),
     ) -> io::Result<Self> {
         todo!();
-
-        // let _version = Self::get_version(&mut reader)?;
-        // let value = reader.read_u64::<LittleEndian>()?;
-        // let rseed = super::data::read_sapling_rseed(&mut reader)?;
-
-        // Ok(
-        //     <SaplingDomain as DomainWalletExt>::wc_to_fvk(wallet_capability)
-        //         .expect("to get an fvk from a wc")
-        //         .fvk()
-        //         .vk
-        //         .to_payment_address(diversifier)
-        //         .unwrap()
-        //         .create_note(sapling_crypto::value::NoteValue::from_raw(value), rseed),
-        // )
     }
 
     fn write<W: Write>(&self, mut writer: W) -> io::Result<()> {
         todo!();
-        // writer.write_u8(Self::VERSION)?;
-        // writer.write_u64::<LittleEndian>(self.value().inner())?;
-        // super::data::write_sapling_rseed(&mut writer, self.rseed())?;
-        // Ok(())
     }
 }
 
@@ -133,33 +114,6 @@ impl ReadableWriteable<(orchard::keys::Diversifier, &WalletCapability)> for orch
         (diversifier, wallet_capability): (orchard::keys::Diversifier, &WalletCapability),
     ) -> io::Result<Self> {
         todo!();
-        // let _version = Self::get_version(&mut reader)?;
-        // let value = reader.read_u64::<LittleEndian>()?;
-        // let mut nullifier_bytes = [0; 32];
-        // reader.read_exact(&mut nullifier_bytes)?;
-        // let rho_nullifier = Option::from(orchard::note::Rho::from_bytes(&nullifier_bytes))
-        //     .ok_or(io::Error::new(io::ErrorKind::InvalidInput, "Bad Nullifier"))?;
-
-        // let mut random_seed_bytes = [0; 32];
-        // reader.read_exact(&mut random_seed_bytes)?;
-        // let random_seed = Option::from(orchard::note::RandomSeed::from_bytes(
-        //     random_seed_bytes,
-        //     &rho_nullifier,
-        // ))
-        // .ok_or(io::Error::new(
-        //     io::ErrorKind::InvalidInput,
-        //     "Nullifier not for note",
-        // ))?;
-
-        // let fvk = <OrchardDomain as DomainWalletExt>::wc_to_fvk(wallet_capability)
-        //     .expect("to get an fvk from a wc");
-        // Option::from(orchard::note::Note::from_parts(
-        //     fvk.address(diversifier, orchard::keys::Scope::External),
-        //     orchard::value::NoteValue::from_raw(value),
-        //     rho_nullifier,
-        //     random_seed,
-        // ))
-        // .ok_or(io::Error::new(io::ErrorKind::InvalidInput, "Invalid note"))
     }
 
     fn write<W: Write>(&self, mut writer: W) -> io::Result<()> {

@@ -6,8 +6,10 @@ use byteorder::{ReadBytesExt, WriteBytesExt};
 use zcash_client_backend::PoolType;
 use zcash_primitives::transaction::{components::OutPoint, TxId};
 
-use crate::notes::{interface::OutputConstructor, query::OutputSpendStatusQuery, OutputInterface};
-use crate::transaction_record::TransactionRecord;
+use crate::wallet::notes::{
+    interface::OutputConstructor, query::OutputSpendStatusQuery, OutputInterface,
+};
+use crate::wallet::transaction_record::TransactionRecord;
 
 /// TODO: Add Doc Comment Here!
 #[derive(Clone, Debug, PartialEq)]

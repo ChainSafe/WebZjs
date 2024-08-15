@@ -4,7 +4,7 @@
 use zcash_primitives::transaction::TxId;
 use zcash_protocol::{consensus::BlockHeight, memo::Memo};
 
-use crate::notes::{OrchardNote, SaplingNote, TransparentOutput};
+use crate::wallet::notes::{OrchardNote, SaplingNote, TransparentOutput};
 
 #[derive(Debug)]
 pub struct TransactionRecord {
