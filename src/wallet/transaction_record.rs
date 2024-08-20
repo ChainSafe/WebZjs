@@ -56,11 +56,7 @@ pub struct TransactionRecord {
 }
 
 impl TransactionRecord {
-    pub fn new(
-        status: ConfirmationStatus,
-        datetime: u64,
-        transaction_id: &TxId,
-    ) -> Self {
+    pub fn new(status: ConfirmationStatus, datetime: u64, transaction_id: &TxId) -> Self {
         TransactionRecord {
             status,
             datetime,
@@ -159,21 +155,6 @@ pub enum ConfirmationStatus {
 
 impl ConfirmationStatus {
     /// To return true, the status must be confirmed earlier than specified height.
-    /// # Examples
-    ///
-    /// ```
-    /// use zingo_status::confirmation_status::ConfirmationStatus;
-    /// use zcash_primitives::consensus::BlockHeight;
-    ///
-    /// let status = ConfirmationStatus::Confirmed(10.into());
-    /// assert_eq!(status.is_confirmed_before(&9.into()), false);
-    ///
-    /// let status = ConfirmationStatus::Confirmed(10.into());
-    /// assert_eq!(status.is_confirmed_before(&10.into()), false);
-    ///
-    /// let status = ConfirmationStatus::Confirmed(10.into());
-    /// assert_eq!(status.is_confirmed_before(&11.into()), true);
-    /// ```
     pub fn is_confirmed_before(&self, comparison_height: &BlockHeight) -> bool {
         match self {
             Self::Confirmed(self_height) => self_height < comparison_height,
@@ -189,21 +170,6 @@ impl ConfirmationStatus {
     }
 
     /// To return true, the status must be confirmed and no later than specified height.
-    /// # Examples
-    ///
-    /// ```
-    /// use zingo_status::confirmation_status::ConfirmationStatus;
-    /// use zcash_primitives::consensus::BlockHeight;
-    ///
-    /// let status = ConfirmationStatus::Confirmed(10.into());
-    /// assert_eq!(status.is_confirmed_before_or_at(&9.into()), false);
-    ///
-    /// let status = ConfirmationStatus::Pending(10.into());
-    /// assert_eq!(status.is_confirmed_before_or_at(&10.into()), false);
-    ///
-    /// let status = ConfirmationStatus::Confirmed(10.into());
-    /// assert_eq!(status.is_confirmed_before_or_at(&11.into()), true);
-    /// ```
     pub fn is_confirmed_before_or_at(&self, comparison_height: &BlockHeight) -> bool {
         match self {
             Self::Confirmed(self_height) => {
@@ -214,14 +180,6 @@ impl ConfirmationStatus {
     }
 
     /// # Examples
-    ///
-    /// ```
-    /// use zingo_status::confirmation_status::ConfirmationStatus;
-    /// use zcash_primitives::consensus::BlockHeight;
-    ///
-    /// let status = ConfirmationStatus::Confirmed(15.into());
-    /// assert_eq!(status.get_height(), 15.into());
-    /// ```
     pub fn get_height(&self) -> BlockHeight {
         match self {
             Self::Pending(self_height) => *self_height,

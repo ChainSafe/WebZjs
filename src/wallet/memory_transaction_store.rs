@@ -12,16 +12,16 @@ use zcash_client_backend::{
     wallet::{NoteId, ReceivedNote, WalletTransparentOutput},
 };
 use zcash_primitives::{
-    legacy::TransparentAddress,
+    legacy::{Script, TransparentAddress},
     transaction::{
-        components::{amount::NonNegativeAmount, OutPoint},
+        components::{amount::NonNegativeAmount, OutPoint, TxOut},
         fees::zip317::MARGINAL_FEE,
         TxId,
     },
 };
 use zcash_protocol::{consensus::BlockHeight, value::BalanceError};
 
-use super::notes::{OrchardNote, SaplingNote};
+use super::notes::{query::OutputSpendStatusQuery, OrchardNote, OutputInterface, SaplingNote};
 
 pub struct MemoryTransactionStore {
     transactions: HashMap<TxId, TransactionRecord>,
@@ -211,9 +211,41 @@ impl InputSource for MemoryTransactionStore {
     /// spendable as of the chain tip height.
     fn get_unspent_transparent_output(
         &self,
-        _outpoint: &OutPoint,
+        outpoint: &OutPoint,
     ) -> Result<Option<WalletTransparentOutput>, Self::Error> {
-        Ok(None)
+        let Some((height, output)) = self.transactions.values().find_map(|transaction_record| {
+            transaction_record
+                .transparent_outputs
+                .iter()
+                .find_map(|output| {
+                    if &output.to_outpoint() == outpoint {
+                        transaction_record
+                            .status
+                            .get_confirmed_height()
+                            .map(|height| (height, output))
+                    } else {
+                        None
+                    }
+                })
+                .filter(|(_height, output)| {
+                    output.spend_status_query(OutputSpendStatusQuery::only_unspent())
+                })
+        }) else {
+            return Ok(None);
+        };
+        let value =
+            NonNegativeAmount::from_u64(output.value).map_err(MemoryStoreError::InvalidValue)?;
+
+        let script_pubkey = Script(output.script.clone());
+
+        Ok(WalletTransparentOutput::from_parts(
+            outpoint.clone(),
+            TxOut {
+                value,
+                script_pubkey,
+            },
+            Some(height),
+        ))
     }
 
     /// Returns the list of spendable transparent outputs received by this wallet at `address`
