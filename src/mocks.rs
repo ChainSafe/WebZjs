@@ -2,7 +2,6 @@
 
 //! Tools to facilitate mocks for structs of external crates and general mocking utilities for testing
 
-pub use proposal::{ProposalBuilder, StepBuilder};
 pub use sapling_crypto_note::SaplingCryptoNoteBuilder;
 
 fn zaddr_from_seed(
@@ -354,7 +353,7 @@ pub mod proposal {
     use zcash_client_backend::wallet::{ReceivedNote, WalletTransparentOutput};
     use zcash_client_backend::zip321::{Payment, TransactionRequest};
     use zcash_client_backend::{PoolType, ShieldedProtocol};
-    use zcash_keys::address::Address;
+    
     use zcash_primitives::consensus::BlockHeight;
     use zcash_primitives::transaction::{
         components::amount::NonNegativeAmount, fees::zip317::FeeRule,

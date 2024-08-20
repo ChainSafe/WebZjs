@@ -116,7 +116,7 @@ pub mod conversions {
     use thiserror::Error;
 
     use zcash_address::ZcashAddress;
-    use zcash_client_backend::address::Address;
+    
     use zcash_primitives::transaction::{components::amount::NonNegativeAmount, TxId};
 
     use super::ChainType;

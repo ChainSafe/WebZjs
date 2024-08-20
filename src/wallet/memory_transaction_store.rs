@@ -27,6 +27,12 @@ pub struct MemoryTransactionStore {
     transactions: HashMap<TxId, TransactionRecord>,
 }
 
+impl Default for MemoryTransactionStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MemoryTransactionStore {
     pub fn new() -> Self {
         Self {
@@ -319,7 +325,7 @@ mod tests {
     use proptest::{prop_assert_eq, proptest};
     use zcash_client_backend::{data_api::InputSource as _, ShieldedProtocol};
     use zcash_primitives::{
-        consensus::BlockHeight, legacy::TransparentAddress,
+        consensus::BlockHeight,
         transaction::components::amount::NonNegativeAmount,
     };
     use zip32::AccountId;
