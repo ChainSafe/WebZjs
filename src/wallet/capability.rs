@@ -1,8 +1,8 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::sync::{atomic::AtomicBool, Arc};
 use append_only_vec::AppendOnlyVec;
+use std::sync::{atomic::AtomicBool, Arc};
 
 use zcash_client_backend::address::UnifiedAddress;
 use zcash_primitives::legacy::TransparentAddress;

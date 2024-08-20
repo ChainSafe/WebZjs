@@ -9,3 +9,8 @@ pub mod bindgen;
 pub mod error;
 pub mod store;
 pub mod wallet;
+
+#[cfg(test)]
+mod mocks;
+#[cfg(test)]
+mod utils;

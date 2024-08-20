@@ -202,3 +202,109 @@ impl ShieldedNoteInterface for OrchardNote {
         zcash_client_backend::wallet::Note::Orchard(*self.note())
     }
 }
+
+#[cfg(test)]
+pub mod mocks {
+    //! Mock version of the struct for testing
+    use incrementalmerkletree::Position;
+    use orchard::{keys::Diversifier, note::Nullifier, value::NoteValue};
+    use zcash_primitives::{memo::Memo, transaction::TxId};
+
+    use crate::{
+        mocks::orchard_note::OrchardCryptoNoteBuilder, utils::build_method,
+        wallet::notes::ShieldedNoteInterface,
+    };
+
+    use super::OrchardNote;
+
+    /// to create a mock SaplingNote
+    #[derive(Clone)]
+    pub(crate) struct OrchardNoteBuilder {
+        diversifier: Option<Diversifier>,
+        note: Option<OrchardCryptoNoteBuilder>,
+        witnessed_position: Option<Option<Position>>,
+        pub output_index: Option<Option<u32>>,
+        nullifier: Option<Option<Nullifier>>,
+        spent: Option<Option<(TxId, u32)>>,
+        pending_spent: Option<Option<(TxId, u32)>>,
+        memo: Option<Option<Memo>>,
+        is_change: Option<bool>,
+        have_spending_key: Option<bool>,
+    }
+
+    #[allow(dead_code)] //TODO:  fix this gross hack that I tossed in to silence the language-analyzer false positive
+    impl OrchardNoteBuilder {
+        /// blank builder
+        pub fn new() -> Self {
+            OrchardNoteBuilder {
+                diversifier: None,
+                note: None,
+                witnessed_position: None,
+                output_index: None,
+                nullifier: None,
+                spent: None,
+                pending_spent: None,
+                memo: None,
+                is_change: None,
+                have_spending_key: None,
+            }
+        }
+
+        // Methods to set each field
+        build_method!(diversifier, Diversifier);
+        build_method!(note, OrchardCryptoNoteBuilder);
+        build_method!(witnessed_position, Option<Position>);
+        build_method!(output_index, Option<u32>);
+        build_method!(nullifier, Option<Nullifier>);
+        build_method!(spent, Option<(TxId, u32)>);
+        build_method!(pending_spent, Option<(TxId, u32)>);
+        build_method!(memo, Option<Memo>);
+        #[doc = "Set the is_change field of the builder."]
+        pub fn set_change(&mut self, is_change: bool) -> &mut Self {
+            self.is_change = Some(is_change);
+            self
+        }
+        build_method!(have_spending_key, bool);
+        pub fn value(&mut self, value: u64) -> &mut Self {
+            self.note
+                .as_mut()
+                .unwrap()
+                .value(NoteValue::from_raw(value));
+            self
+        }
+
+        /// builds a mock SaplingNote after all pieces are supplied
+        pub fn build(&self) -> OrchardNote {
+            OrchardNote::from_parts(
+                self.diversifier.unwrap(),
+                self.note.clone().unwrap().build(),
+                self.witnessed_position.unwrap(),
+                self.nullifier.unwrap(),
+                self.spent.unwrap(),
+                self.pending_spent.unwrap(),
+                self.memo.clone().unwrap(),
+                self.is_change.unwrap(),
+                self.have_spending_key.unwrap(),
+                self.output_index.unwrap(),
+            )
+        }
+    }
+
+    impl Default for OrchardNoteBuilder {
+        fn default() -> Self {
+            let mut builder = OrchardNoteBuilder::new();
+            builder
+                .diversifier(Diversifier::from_bytes([0; 11]))
+                .note(OrchardCryptoNoteBuilder::default())
+                .witnessed_position(Some(Position::from(0)))
+                .output_index(Some(0))
+                .nullifier(Some(Nullifier::from_bytes(&[0u8; 32]).unwrap()))
+                .spent(None)
+                .pending_spent(None)
+                .memo(None)
+                .set_change(false)
+                .have_spending_key(true);
+            builder
+        }
+    }
+}
