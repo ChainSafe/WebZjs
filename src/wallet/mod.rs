@@ -10,7 +10,7 @@
 
 use wasm_bindgen::prelude::*;
 
-use crate::account::{Account, AccountIndex};
+use crate::account::{Account, AccountId};
 use crate::bindgen::transaction_proposal::TransactionProposal;
 use crate::bindgen::transaction_request::TransactionRequest;
 use crate::error::Error;
@@ -35,14 +35,14 @@ impl<S: WalletStore> Wallet<S> {
 
     pub fn add(&self, _account: Account) {}
 
-    pub async fn get(&self, _index: AccountIndex) -> Result<Account, Error> {
-        Account::from_bytes(&self.store.get("yer").await?.unwrap())
+    pub async fn get(&self, _index: AccountId) -> Result<Account, Error> {
+        todo!();
     }
 
     /// Given a request, create a proposal of how funds can be spent from the given account to realize it
     pub fn propose_transfer(
         &self,
-        _spend_from_account: AccountIndex,
+        _spend_from_account: AccountId,
         _request: TransactionRequest,
     ) -> TransactionProposal {
         todo!();

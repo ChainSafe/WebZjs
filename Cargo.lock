@@ -1781,6 +1781,7 @@ dependencies = [
  "ripemd",
  "sapling-crypto",
  "secp256k1 0.29.0",
+ "secrecy",
  "sha2",
  "subtle",
  "thiserror",

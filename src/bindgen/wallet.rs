@@ -8,7 +8,7 @@
 //! A wallet is defined without regard to how it is stored or synchronized.
 //!
 
-use crate::account::{Account, AccountIndex};
+use crate::account::{Account, AccountId};
 use crate::bindgen::transaction_proposal::TransactionProposal;
 use crate::bindgen::transaction_request::TransactionRequest;
 use wasm_bindgen::prelude::*;
@@ -32,14 +32,14 @@ impl WalletInjectedStore {
         self.0.add(account)
     }
 
-    pub async fn get(&self, index: AccountIndex) -> Result<Account, Error> {
+    pub async fn get(&self, index: AccountId) -> Result<Account, Error> {
         self.0.get(index).await
     }
 
     /// Given a request, create a proposal of how funds can be spent from the given account to realize it
     pub fn propose_transfer(
         &self,
-        spend_from_account: AccountIndex,
+        spend_from_account: AccountId,
         request: TransactionRequest,
     ) -> TransactionProposal {
         self.0.propose_transfer(spend_from_account, request)

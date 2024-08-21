@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use crate::wallet::transaction_record::TransactionRecord;
 use zcash_client_backend::{
     data_api::{InputSource, SpendableNotes},
-    wallet::{NoteId, ReceivedNote, WalletTransparentOutput},
+    wallet::{NoteId, ReceivedNote, WalletTransparentOutput, WalletTx},
 };
 use zcash_primitives::{
     legacy::TransparentAddress,
@@ -25,6 +25,7 @@ use super::notes::{OrchardNote, SaplingNote};
 
 pub struct MemoryTransactionStore {
     transactions: HashMap<TxId, TransactionRecord>,
+    wallet_tx: HashMap<TxId, WalletTx<u32>>,
 }
 
 impl MemoryTransactionStore {

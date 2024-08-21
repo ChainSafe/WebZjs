@@ -51,6 +51,7 @@ ring = "0.17.8"
 secp256k1 = "0.29.0"
 lazy_static = "1.5.0"
 subtle = "2.6.1"
+secrecy = "0.8.0"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
