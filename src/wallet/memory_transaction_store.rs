@@ -25,7 +25,6 @@ use super::notes::{query::OutputSpendStatusQuery, OrchardNote, OutputInterface, 
 
 pub struct MemoryTransactionStore {
     transactions: HashMap<TxId, TransactionRecord>,
-    wallet_tx: HashMap<TxId, WalletTx<u32>>,
 }
 
 impl Default for MemoryTransactionStore {
