@@ -2,6 +2,8 @@
 
 pub use sapling_crypto_note::SaplingCryptoNoteBuilder;
 
+pub(crate) mod utils;
+
 fn zaddr_from_seed(
     seed: [u8; 32],
 ) -> (
@@ -50,7 +52,7 @@ pub fn random_txid() -> zcash_primitives::transaction::TxId {
 pub mod nullifier {
     //! Module for mocking nullifiers from [`sapling_crypto::note::Nullifier`] and [`orchard::note::Nullifier`]
 
-    use crate::utils::build_method;
+    use crate::mocks::utils::build_method;
 
     macro_rules! build_assign_unique_nullifier {
         () => {
@@ -144,7 +146,7 @@ mod sapling_crypto_note {
     use sapling_crypto::PaymentAddress;
     use sapling_crypto::Rseed;
 
-    use crate::utils::build_method;
+    use crate::mocks::utils::build_method;
 
     use super::default_zaddr;
 
@@ -206,7 +208,7 @@ pub mod orchard_note {
     use rand::{rngs::OsRng, Rng};
     use zip32::Scope;
 
-    use crate::utils::build_method;
+    use crate::mocks::utils::build_method;
 
     /// A struct to build a mock orchard::Note from scratch.
     /// Distinguish [`orchard::Note`] from [`crate::wallet::notes::OrchardNote`]. The latter wraps the former with some other attributes.
@@ -319,11 +321,11 @@ pub mod proposal {
         components::amount::NonNegativeAmount, fees::zip317::FeeRule,
     };
 
-    use crate::utils::{ChainType, RegtestNetwork};
+    use crate::mocks::utils::{ChainType, RegtestNetwork};
     use zcash_client_backend::wallet::NoteId;
 
-    use crate::utils::conversions::address_from_str;
-    use crate::utils::{build_method, build_method_push};
+    use crate::mocks::utils::conversions::address_from_str;
+    use crate::mocks::utils::{build_method, build_method_push};
 
     use super::{default_txid, default_zaddr};
 

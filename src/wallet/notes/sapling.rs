@@ -233,7 +233,7 @@ pub mod mocks {
 
     use crate::{
         mocks::SaplingCryptoNoteBuilder,
-        utils::build_method,
+        mocks::utils::build_method,
         wallet::{notes::ShieldedNoteInterface, traits::FromBytes},
     };
 

@@ -218,7 +218,7 @@ pub mod mocks {
     //! Mock version of the struct for testing
     use zcash_primitives::{legacy::TransparentAddress, transaction::TxId};
 
-    use crate::{utils::build_method, wallet::notes::TransparentOutput};
+    use crate::{mocks::utils::build_method, wallet::notes::TransparentOutput};
 
     /// to create a mock TransparentOutput
     #[derive(Clone)]

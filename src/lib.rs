@@ -12,5 +12,3 @@ pub mod wallet;
 
 #[cfg(test)]
 mod mocks;
-#[cfg(test)]
-mod utils;

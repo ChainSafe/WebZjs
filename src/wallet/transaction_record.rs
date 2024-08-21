@@ -213,8 +213,8 @@ pub mod mocks {
         mocks::{
             nullifier::{OrchardNullifierBuilder, SaplingNullifierBuilder},
             random_txid,
+            utils::{build_method, build_method_push, build_push_list},
         },
-        utils::{build_method, build_method_push, build_push_list},
         wallet::notes::{
             orchard::mocks::OrchardNoteBuilder, sapling::mocks::SaplingNoteBuilder,
             transparent::mocks::TransparentOutputBuilder,
