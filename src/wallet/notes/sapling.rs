@@ -223,3 +223,110 @@ impl ShieldedNoteInterface for SaplingNote {
         zcash_client_backend::wallet::Note::Sapling(self.note().clone())
     }
 }
+
+#[cfg(test)]
+pub mod mocks {
+    //! Mock version of the struct for testing
+    use incrementalmerkletree::Position;
+    use sapling_crypto::value::NoteValue;
+    use zcash_primitives::{memo::Memo, transaction::TxId};
+
+    use crate::{
+        mocks::utils::build_method,
+        mocks::SaplingCryptoNoteBuilder,
+        wallet::{notes::ShieldedNoteInterface, traits::FromBytes},
+    };
+
+    use super::SaplingNote;
+
+    /// to create a mock SaplingNote
+    #[derive(Clone)]
+    pub(crate) struct SaplingNoteBuilder {
+        diversifier: Option<sapling_crypto::Diversifier>,
+        note: Option<SaplingCryptoNoteBuilder>,
+        witnessed_position: Option<Option<Position>>,
+        pub output_index: Option<Option<u32>>,
+        nullifier: Option<Option<sapling_crypto::Nullifier>>,
+        spent: Option<Option<(TxId, u32)>>,
+        pending_spent: Option<Option<(TxId, u32)>>,
+        memo: Option<Option<Memo>>,
+        is_change: Option<bool>,
+        have_spending_key: Option<bool>,
+    }
+
+    #[allow(dead_code)] //TODO:  fix this gross hack that I tossed in to silence the language-analyzer false positive
+    impl SaplingNoteBuilder {
+        /// blank builder
+        pub fn new() -> Self {
+            SaplingNoteBuilder {
+                diversifier: None,
+                note: None,
+                witnessed_position: None,
+                output_index: None,
+                nullifier: None,
+                spent: None,
+                pending_spent: None,
+                memo: None,
+                is_change: None,
+                have_spending_key: None,
+            }
+        }
+
+        // Methods to set each field
+        build_method!(diversifier, sapling_crypto::Diversifier);
+        build_method!(note, SaplingCryptoNoteBuilder);
+        build_method!(witnessed_position, Option<Position>);
+        build_method!(output_index, Option<u32>);
+        build_method!(nullifier, Option<sapling_crypto::Nullifier>);
+        build_method!(spent, Option<(TxId, u32)>);
+        build_method!(pending_spent, Option<(TxId, u32)>);
+        build_method!(memo, Option<Memo>);
+        #[doc = "Set the is_change field of the builder."]
+        pub fn set_change(&mut self, is_change: bool) -> &mut Self {
+            self.is_change = Some(is_change);
+            self
+        }
+        build_method!(have_spending_key, bool);
+        pub fn value(&mut self, value: u64) -> &mut Self {
+            self.note
+                .as_mut()
+                .unwrap()
+                .value(NoteValue::from_raw(value));
+            self
+        }
+
+        /// builds a mock SaplingNote after all pieces are supplied
+        pub fn build(&self) -> SaplingNote {
+            SaplingNote::from_parts(
+                self.diversifier.unwrap(),
+                self.note.clone().unwrap().build(),
+                self.witnessed_position.unwrap(),
+                self.nullifier.unwrap(),
+                self.spent.unwrap(),
+                self.pending_spent.unwrap(),
+                self.memo.clone().unwrap(),
+                self.is_change.unwrap(),
+                self.have_spending_key.unwrap(),
+                self.output_index.unwrap(),
+            )
+        }
+    }
+
+    impl Default for SaplingNoteBuilder {
+        fn default() -> Self {
+            let mut builder = SaplingNoteBuilder::new();
+            builder
+                .diversifier(sapling_crypto::Diversifier([0; 11]))
+                .note(crate::mocks::SaplingCryptoNoteBuilder::default())
+                .witnessed_position(Some(Position::from(0)))
+                .output_index(Some(0))
+                .nullifier(Some(sapling_crypto::Nullifier::from_bytes([0; 32])))
+                .spent(None)
+                .pending_spent(None)
+                .memo(None)
+                .set_change(false)
+                .have_spending_key(true);
+            builder
+        }
+    }
+}

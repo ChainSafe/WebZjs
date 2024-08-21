@@ -212,3 +212,74 @@ impl TransparentOutput {
         })
     }
 }
+
+#[cfg(test)]
+pub mod mocks {
+    //! Mock version of the struct for testing
+    use zcash_primitives::{legacy::TransparentAddress, transaction::TxId};
+
+    use crate::{mocks::utils::build_method, wallet::notes::TransparentOutput};
+
+    /// to create a mock TransparentOutput
+    #[derive(Clone)]
+    pub(crate) struct TransparentOutputBuilder {
+        address: Option<String>,
+        txid: Option<TxId>,
+        pub output_index: Option<u64>,
+        script: Option<Vec<u8>>,
+        value: Option<u64>,
+        spent: Option<Option<(TxId, u32)>>,
+        pending_spent: Option<Option<(TxId, u32)>>,
+    }
+    #[allow(dead_code)] //TODO:  fix this gross hack that I tossed in to silence the language-analyzer false positive
+    impl TransparentOutputBuilder {
+        /// blank builder
+        pub fn new() -> Self {
+            Self {
+                address: None,
+                txid: None,
+                output_index: None,
+                script: None,
+                value: None,
+                spent: None,
+                pending_spent: None,
+            }
+        }
+        // Methods to set each field
+        build_method!(address, String);
+        build_method!(txid, TxId);
+        build_method!(output_index, u64);
+        build_method!(script, Vec<u8>);
+        build_method!(value, u64);
+        build_method!(spent, Option<(TxId, u32)>);
+        build_method!(pending_spent, Option<(TxId, u32)>);
+
+        /// builds a mock TransparentNote after all pieces are supplied
+        pub fn build(&self) -> TransparentOutput {
+            TransparentOutput::from_parts(
+                self.address.clone().unwrap(),
+                self.txid.unwrap(),
+                self.output_index.unwrap(),
+                self.script.clone().unwrap(),
+                self.value.unwrap(),
+                self.spent.unwrap(),
+                self.pending_spent.unwrap(),
+            )
+        }
+    }
+
+    impl Default for TransparentOutputBuilder {
+        fn default() -> Self {
+            let mut builder = Self::new();
+            builder
+                .address("default_address".to_string())
+                .txid(TxId::from_bytes([0u8; 32]))
+                .output_index(0)
+                .script(TransparentAddress::ScriptHash([0; 20]).script().0)
+                .value(100_000)
+                .spent(None)
+                .pending_spent(None);
+            builder
+        }
+    }
+}

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 //! An in-memory (hashmap) store for a wallets transaction
-//! This implementation is largely based on the TransactionRecordsById implementation in from zingolib
+//! This implementation is largely based on the MemoryTransactionStore implementation in from zingolib
 
 use std::collections::HashMap;
 
@@ -12,23 +12,41 @@ use zcash_client_backend::{
     wallet::{NoteId, ReceivedNote, WalletTransparentOutput, WalletTx},
 };
 use zcash_primitives::{
-    legacy::TransparentAddress,
+    legacy::{Script, TransparentAddress},
     transaction::{
-        components::{amount::NonNegativeAmount, OutPoint},
+        components::{amount::NonNegativeAmount, OutPoint, TxOut},
         fees::zip317::MARGINAL_FEE,
         TxId,
     },
 };
 use zcash_protocol::{consensus::BlockHeight, value::BalanceError};
 
-use super::notes::{OrchardNote, SaplingNote};
+use super::notes::{query::OutputSpendStatusQuery, OrchardNote, OutputInterface, SaplingNote};
 
 pub struct MemoryTransactionStore {
     transactions: HashMap<TxId, TransactionRecord>,
     wallet_tx: HashMap<TxId, WalletTx<u32>>,
 }
 
+impl Default for MemoryTransactionStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MemoryTransactionStore {
+    pub fn new() -> Self {
+        Self {
+            transactions: HashMap::new(),
+        }
+    }
+
+    /// Adds a TransactionRecord to the hashmap, using its TxId as a key.
+    pub fn insert_transaction_record(&mut self, transaction_record: TransactionRecord) {
+        self.transactions
+            .insert(transaction_record.txid, transaction_record);
+    }
+
     /// get a list of spendable NoteIds with associated note values
     #[allow(clippy::type_complexity)]
     pub(crate) fn get_spendable_note_ids_and_values(
@@ -200,9 +218,41 @@ impl InputSource for MemoryTransactionStore {
     /// spendable as of the chain tip height.
     fn get_unspent_transparent_output(
         &self,
-        _outpoint: &OutPoint,
+        outpoint: &OutPoint,
     ) -> Result<Option<WalletTransparentOutput>, Self::Error> {
-        Ok(None)
+        let Some((height, output)) = self.transactions.values().find_map(|transaction_record| {
+            transaction_record
+                .transparent_outputs
+                .iter()
+                .find_map(|output| {
+                    if &output.to_outpoint() == outpoint {
+                        transaction_record
+                            .status
+                            .get_confirmed_height()
+                            .map(|height| (height, output))
+                    } else {
+                        None
+                    }
+                })
+                .filter(|(_height, output)| {
+                    output.spend_status_query(OutputSpendStatusQuery::only_unspent())
+                })
+        }) else {
+            return Ok(None);
+        };
+        let value =
+            NonNegativeAmount::from_u64(output.value).map_err(MemoryStoreError::InvalidValue)?;
+
+        let script_pubkey = Script(output.script.clone());
+
+        Ok(WalletTransparentOutput::from_parts(
+            outpoint.clone(),
+            TxOut {
+                value,
+                script_pubkey,
+            },
+            Some(height),
+        ))
     }
 
     /// Returns the list of spendable transparent outputs received by this wallet at `address`
@@ -268,4 +318,100 @@ pub enum MemoryStoreError {
     /// Wallet data is out of date
     #[error("Output index data is missing! Wallet data is out of date, please rescan.")]
     MissingOutputIndexes(Vec<(TxId, zcash_primitives::consensus::BlockHeight)>),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::{prop_assert_eq, proptest};
+    use zcash_client_backend::ShieldedProtocol;
+    use zcash_primitives::{
+        consensus::BlockHeight, transaction::components::amount::NonNegativeAmount,
+    };
+    use zip32::AccountId;
+
+    use crate::wallet::{
+        notes::{orchard::mocks::OrchardNoteBuilder, transparent::mocks::TransparentOutputBuilder},
+        transaction_record::mocks::{
+            nine_note_transaction_record_default, TransactionRecordBuilder,
+        },
+    };
+
+    proptest! {
+
+        #[test]
+        fn select_spendable_notes_2(
+            target_value in 5_000..3_980_000u32,
+        ) {
+            let mut transaction_records_by_id = MemoryTransactionStore::new();
+            transaction_records_by_id.insert_transaction_record(
+
+        TransactionRecordBuilder::default()
+            .orchard_notes(OrchardNoteBuilder::default().value(1_000_000).clone())
+            .orchard_notes(OrchardNoteBuilder::default().value(1_000_000).clone())
+            .orchard_notes(OrchardNoteBuilder::default().value(1_000_000).clone())
+            .orchard_notes(OrchardNoteBuilder::default().value(1_000_000).clone())
+            .randomize_txid()
+            .set_output_indexes()
+            .build()
+                );
+
+            let target_amount = NonNegativeAmount::const_from_u64(target_value as u64);
+            let anchor_height: BlockHeight = 10.into();
+            let spendable_notes =
+                zcash_client_backend::data_api::InputSource::select_spendable_notes(
+                    &transaction_records_by_id,
+                    AccountId::ZERO,
+                    target_amount,
+                    &[ShieldedProtocol::Sapling, ShieldedProtocol::Orchard],
+                    anchor_height,
+                    &[],
+                ).unwrap();
+            let expected_len = match target_value {
+                target_value if target_value <= 1_000_000 => 1,
+                target_value if target_value <= 2_000_000 => 2,
+                target_value if target_value <= 3_000_000 => 3,
+                _ => 4
+            };
+
+            prop_assert_eq!(spendable_notes.sapling().len() + spendable_notes.orchard().len(), expected_len);
+        }
+    }
+
+    #[test]
+    fn get_unspent_transparent_output() {
+        let mut transaction_records_by_id = MemoryTransactionStore::new();
+
+        let transaction_record = nine_note_transaction_record_default();
+
+        transaction_records_by_id.insert_transaction_record(transaction_record);
+
+        let transparent_output = transaction_records_by_id
+            .transactions
+            .values()
+            .next()
+            .unwrap()
+            .transparent_outputs
+            .first()
+            .unwrap();
+        let record_height = transaction_records_by_id
+            .transactions
+            .values()
+            .next()
+            .unwrap()
+            .status
+            .get_confirmed_height();
+
+        let wto = transaction_records_by_id
+            .get_unspent_transparent_output(
+                &TransparentOutputBuilder::default().build().to_outpoint(),
+            )
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(wto.outpoint(), &transparent_output.to_outpoint());
+        assert_eq!(wto.txout().value.into_u64(), transparent_output.value);
+        assert_eq!(wto.txout().script_pubkey.0, transparent_output.script);
+        assert_eq!(Some(wto.mined_height()), Some(record_height))
+    }
 }
