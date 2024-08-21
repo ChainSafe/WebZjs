@@ -7,5 +7,8 @@ build:
 test-web:
     WASM_BINDGEN_TEST_TIMEOUT=99999  wasm-pack test --release --headless --chrome
 
+test:
+    cargo test --target aarch64-apple-darwin
+
 check:
     cargo check

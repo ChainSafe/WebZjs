@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 //! Tools to facilitate mocks for structs of external crates and general mocking utilities for testing
 
 pub use sapling_crypto_note::SaplingCryptoNoteBuilder;
@@ -47,18 +45,6 @@ pub fn random_txid() -> zcash_primitives::transaction::TxId {
     let mut seed = [0u8; 32];
     rng.fill(&mut seed);
     zcash_primitives::transaction::TxId::from_bytes(seed)
-}
-/// Any old OS randomness
-pub fn random_zaddr() -> (
-    ExtendedSpendingKey,
-    PreparedIncomingViewingKey,
-    PaymentAddress,
-) {
-    let mut rng = OsRng;
-    let mut seed = [0u8; 32];
-    rng.fill(&mut seed);
-
-    zaddr_from_seed(seed)
 }
 
 pub mod nullifier {
@@ -186,12 +172,6 @@ mod sapling_crypto_note {
         build_method!(value, NoteValue);
         build_method!(rseed, Rseed);
 
-        /// For any old zcaddr!
-        pub fn randomize_recipient(&mut self) -> &mut Self {
-            let (_, _, address) = super::random_zaddr();
-            self.recipient(address)
-        }
-
         /// Build the note.
         pub fn build(self) -> Note {
             Note::from_parts(
@@ -259,26 +239,6 @@ pub mod orchard_note {
         pub fn default_recipient(&mut self) -> &mut Self {
             let bytes = [0; 32];
             let sk = SpendingKey::from_bytes(bytes).unwrap();
-            let fvk: FullViewingKey = (&sk).into();
-            let recipient = fvk.address_at(0u32, Scope::External);
-
-            self.recipient(recipient)
-        }
-
-        /// selects a random recipient address for the orchard note
-        pub fn randomize_recipient(&mut self) -> &mut Self {
-            let mut rng = OsRng;
-
-            let sk = {
-                loop {
-                    let mut bytes = [0; 32];
-                    rng.fill(&mut bytes);
-                    let sk = SpendingKey::from_bytes(bytes);
-                    if sk.is_some().into() {
-                        break sk.unwrap();
-                    }
-                }
-            };
             let fvk: FullViewingKey = (&sk).into();
             let recipient = fvk.address_at(0u32, Scope::External);
 

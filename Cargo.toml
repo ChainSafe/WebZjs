@@ -51,14 +51,13 @@ ring = "0.17.8"
 secp256k1 = "0.29.0"
 lazy_static = "1.5.0"
 subtle = "2.6.1"
-hex = "0.4.3"
-nonempty = "0.7"
 
 [dev-dependencies]
 hex = "0.4.3"
 proptest = "1.5.0"
 rand = "0.8.5"
 wasm-bindgen-test = "0.3.42"
+nonempty = "0.7"
 
 [build-dependencies]
 tonic-build = { version = "0.11", default-features = false, features = [

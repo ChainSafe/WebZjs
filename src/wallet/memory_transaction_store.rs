@@ -323,7 +323,7 @@ pub enum MemoryStoreError {
 mod tests {
     use super::*;
     use proptest::{prop_assert_eq, proptest};
-    use zcash_client_backend::{data_api::InputSource as _, ShieldedProtocol};
+    use zcash_client_backend::ShieldedProtocol;
     use zcash_primitives::{
         consensus::BlockHeight,
         transaction::components::amount::NonNegativeAmount,
