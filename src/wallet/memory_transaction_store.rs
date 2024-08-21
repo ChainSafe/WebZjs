@@ -325,8 +325,7 @@ mod tests {
     use proptest::{prop_assert_eq, proptest};
     use zcash_client_backend::ShieldedProtocol;
     use zcash_primitives::{
-        consensus::BlockHeight,
-        transaction::components::amount::NonNegativeAmount,
+        consensus::BlockHeight, transaction::components::amount::NonNegativeAmount,
     };
     use zip32::AccountId;
 

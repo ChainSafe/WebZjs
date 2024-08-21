@@ -93,10 +93,9 @@ use zcash_protocol::consensus::BlockHeight;
 pub mod conversions {
     //! Conversion specific utilities
 
-    use zcash_address::ZcashAddress;
-    use super::ChainType;
     use super::error::ConversionError;
-
+    use super::ChainType;
+    use zcash_address::ZcashAddress;
 
     /// Convert a &str to an Address
     pub fn address_from_str(

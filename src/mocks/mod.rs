@@ -315,7 +315,7 @@ pub mod proposal {
     use zcash_client_backend::wallet::{ReceivedNote, WalletTransparentOutput};
     use zcash_client_backend::zip321::{Payment, TransactionRequest};
     use zcash_client_backend::{PoolType, ShieldedProtocol};
-    
+
     use zcash_primitives::consensus::BlockHeight;
     use zcash_primitives::transaction::{
         components::amount::NonNegativeAmount, fees::zip317::FeeRule,
