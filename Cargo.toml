@@ -20,16 +20,22 @@ codegen-units = 1
 wasm-opt = ["-O4", "-O4"]
 
 [dependencies]
+## Web dependencies
 wasm-bindgen = "0.2.84"
 js-sys = "0.3.69"
-zcash_keys = { git = "https://github.com/zcash/librustzcash", rev = "5a4a3e06dcd2cf5bdf79a7cd48709b58693c65f0", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_primitives = { git = "https://github.com/zcash/librustzcash", rev = "5a4a3e06dcd2cf5bdf79a7cd48709b58693c65f0" }
+wasm-bindgen-futures = "0.4.42"
+web-sys = { version  = "0.3.69", features = ["console"] }
+
+## Zcash dependencies
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd" }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd" }
+
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
 console_error_panic_hook = { version = "0.1.7", optional = true }
-wasm-bindgen-futures = "0.4.42"
 indexed_db_futures = "0.5.0"
-web-sys = { version  = "0.3.69", features = ["console"] }
 sha2 = "0.10"
 ripemd = "0.1"
 
@@ -41,3 +47,6 @@ tonic-build = { version = "0.11", default-features = false, features = [
     "prost",
 ] }
 which = "4"
+
+[patch.crates-io]
+zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord"}
