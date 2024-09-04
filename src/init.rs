@@ -22,6 +22,7 @@ fn setup_tracing() {
     let subscriber = tracing_subscriber::fmt()
         .with_ansi(false)
         .with_writer(MakeWebConsoleWriter::new())
+        .without_time() // time breaks if used in browser
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 }

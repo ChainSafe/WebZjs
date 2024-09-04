@@ -26,10 +26,13 @@ fn tests_working() {
 async fn test_get_and_scan_range() {
     initialize();
 
-    let mut w = Wallet::new("main", "https://zcash-mainnet.chainsafe.dev", 10).unwrap();
+    let mut w = Wallet::new("main", "https://zcash-mainnet.chainsafe.dev", 10, 0).unwrap();
 
     let id = w.create_account(SEED, BIRTHDAY).await.unwrap();
     tracing::info!("Created account with id: {}", id);
 
     w.get_and_scan_range(2406739, 2406739 + 1000).await.unwrap();
+
+    let summary = w.get_wallet_summary().unwrap();
+    tracing::info!("Wallet summary: {:?}", summary);
 }

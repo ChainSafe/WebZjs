@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use wasm_bindgen::prelude::*;
 
 use bip0039::{English, Mnemonic};
@@ -42,6 +44,7 @@ pub struct Wallet {
     // gRPC client used to connect to a lightwalletd instance for network data
     client: CompactTxStreamerClient<tonic_web_wasm_client::Client>,
     network: consensus::Network,
+    min_confirmations: u32,
 }
 
 #[wasm_bindgen]
@@ -52,6 +55,7 @@ impl Wallet {
         network: &str,
         lightwalletd_url: &str,
         max_checkpoints: usize,
+        min_confirmations: u32,
     ) -> Result<Wallet, Error> {
         let network = match network {
             "main" => consensus::Network::MainNetwork,
@@ -65,6 +69,7 @@ impl Wallet {
             db: MemoryWalletDb::new(network, max_checkpoints),
             client: CompactTxStreamerClient::new(Client::new(lightwalletd_url.to_string())),
             network,
+            min_confirmations,
         })
     }
 
@@ -189,7 +194,66 @@ impl Wallet {
         self.db.put_blocks(&chainstate, scanned_blocks)?;
         Ok(())
     }
+
+    pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
+        Ok(self
+            .db
+            .get_wallet_summary(self.min_confirmations)?
+            .map(Into::into))
+    }
 }
 
 #[wasm_bindgen]
 pub struct BlockRange(pub u32, pub u32);
+
+#[wasm_bindgen]
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct WalletSummary {
+    account_balances: HashMap<u32, AccountBalance>,
+    chain_tip_height: u32,
+    fully_scanned_height: u32,
+    // scan_progress: Option<Ratio<u64>>,
+    next_sapling_subtree_index: u64,
+    next_orchard_subtree_index: u64,
+}
+
+#[wasm_bindgen]
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct AccountBalance {
+    sapling_balance: u64,
+    orchard_balance: u64,
+    unshielded_balance: u64,
+}
+
+impl From<zcash_client_backend::data_api::AccountBalance> for AccountBalance {
+    fn from(balance: zcash_client_backend::data_api::AccountBalance) -> Self {
+        AccountBalance {
+            sapling_balance: balance.sapling_balance().spendable_value().into(),
+            orchard_balance: balance.orchard_balance().spendable_value().into(),
+            unshielded_balance: balance.unshielded().into(),
+        }
+    }
+}
+
+impl<T> From<zcash_client_backend::data_api::WalletSummary<T>> for WalletSummary
+where
+    T: std::cmp::Eq + std::hash::Hash + std::ops::Deref<Target = u32> + Clone,
+{
+    fn from(summary: zcash_client_backend::data_api::WalletSummary<T>) -> Self {
+        let account_balances = summary
+            .account_balances()
+            .iter()
+            .map(|(k, v)| (*(*k).clone().deref(), (*v).into()))
+            .collect();
+
+        WalletSummary {
+            account_balances,
+            chain_tip_height: summary.chain_tip_height().into(),
+            fully_scanned_height: summary.fully_scanned_height().into(),
+            next_sapling_subtree_index: summary.next_sapling_subtree_index(),
+            next_orchard_subtree_index: summary.next_orchard_subtree_index(),
+        }
+    }
+}
