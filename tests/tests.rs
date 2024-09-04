@@ -16,13 +16,6 @@ pub fn initialize() {
 }
 
 #[wasm_bindgen_test]
-fn tests_working() {
-    initialize();
-
-    assert!(true);
-}
-
-#[wasm_bindgen_test]
 async fn test_get_and_scan_range() {
     initialize();
 
