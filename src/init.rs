@@ -3,9 +3,7 @@
 
 use wasm_bindgen::prelude::*;
 
-use tracing_subscriber::fmt::format::Pretty;
-use tracing_subscriber::prelude::*;
-use tracing_web::{performance_layer, MakeWebConsoleWriter};
+use tracing_web::MakeWebConsoleWriter;
 
 fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the

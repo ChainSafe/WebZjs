@@ -7,11 +7,9 @@ use futures_util::{StreamExt, TryStreamExt};
 use secrecy::{SecretVec, Zeroize};
 use tonic_web_wasm_client::Client;
 
-use zcash_client_backend::data_api::scanning::ScanRange;
 use zcash_client_backend::data_api::{AccountBirthday, NullifierQuery, WalletRead, WalletWrite};
 use zcash_client_backend::proto::service;
 use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
-use zcash_client_backend::scan;
 use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_memory::MemoryWalletDb;
 use zcash_primitives::consensus;
