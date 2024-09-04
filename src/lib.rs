@@ -6,3 +6,5 @@
 pub mod error;
 pub mod init;
 pub mod bindgen;
+
+pub use bindgen::wallet::Wallet;

@@ -27,10 +27,17 @@ wasm-bindgen-futures = "0.4.42"
 web-sys = { version  = "0.3.69", features = ["console"] }
 
 ## Zcash dependencies
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd" }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "93214eb219bc10719e675f5fc8649da1987b59cd" }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "de42b1ad47872ce2a7a89fb4d0270467064bea92", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "de42b1ad47872ce2a7a89fb4d0270467064bea92", features = ["lightwalletd-tonic"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "de42b1ad47872ce2a7a89fb4d0270467064bea92", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "de42b1ad47872ce2a7a89fb4d0270467064bea92" }
+
+## gRPC Web dependencies
+prost = { version = "0.12", default-features = false }
+tonic = { version = "0.11", default-features = false, features = [
+    "prost",
+] }
+tonic-web-wasm-client = "0.6.0"
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -38,6 +45,12 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 indexed_db_futures = "0.5.0"
 sha2 = "0.10"
 ripemd = "0.1"
+bip0039 = "0.12.0"
+secrecy = "0.8.0"
+futures-util = "0.3.30"
+tracing-web = "0.1.3"
+tracing-subscriber = "0.3.18"
+tracing = "0.1.40"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
