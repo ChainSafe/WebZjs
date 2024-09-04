@@ -14,6 +14,8 @@ use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_memory::MemoryWalletDb;
 use zcash_primitives::consensus;
 
+use crate::error::Error;
+
 /// # A Zcash wallet
 ///
 /// A wallet is a set of accounts that can be synchronized together with the blockchain.
@@ -50,14 +52,12 @@ impl Wallet {
         network: &str,
         lightwalletd_url: &str,
         max_checkpoints: usize,
-    ) -> Result<Wallet, JsValue> {
+    ) -> Result<Wallet, Error> {
         let network = match network {
             "main" => consensus::Network::MainNetwork,
             "test" => consensus::Network::TestNetwork,
             _ => {
-                return Err(JsValue::from_str(
-                    "Invalid network. Must be 'main' or 'test'",
-                ))
+                return Err(Error::InvalidNetwork(network.to_string()));
             }
         };
 
@@ -78,7 +78,7 @@ impl Wallet {
         &mut self,
         seed_phrase: &str,
         birthday_height: Option<u32>,
-    ) -> Result<String, JsValue> {
+    ) -> Result<String, Error> {
         // decode the mnemonic
         let mnemonic = <Mnemonic<English>>::from_phrase(seed_phrase).unwrap();
         let seed = {
@@ -94,8 +94,7 @@ impl Wallet {
                 let chain_tip: u32 = self
                     .client
                     .get_latest_block(service::ChainSpec::default())
-                    .await
-                    .unwrap()
+                    .await?
                     .into_inner()
                     .height
                     .try_into()
@@ -111,45 +110,30 @@ impl Wallet {
                 height: (birthday - 1).into(),
                 ..Default::default()
             };
-            let treestate = self
-                .client
-                .get_tree_state(request)
-                .await
-                .unwrap()
-                .into_inner();
-            AccountBirthday::from_treestate(treestate, None)
-                .map_err(|_| "cooked")
-                .unwrap()
+            let treestate = self.client.get_tree_state(request).await?.into_inner();
+            AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
         };
 
-        let (id, _spending_key) = self.db.create_account(&seed, &birthday).unwrap();
+        let (id, _spending_key) = self.db.create_account(&seed, &birthday)?;
         Ok(id.to_string())
     }
 
-    pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, JsValue> {
-        Ok(self
-            .db
-            .suggest_scan_ranges()
-            .map(|ranges| {
-                ranges
-                    .iter()
-                    .map(|scan_range| {
-                        BlockRange(
-                            scan_range.block_range().start.into(),
-                            scan_range.block_range().end.into(),
-                        )
-                    })
-                    .collect()
-            })
-            .unwrap())
+    pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
+        Ok(self.db.suggest_scan_ranges().map(|ranges| {
+            ranges
+                .iter()
+                .map(|scan_range| {
+                    BlockRange(
+                        scan_range.block_range().start.into(),
+                        scan_range.block_range().end.into(),
+                    )
+                })
+                .collect()
+        })?)
     }
 
     /// Fully sync the wallet with the blockchain calling the provided callback with progress updates
-    pub async fn get_and_scan_range(
-        &mut self,
-        start: u32,
-        end: u32,
-    ) -> Result<(), JsValue> {
+    pub async fn get_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
         let range = service::BlockRange {
             start: Some(service::BlockId {
                 height: start.into(),
@@ -168,20 +152,18 @@ impl Wallet {
                 height: (start - 1).into(),
                 ..Default::default()
             })
-            .await
-            .unwrap();
-        let chainstate = tree_state.into_inner().to_chain_state().unwrap();
+            .await?;
+
+        let chainstate = tree_state.into_inner().to_chain_state()?;
 
         // Get the scanning keys from the DB
-        let account_ufvks = self.db.get_unified_full_viewing_keys().unwrap();
+        let account_ufvks = self.db.get_unified_full_viewing_keys()?;
         let scanning_keys = ScanningKeys::from_account_ufvks(account_ufvks);
 
         // Get the nullifiers for the unspent notes we are tracking
         let nullifiers = Nullifiers::new(
-            self.db
-                .get_sapling_nullifiers(NullifierQuery::Unspent).unwrap(),
-            self.db
-                .get_orchard_nullifiers(NullifierQuery::Unspent).unwrap()
+            self.db.get_sapling_nullifiers(NullifierQuery::Unspent)?,
+            self.db.get_orchard_nullifiers(NullifierQuery::Unspent)?,
         );
 
         // convert the compact blocks into ScannedBlocks
@@ -190,8 +172,7 @@ impl Wallet {
         let scanned_blocks = self
             .client
             .get_block_range(range)
-            .await
-            .unwrap()
+            .await?
             .into_inner()
             .map(|compact_block| {
                 scan_block(
@@ -201,9 +182,11 @@ impl Wallet {
                     &nullifiers,
                     None,
                 )
-            }).try_collect().await.unwrap();
+            })
+            .try_collect()
+            .await?;
 
-        self.db.put_blocks(&chainstate, scanned_blocks).unwrap();
+        self.db.put_blocks(&chainstate, scanned_blocks)?;
         Ok(())
     }
 }

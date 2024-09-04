@@ -3,8 +3,8 @@
 
 //! This is the top level documentation!
 
+pub mod bindgen;
 pub mod error;
 pub mod init;
-pub mod bindgen;
 
 pub use bindgen::wallet::Wallet;

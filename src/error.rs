@@ -21,6 +21,18 @@ pub enum Error {
     },
     #[error("Address generation error")]
     AddressGenerationError(#[from] zcash_keys::keys::AddressGenerationError),
+    #[error("Invalid network string given: {0}")]
+    InvalidNetwork(String),
+    #[error("Error returned from GRPC server: {0}")]
+    GrpcError(#[from] tonic::Status),
+    #[error("Error handling wallet birthday")]
+    BirthdayError,
+    #[error("Memory client error: {0}")]
+    MemoryClientError(#[from] zcash_client_memory::Error),
+    #[error("Error scanning: {0}")]
+    ScanError(zcash_client_backend::scanning::ScanError),
+    #[error("IO Error: {0}")]
+    IoError(#[from] std::io::Error),
 }
 
 impl From<Error> for JsValue {
@@ -42,5 +54,11 @@ impl From<indexed_db_futures::web_sys::DomException> for Error {
             message: e.message(),
             code: e.code(),
         }
+    }
+}
+
+impl From<zcash_client_backend::scanning::ScanError> for Error {
+    fn from(e: zcash_client_backend::scanning::ScanError) -> Self {
+        Self::ScanError(e)
     }
 }
