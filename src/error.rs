@@ -7,8 +7,9 @@ use wasm_bindgen::JsValue;
 pub enum Error {
     #[error("Invalid account id")]
     AccountIdConversion(#[from] zcash_primitives::zip32::TryFromIntError),
-    // #[error("Failed to derive key from seed")] // doesn't implement std::error. Should probably fix this upstream
-    // DerivationError(#[from] zcash_keys::keys::DerivationError),
+    #[error("Failed to derive key from seed")]
+    // doesn't implement std::error. Should probably fix this upstream
+    DerivationError(#[from] zcash_keys::keys::DerivationError),
     // #[error("Failed to derive key from seed")] // doesn't implement std::error. Should probably fix this upstream
     // DecodingError(#[from] zcash_keys::keys::DecodingError),
     #[error("Javascript error")]

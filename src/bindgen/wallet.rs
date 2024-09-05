@@ -4,14 +4,17 @@ use wasm_bindgen::prelude::*;
 
 use bip0039::{English, Mnemonic};
 use futures_util::{StreamExt, TryStreamExt};
-use secrecy::{SecretVec, Zeroize};
+use secrecy::{ExposeSecret, SecretVec, Zeroize};
 use tonic_web_wasm_client::Client;
 
-use zcash_client_backend::data_api::{AccountBirthday, NullifierQuery, WalletRead, WalletWrite};
+use zcash_client_backend::data_api::{
+    AccountBirthday, AccountPurpose, NullifierQuery, WalletRead, WalletWrite,
+};
 use zcash_client_backend::proto::service;
 use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
 use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_memory::MemoryWalletDb;
+use zcash_keys::keys::UnifiedSpendingKey;
 use zcash_primitives::consensus;
 
 use crate::error::Error;
@@ -75,14 +78,16 @@ impl Wallet {
     ///
     /// # Arguments
     /// seed_phrase - mnemonic phrase to initialise the wallet
+    /// account_index - The HD derivation index to use. Can be any integer
     /// birthday_height - The block height at which the account was created, optionally None and the current height is used
     ///
     pub async fn create_account(
         &mut self,
         seed_phrase: &str,
+        account_index: u32,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
-        // decode the mnemonic
+        // decode the mnemonic and derive the first account
         let mnemonic = <Mnemonic<English>>::from_phrase(seed_phrase).unwrap();
         let seed = {
             let mut seed = mnemonic.to_seed("");
@@ -90,6 +95,12 @@ impl Wallet {
             seed.zeroize();
             SecretVec::new(secret)
         };
+        let usk = UnifiedSpendingKey::from_seed(
+            &self.network,
+            seed.expose_secret(),
+            account_index.try_into()?,
+        )?;
+        let ufvk = usk.to_unified_full_viewing_key();
 
         let birthday = match birthday_height {
             Some(height) => height,
@@ -117,8 +128,11 @@ impl Wallet {
             AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
         };
 
-        let (id, _spending_key) = self.db.create_account(&seed, &birthday)?;
-        Ok(id.to_string())
+        let _account = self
+            .db
+            .import_account_ufvk(&ufvk, &birthday, AccountPurpose::Spending)?;
+        // TOOD: Make this public on account Ok(account.account_id().to_string())
+        Ok("0".to_string())
     }
 
     pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
