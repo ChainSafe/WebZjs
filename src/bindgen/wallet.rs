@@ -7,6 +7,7 @@ use futures_util::{StreamExt, TryStreamExt};
 use secrecy::{ExposeSecret, SecretVec, Zeroize};
 use tonic_web_wasm_client::Client;
 
+use zcash_client_backend::data_api::scanning::ScanRange;
 use zcash_client_backend::data_api::{
     AccountBirthday, AccountPurpose, NullifierQuery, WalletRead, WalletWrite,
 };
@@ -15,9 +16,11 @@ use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxS
 use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedSpendingKey;
-use zcash_primitives::consensus;
+use zcash_primitives::consensus::{self, BlockHeight};
 
 use crate::error::Error;
+
+const BATCH_SIZE: usize = 10000;
 
 /// # A Zcash wallet
 ///
@@ -151,16 +154,7 @@ impl Wallet {
 
     /// Fully sync the wallet with the blockchain calling the provided callback with progress updates
     pub async fn get_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
-        let range = service::BlockRange {
-            start: Some(service::BlockId {
-                height: start.into(),
-                ..Default::default()
-            }),
-            end: Some(service::BlockId {
-                height: end.into(),
-                ..Default::default()
-            }),
-        };
+        self.update_chain_tip().await?;
 
         // get the chainstate prior to the range
         let tree_state = self
@@ -186,7 +180,25 @@ impl Wallet {
         // convert the compact blocks into ScannedBlocks
         // TODO: We can tweak how we batch and collect this stream in the future
         //          to optimize for parallelism and memory usage
-        let scanned_blocks = self
+        
+        // take the range in batches of BATCH_SIZE
+        // trying to take more than the server can handle will result in an error
+
+        for batch_start in (start..end).step_by(BATCH_SIZE) {
+            let range = service::BlockRange {
+                start: Some(service::BlockId {
+                    height: batch_start.into(),
+                    ..Default::default()
+                }),
+                end: Some(service::BlockId {
+                    height: (batch_start+BATCH_SIZE as u32).into(),
+                    ..Default::default()
+                }),
+            };
+
+            tracing::info!("Scanning block range: {:?} to {:?}", range.start, range.end);
+
+            let scanned_blocks = self
             .client
             .get_block_range(range)
             .await?
@@ -204,6 +216,9 @@ impl Wallet {
             .await?;
 
         self.db.put_blocks(&chainstate, scanned_blocks)?;
+        }
+        
+
         Ok(())
     }
 
@@ -212,6 +227,22 @@ impl Wallet {
             .db
             .get_wallet_summary(self.min_confirmations)?
             .map(Into::into))
+    }
+
+    async fn update_chain_tip(&mut self) -> Result<BlockHeight, Error> {
+        let tip_height = self
+            .client
+            .get_latest_block(service::ChainSpec::default())
+            .await?
+            .get_ref()
+            .height
+            .try_into()
+            .unwrap();
+
+        tracing::info!("Latest block height is {}", tip_height);
+        self.db.update_chain_tip(tip_height)?;
+
+        Ok(tip_height)
     }
 }
 
