@@ -243,7 +243,7 @@ impl Wallet {
                 ..Default::default()
             }),
             end: Some(service::BlockId {
-                height: end.into(),
+                height: (end - 1).into(),
                 ..Default::default()
             }),
         };
@@ -312,8 +312,8 @@ impl Wallet {
         );
 
         let request = TransactionRequest::new(vec![Payment::without_memo(
-            ZcashAddress::try_from_encoded(&to_address).unwrap(),
-            NonNegativeAmount::from_u64(value).unwrap(),
+            ZcashAddress::try_from_encoded(&to_address)?,
+            NonNegativeAmount::from_u64(value)?,
         )])
         .unwrap();
 

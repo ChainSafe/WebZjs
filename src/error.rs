@@ -22,6 +22,8 @@ pub enum Error {
     },
     #[error("Address generation error")]
     AddressGenerationError(#[from] zcash_keys::keys::AddressGenerationError),
+    #[error("Error attempting to decode address: {0}")]
+    AddressDecodingError(#[from] zcash_address::ParseError),
     #[error("Invalid network string given: {0}")]
     InvalidNetwork(String),
     #[error("Error returned from GRPC server: {0}")]
@@ -34,8 +36,12 @@ pub enum Error {
     ScanError(zcash_client_backend::scanning::ScanError),
     #[error("IO Error: {0}")]
     IoError(#[from] std::io::Error),
-    #[error("Error parsing min_confirmations argument {0}. Must be an integer > 0 (e.g. at least 1)")]
+    #[error(
+        "Error parsing min_confirmations argument {0}. Must be an integer > 0 (e.g. at least 1)"
+    )]
     InvalidMinConformations(u32),
+    #[error("Error parsing zatoshi amount: {0}")]
+    InvalidAmount(#[from] zcash_primitives::transaction::components::amount::BalanceError),
 }
 
 impl From<Error> for JsValue {
