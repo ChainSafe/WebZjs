@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::num::NonZeroU32;
 
+use nonempty::NonEmpty;
 use sha2::digest::block_buffer::Block;
 use wasm_bindgen::prelude::*;
 
@@ -12,7 +13,7 @@ use tonic_web_wasm_client::Client;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::scanning::ScanRange;
 use zcash_client_backend::data_api::wallet::input_selection::GreedyInputSelector;
-use zcash_client_backend::data_api::wallet::propose_transfer;
+use zcash_client_backend::data_api::wallet::{create_proposed_transactions, propose_transfer};
 use zcash_client_backend::data_api::{
     AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead, WalletWrite,
 };
@@ -20,6 +21,7 @@ use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::proto::service;
 use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
 use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
+use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::MemoryWalletDb;
@@ -27,10 +29,15 @@ use zcash_keys::keys::UnifiedSpendingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
+use zcash_primitives::transaction::TxId;
+use zcash_proofs::prover::LocalTxProver;
 
 use crate::error::Error;
 
 const BATCH_SIZE: u32 = 10000;
+
+type Proposal =
+    zcash_client_backend::proposal::Proposal<FeeRule, zcash_client_backend::wallet::NoteId>;
 
 /// # A Zcash wallet
 ///
@@ -103,18 +110,7 @@ impl Wallet {
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
         // decode the mnemonic and derive the first account
-        let mnemonic = <Mnemonic<English>>::from_phrase(seed_phrase).unwrap();
-        let seed = {
-            let mut seed = mnemonic.to_seed("");
-            let secret = seed.to_vec();
-            seed.zeroize();
-            SecretVec::new(secret)
-        };
-        let usk = UnifiedSpendingKey::from_seed(
-            &self.network,
-            seed.expose_secret(),
-            account_index.try_into()?,
-        )?;
+        let usk = usk_from_seed_str(seed_phrase, account_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
 
         let birthday = match birthday_height {
@@ -297,13 +293,15 @@ impl Wallet {
         Ok(tip_height)
     }
 
-    /// Produce a proposal for a transaction to send funds from the wallet to a given address
-    pub fn propose(
+    ///
+    /// Create a transaction proposal to send funds from the wallet to a given address
+    ///
+    fn propose_transfer(
         &mut self,
         account_index: usize,
         to_address: String,
         value: u64,
-    ) -> Result<(), Error> {
+    ) -> Result<Proposal, Error> {
         let account_id = self.db.get_account_ids()?[account_index];
 
         let input_selector = GreedyInputSelector::new(
@@ -316,6 +314,13 @@ impl Wallet {
             NonNegativeAmount::from_u64(value)?,
         )])
         .unwrap();
+
+        tracing::info!("Chain height: {:?}", self.db.chain_height()?);
+        tracing::info!(
+            "target and anchor heights: {:?}",
+            self.db
+                .get_target_and_anchor_heights(self.min_confirmations)?
+        );
 
         let proposal = propose_transfer::<
             _,
@@ -331,9 +336,62 @@ impl Wallet {
             self.min_confirmations,
         )
         .unwrap();
-
         tracing::info!("Proposal: {:#?}", proposal);
+        Ok(proposal)
+    }
 
+    ///
+    /// Do the proving and signing required to create one or more transaction from the proposal. Created transactions are stored in the wallet database.
+    ///
+    /// Note: At the moment this requires a USK but ideally we want to be able to hand the signing off to a separate service
+    ///     e.g. browser plugin, hardware wallet, etc. Will need to look into refactoring librustzcash create_proposed_transactions to allow for this
+    ///
+    fn create_proposed_transactions(
+        &mut self,
+        proposal: Proposal,
+        usk: &UnifiedSpendingKey,
+    ) -> Result<NonEmpty<TxId>, Error> {
+        let prover = LocalTxProver::bundled();
+
+        let transactions = create_proposed_transactions::<
+            _,
+            _,
+            <MemoryWalletDb<consensus::Network> as InputSource>::Error,
+            _,
+            _,
+        >(
+            &mut self.db,
+            &self.network,
+            &prover,
+            &prover,
+            usk,
+            OvkPolicy::Sender,
+            &proposal,
+        )
+        .unwrap();
+
+        Ok(transactions)
+    }
+
+    ///
+    /// Create a transaction proposal to send funds from the wallet to a given address and if approved will sign it and send the proposed transaction(s) to the network
+    ///
+    /// First a proposal is created by selecting inputs and outputs to cover the requested amount. This proposal is then sent to the approval callback.
+    /// This allows wallet developers to display a confirmation dialog to the user before continuing.
+    ///
+    /// # Arguments
+    ///
+    pub fn transfer(
+        &mut self,
+        seed_phrase: &str,
+        from_account_index: usize,
+        to_address: String,
+        value: u64,
+    ) -> Result<(), Error> {
+        let usk = usk_from_seed_str(seed_phrase, 0, &self.network)?;
+        let proposal = self.propose_transfer(from_account_index, to_address, value)?;
+        // TODO: Add callback for approving the transaction here
+        let txids = self.create_proposed_transactions(proposal, &usk)?;
         Ok(())
     }
 }
@@ -391,4 +449,20 @@ where
             next_orchard_subtree_index: summary.next_orchard_subtree_index(),
         }
     }
+}
+
+fn usk_from_seed_str(seed: &str, account_index: u32, network: &consensus::Network) -> Result<UnifiedSpendingKey, Error> {
+    let mnemonic = <Mnemonic<English>>::from_phrase(seed).unwrap();
+    let seed = {
+        let mut seed = mnemonic.to_seed("");
+        let secret = seed.to_vec();
+        seed.zeroize();
+        SecretVec::new(secret)
+    };
+    let usk = UnifiedSpendingKey::from_seed(
+        network,
+        seed.expose_secret(),
+        account_index.try_into()?,
+    )?;
+    Ok(usk)
 }

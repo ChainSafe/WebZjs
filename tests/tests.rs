@@ -45,7 +45,7 @@ async fn test_get_and_scan_range() {
     tracing::info!("Wallet summary: {:?}", summary);
 
     tracing::info!("Proposing a transaction");
-    w.propose(0, "u1etemssflf0zat7c0rd7myvyakm90rvdr6ytejtrz3n5d2yx20utmdyxcpdgasyrk98vls3vlfjet8kyekw9jc0dwn3jug860yquuz00fj2tpc0u7mnv2gtve4u7r5uktf26m40m57dp0vp5var22d0s5vfa9fsnp4e9puukdrrxgzp3wrujz2kdr6mamew8swhcqc8q8j7622r6mxty".to_string(), 1000).unwrap();
+    w.transfer(SEED, 0, "u1etemssflf0zat7c0rd7myvyakm90rvdr6ytejtrz3n5d2yx20utmdyxcpdgasyrk98vls3vlfjet8kyekw9jc0dwn3jug860yquuz00fj2tpc0u7mnv2gtve4u7r5uktf26m40m57dp0vp5var22d0s5vfa9fsnp4e9puukdrrxgzp3wrujz2kdr6mamew8swhcqc8q8j7622r6mxty".to_string(), 1000).unwrap();
     tracing::info!("Transaction proposed");
 
     let summary = w.get_wallet_summary().unwrap();
