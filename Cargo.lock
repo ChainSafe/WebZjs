@@ -2136,6 +2136,7 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
+ "zcash_address",
  "zcash_client_backend",
  "zcash_client_memory",
  "zcash_keys",

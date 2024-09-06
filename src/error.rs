@@ -34,6 +34,8 @@ pub enum Error {
     ScanError(zcash_client_backend::scanning::ScanError),
     #[error("IO Error: {0}")]
     IoError(#[from] std::io::Error),
+    #[error("Error parsing min_confirmations argument {0}. Must be an integer > 0 (e.g. at least 1)")]
+    InvalidMinConformations(u32),
 }
 
 impl From<Error> for JsValue {

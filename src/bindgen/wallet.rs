@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::num::NonZeroU32;
 
+use sha2::digest::block_buffer::Block;
 use wasm_bindgen::prelude::*;
 
 use bip0039::{English, Mnemonic};
@@ -7,16 +9,24 @@ use futures_util::{StreamExt, TryStreamExt};
 use secrecy::{ExposeSecret, SecretVec, Zeroize};
 use tonic_web_wasm_client::Client;
 
+use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::scanning::ScanRange;
+use zcash_client_backend::data_api::wallet::input_selection::GreedyInputSelector;
+use zcash_client_backend::data_api::wallet::propose_transfer;
 use zcash_client_backend::data_api::{
-    AccountBirthday, AccountPurpose, NullifierQuery, WalletRead, WalletWrite,
+    AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead, WalletWrite,
 };
+use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::proto::service;
 use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
 use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
+use zcash_client_backend::zip321::{Payment, TransactionRequest};
+use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedSpendingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
+use zcash_primitives::transaction::components::amount::NonNegativeAmount;
+use zcash_primitives::transaction::fees::zip317::FeeRule;
 
 use crate::error::Error;
 
@@ -48,7 +58,7 @@ pub struct Wallet {
     // gRPC client used to connect to a lightwalletd instance for network data
     client: CompactTxStreamerClient<tonic_web_wasm_client::Client>,
     network: consensus::Network,
-    min_confirmations: u32,
+    min_confirmations: NonZeroU32,
 }
 
 #[wasm_bindgen]
@@ -68,12 +78,14 @@ impl Wallet {
                 return Err(Error::InvalidNetwork(network.to_string()));
             }
         };
+        let min_confirmations = NonZeroU32::try_from(min_confirmations)
+            .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
 
         Ok(Wallet {
             db: MemoryWalletDb::new(network, max_checkpoints),
             client: CompactTxStreamerClient::new(Client::new(lightwalletd_url.to_string())),
             network,
-            min_confirmations,
+            min_confirmations: min_confirmations,
         })
     }
 
@@ -153,8 +165,9 @@ impl Wallet {
     }
 
     /// Synchronize the wallet with the blockchain up to the tip
-    pub async fn sync(&mut self) -> Result<(), Error> {
-        self.update_chain_tip().await?;
+    /// The passed callback will be called for every batch of blocks processed with the current progress
+    pub async fn sync(&mut self, callback: &js_sys::Function) -> Result<(), Error> {
+        let tip = self.update_chain_tip().await?;
 
         tracing::info!("Retrieving suggested scan ranges from wallet");
         let scan_ranges = self.db.suggest_scan_ranges()?;
@@ -162,6 +175,15 @@ impl Wallet {
 
         // TODO: Ensure wallet's view of the chain tip as of the previous wallet session is valid.
         // See https://github.com/Electric-Coin-Company/zec-sqlite-cli/blob/8c2e49f6d3067ec6cc85248488915278c3cb1c5a/src/commands/sync.rs#L157
+
+        let callback = move |scanned_to: BlockHeight| {
+            let this = JsValue::null();
+            let _ = callback.call2(
+                &this,
+                &JsValue::from(Into::<u32>::into(scanned_to)),
+                &JsValue::from(Into::<u32>::into(tip)),
+            );
+        };
 
         // Download and process all blocks in the requested ranges
         // Split each range into BATCH_SIZE chunks to avoid requesting too many blocks at once
@@ -187,15 +209,14 @@ impl Wallet {
                 scan_range.block_range().end.into(),
             )
             .await?;
+            callback(scan_range.block_range().end);
         }
 
         Ok(())
     }
 
     /// Download and process all blocks in the given range
-    /// Useful for testing only. For real syncing use the sync method which will
-    /// more intelligently scan the chain
-    pub async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
+    async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
         // get the chainstate prior to the range
         let tree_state = self
             .client
@@ -254,7 +275,7 @@ impl Wallet {
     pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
         Ok(self
             .db
-            .get_wallet_summary(self.min_confirmations)?
+            .get_wallet_summary(self.min_confirmations.into())?
             .map(Into::into))
     }
 
@@ -274,6 +295,46 @@ impl Wallet {
         self.db.update_chain_tip(tip_height)?;
 
         Ok(tip_height)
+    }
+
+    /// Produce a proposal for a transaction to send funds from the wallet to a given address
+    pub fn propose(
+        &mut self,
+        account_index: usize,
+        to_address: String,
+        value: u64,
+    ) -> Result<(), Error> {
+        let account_id = self.db.get_account_ids()?[account_index];
+
+        let input_selector = GreedyInputSelector::new(
+            SingleOutputChangeStrategy::new(FeeRule::standard(), None, ShieldedProtocol::Orchard),
+            Default::default(),
+        );
+
+        let request = TransactionRequest::new(vec![Payment::without_memo(
+            ZcashAddress::try_from_encoded(&to_address).unwrap(),
+            NonNegativeAmount::from_u64(value).unwrap(),
+        )])
+        .unwrap();
+
+        let proposal = propose_transfer::<
+            _,
+            _,
+            _,
+            <MemoryWalletDb<consensus::Network> as InputSource>::Error,
+        >(
+            &mut self.db,
+            &self.network,
+            account_id,
+            &input_selector,
+            request,
+            self.min_confirmations,
+        )
+        .unwrap();
+
+        tracing::info!("Proposal: {:#?}", proposal);
+
+        Ok(())
     }
 }
 

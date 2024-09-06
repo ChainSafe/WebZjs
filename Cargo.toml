@@ -31,6 +31,7 @@ zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "c30f614
 zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "c30f614ce2d78afebb0ef2587f71851e740ef28d", features = ["lightwalletd-tonic"] }
 zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "c30f614ce2d78afebb0ef2587f71851e740ef28d", features = ["orchard"] }
 zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "c30f614ce2d78afebb0ef2587f71851e740ef28d" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "c30f614ce2d78afebb0ef2587f71851e740ef28d" }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }
