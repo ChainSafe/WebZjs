@@ -32,7 +32,10 @@ async fn test_get_and_scan_range() {
     let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
     tracing::info!("Created account with id: {}", id);
 
-    w.get_and_scan_range(2406739, 2983954).await.unwrap();
+    tracing::info!("Syncing wallet");
+    w.sync().await.unwrap();
+    tracing::info!("Syncing complete :)");
+
 
     let summary = w.get_wallet_summary().unwrap();
     tracing::info!("Wallet summary: {:?}", summary);

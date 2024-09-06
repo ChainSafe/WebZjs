@@ -20,7 +20,7 @@ use zcash_primitives::consensus::{self, BlockHeight};
 
 use crate::error::Error;
 
-const BATCH_SIZE: usize = 10000;
+const BATCH_SIZE: u32 = 10000;
 
 /// # A Zcash wallet
 ///
@@ -152,10 +152,50 @@ impl Wallet {
         })?)
     }
 
-    /// Fully sync the wallet with the blockchain calling the provided callback with progress updates
-    pub async fn get_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
+    /// Synchronize the wallet with the blockchain up to the tip
+    pub async fn sync(&mut self) -> Result<(), Error> {
         self.update_chain_tip().await?;
 
+        tracing::info!("Retrieving suggested scan ranges from wallet");
+        let scan_ranges = self.db.suggest_scan_ranges()?;
+        tracing::info!("Suggested scan ranges: {:?}", scan_ranges);
+
+        // TODO: Ensure wallet's view of the chain tip as of the previous wallet session is valid.
+        // See https://github.com/Electric-Coin-Company/zec-sqlite-cli/blob/8c2e49f6d3067ec6cc85248488915278c3cb1c5a/src/commands/sync.rs#L157
+
+        // Download and process all blocks in the requested ranges
+        // Split each range into BATCH_SIZE chunks to avoid requesting too many blocks at once
+        for scan_range in scan_ranges.into_iter().flat_map(|r| {
+            // Limit the number of blocks we download and scan at any one time.
+            (0..).scan(r, |acc, _| {
+                if acc.is_empty() {
+                    None
+                } else if let Some((cur, next)) = acc.split_at(acc.block_range().start + BATCH_SIZE)
+                {
+                    *acc = next;
+                    Some(cur)
+                } else {
+                    let cur = acc.clone();
+                    let end = acc.block_range().end;
+                    *acc = ScanRange::from_parts(end..end, acc.priority());
+                    Some(cur)
+                }
+            })
+        }) {
+            self.fetch_and_scan_range(
+                scan_range.block_range().start.into(),
+                scan_range.block_range().end.into(),
+            )
+            .await?;
+        }
+
+        Ok(())
+    }
+
+    /// Download and process all blocks in the given range
+    /// Useful for testing only. For real syncing use the sync method which will
+    /// more intelligently scan the chain
+    pub async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
         // get the chainstate prior to the range
         let tree_state = self
             .client
@@ -164,7 +204,6 @@ impl Wallet {
                 ..Default::default()
             })
             .await?;
-
         let chainstate = tree_state.into_inner().to_chain_state()?;
 
         // Get the scanning keys from the DB
@@ -177,28 +216,20 @@ impl Wallet {
             self.db.get_orchard_nullifiers(NullifierQuery::Unspent)?,
         );
 
-        // convert the compact blocks into ScannedBlocks
-        // TODO: We can tweak how we batch and collect this stream in the future
-        //          to optimize for parallelism and memory usage
-        
-        // take the range in batches of BATCH_SIZE
-        // trying to take more than the server can handle will result in an error
+        let range = service::BlockRange {
+            start: Some(service::BlockId {
+                height: start.into(),
+                ..Default::default()
+            }),
+            end: Some(service::BlockId {
+                height: end.into(),
+                ..Default::default()
+            }),
+        };
 
-        for batch_start in (start..end).step_by(BATCH_SIZE) {
-            let range = service::BlockRange {
-                start: Some(service::BlockId {
-                    height: batch_start.into(),
-                    ..Default::default()
-                }),
-                end: Some(service::BlockId {
-                    height: (batch_start+BATCH_SIZE as u32).into(),
-                    ..Default::default()
-                }),
-            };
+        tracing::info!("Scanning block range: {:?} to {:?}", start, end);
 
-            tracing::info!("Scanning block range: {:?} to {:?}", range.start, range.end);
-
-            let scanned_blocks = self
+        let scanned_blocks = self
             .client
             .get_block_range(range)
             .await?
@@ -216,8 +247,6 @@ impl Wallet {
             .await?;
 
         self.db.put_blocks(&chainstate, scanned_blocks)?;
-        }
-        
 
         Ok(())
     }
@@ -230,6 +259,8 @@ impl Wallet {
     }
 
     async fn update_chain_tip(&mut self) -> Result<BlockHeight, Error> {
+        tracing::info!("Retrieving chain tip from lightwalletd");
+
         let tip_height = self
             .client
             .get_latest_block(service::ChainSpec::default())
