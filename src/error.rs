@@ -42,6 +42,8 @@ pub enum Error {
     InvalidMinConformations(u32),
     #[error("Error parsing zatoshi amount: {0}")]
     InvalidAmount(#[from] zcash_primitives::transaction::components::amount::BalanceError),
+    #[error("Failed to send transaction")]
+    SendFailed { code: i32, reason: String },
 }
 
 impl From<Error> for JsValue {

@@ -36,6 +36,9 @@ use crate::error::Error;
 
 const BATCH_SIZE: u32 = 10000;
 
+/// The maximum number of checkpoints to store in each shard-tree
+const PRUNING_DEPTH: usize = 100;
+
 type Proposal =
     zcash_client_backend::proposal::Proposal<FeeRule, zcash_client_backend::wallet::NoteId>;
 
@@ -75,7 +78,6 @@ impl Wallet {
     pub fn new(
         network: &str,
         lightwalletd_url: &str,
-        max_checkpoints: usize,
         min_confirmations: u32,
     ) -> Result<Wallet, Error> {
         let network = match network {
@@ -89,7 +91,7 @@ impl Wallet {
             .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
 
         Ok(Wallet {
-            db: MemoryWalletDb::new(network, max_checkpoints),
+            db: MemoryWalletDb::new(network, PRUNING_DEPTH),
             client: CompactTxStreamerClient::new(Client::new(lightwalletd_url.to_string())),
             network,
             min_confirmations: min_confirmations,
@@ -381,7 +383,7 @@ impl Wallet {
     ///
     /// # Arguments
     ///
-    pub fn transfer(
+    pub async fn transfer(
         &mut self,
         seed_phrase: &str,
         from_account_index: usize,
@@ -392,7 +394,32 @@ impl Wallet {
         let proposal = self.propose_transfer(from_account_index, to_address, value)?;
         // TODO: Add callback for approving the transaction here
         let txids = self.create_proposed_transactions(proposal, &usk)?;
-        Ok(())
+
+        // send the transactions to the network!!
+        tracing::info!("Sending transaction...");
+        let txid = *txids.first();
+        let (txid, raw_tx) = self
+            .db
+            .get_transaction(txid)?
+            .map(|tx| {
+                let mut raw_tx = service::RawTransaction::default();
+                tx.write(&mut raw_tx.data).unwrap();
+                (tx.txid(), raw_tx)
+            })
+            .unwrap();
+
+        let response = self.client.send_transaction(raw_tx).await?.into_inner();
+
+        if response.error_code != 0 {
+            Err(Error::SendFailed {
+                code: response.error_code,
+                reason: response.error_message,
+            }
+            .into())
+        } else {
+            println!("Transaction {} send successfully :)", txid);
+            Ok(())
+        }
     }
 }
 
@@ -451,7 +478,11 @@ where
     }
 }
 
-fn usk_from_seed_str(seed: &str, account_index: u32, network: &consensus::Network) -> Result<UnifiedSpendingKey, Error> {
+fn usk_from_seed_str(
+    seed: &str,
+    account_index: u32,
+    network: &consensus::Network,
+) -> Result<UnifiedSpendingKey, Error> {
     let mnemonic = <Mnemonic<English>>::from_phrase(seed).unwrap();
     let seed = {
         let mut seed = mnemonic.to_seed("");
@@ -459,10 +490,7 @@ fn usk_from_seed_str(seed: &str, account_index: u32, network: &consensus::Networ
         seed.zeroize();
         SecretVec::new(secret)
     };
-    let usk = UnifiedSpendingKey::from_seed(
-        network,
-        seed.expose_secret(),
-        account_index.try_into()?,
-    )?;
+    let usk =
+        UnifiedSpendingKey::from_seed(network, seed.expose_secret(), account_index.try_into()?)?;
     Ok(usk)
 }

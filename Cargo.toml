@@ -31,12 +31,12 @@ wasm-bindgen-futures = "0.4.42"
 web-sys = { version  = "0.3.69", features = ["console"] }
 
 ## Zcash dependencies
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "c4cc0cd83e59f72e591f05c498608bdf3b4dc391", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "c4cc0cd83e59f72e591f05c498608bdf3b4dc391", features = ["lightwalletd-tonic"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "c4cc0cd83e59f72e591f05c498608bdf3b4dc391", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "c4cc0cd83e59f72e591f05c498608bdf3b4dc391" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "c4cc0cd83e59f72e591f05c498608bdf3b4dc391" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "c4cc0cd83e59f72e591f05c498608bdf3b4dc391", default-features = false, features = ["bundled-prover"] }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", default-features = false, features = ["lightwalletd-tonic", "wasm-bindgen"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", default-features = false, features = ["bundled-prover"] }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }

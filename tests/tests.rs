@@ -27,7 +27,7 @@ fn tests_working() {
 async fn test_get_and_scan_range() {
     initialize();
 
-    let mut w = Wallet::new("test", "https://zcash-testnet.chainsafe.dev", 10, 1).unwrap();
+    let mut w = Wallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();
 
     let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
     tracing::info!("Created account with id: {}", id);
@@ -45,7 +45,7 @@ async fn test_get_and_scan_range() {
     tracing::info!("Wallet summary: {:?}", summary);
 
     tracing::info!("Proposing a transaction");
-    w.transfer(SEED, 0, "u1etemssflf0zat7c0rd7myvyakm90rvdr6ytejtrz3n5d2yx20utmdyxcpdgasyrk98vls3vlfjet8kyekw9jc0dwn3jug860yquuz00fj2tpc0u7mnv2gtve4u7r5uktf26m40m57dp0vp5var22d0s5vfa9fsnp4e9puukdrrxgzp3wrujz2kdr6mamew8swhcqc8q8j7622r6mxty".to_string(), 1000).unwrap();
+    w.transfer(SEED, 0, "utest1z00xn09t4eyeqw9zmjss75sf460423dymgyfjn8rtlj26cffy0yad3eea82xekk24s00wnm38cvyrm2c6x7fxlc0ns4a5j7utgl6lchvglfvl9g9p56fqwzvzvj9d3z6r6ft88j654d7dj0ep6myq5duz9s8x78fdzmtx04d2qn8ydkxr4lfdhlkx9ktrw98gd97dateegrr68vl8xu".to_string(), 1000).unwrap();
     tracing::info!("Transaction proposed");
 
     let summary = w.get_wallet_summary().unwrap();
