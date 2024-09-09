@@ -408,6 +408,8 @@ impl Wallet {
             })
             .unwrap();
 
+        tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
+
         let response = self.client.send_transaction(raw_tx).await?.into_inner();
 
         if response.error_code != 0 {

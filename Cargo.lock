@@ -2171,6 +2171,7 @@ dependencies = [
  "console_error_panic_hook",
  "futures-util",
  "getrandom",
+ "hex",
  "indexed_db_futures",
  "js-sys",
  "nonempty",
