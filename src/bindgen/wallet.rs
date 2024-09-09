@@ -417,7 +417,7 @@ impl Wallet {
             }
             .into())
         } else {
-            println!("Transaction {} send successfully :)", txid);
+            tracing::info!("Transaction {} send successfully :)", txid);
             Ok(())
         }
     }
