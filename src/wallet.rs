@@ -199,7 +199,7 @@ where
     }
 
     /// Download and process all blocks in the given range
-    pub(crate) async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
+    async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
         // get the chainstate prior to the range
         let tree_state = self
             .client
@@ -289,10 +289,10 @@ where
     ///
     /// Create a transaction proposal to send funds from the wallet to a given address
     ///
-    pub(crate) fn propose_transfer(
+    fn propose_transfer(
         &mut self,
         account_index: usize,
-        to_address: String,
+        to_address: ZcashAddress,
         value: u64,
     ) -> Result<Proposal, Error> {
         let account_id = self.db.get_account_ids()?[account_index];
@@ -303,7 +303,7 @@ where
         );
 
         let request = TransactionRequest::new(vec![Payment::without_memo(
-            ZcashAddress::try_from_encoded(&to_address)?,
+            to_address,
             NonNegativeAmount::from_u64(value)?,
         )])
         .unwrap();
@@ -378,7 +378,7 @@ where
         &mut self,
         seed_phrase: &str,
         from_account_index: usize,
-        to_address: String,
+        to_address: ZcashAddress,
         value: u64,
     ) -> Result<(), Error> {
         let usk = usk_from_seed_str(seed_phrase, 0, &self.network)?;

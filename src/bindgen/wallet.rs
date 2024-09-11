@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use tonic_web_wasm_client::Client;
 
+use zcash_address::ZcashAddress;
 use zcash_primitives::consensus::{self, BlockHeight};
 
 use crate::error::Error;
@@ -122,6 +123,7 @@ impl Wallet {
         to_address: String,
         value: u64,
     ) -> Result<(), Error> {
+        let to_address = ZcashAddress::try_from_encoded(&to_address)?;
         self.inner
             .transfer(seed_phrase, from_account_index, to_address, value)
             .await
