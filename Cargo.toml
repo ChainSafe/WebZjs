@@ -20,8 +20,10 @@ codegen-units = 1
 wasm-opt = ["-O4", "-O4"]
 
 [features]
-default = ["console_error_panic_hook"]
-console_error_panic_hook = ["dep:console_error_panic_hook"]
+default = ["wasm"]
+# default = ["native", "wasm"]
+wasm = ["dep:console_error_panic_hook"]
+# native = ["tokio"]
 
 [dependencies]
 ## Web dependencies
@@ -59,6 +61,8 @@ tracing-subscriber = "0.3.18"
 tracing = "0.1.40"
 nonempty = "0.7"
 hex = "0.4.3"
+
+# tokio = { version = "1.0", features = ["rt", "macros"], optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
