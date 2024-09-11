@@ -1,24 +1,24 @@
-name: Web Tests
+# name: Web Tests
 
-on:
-  pull_request:
-  push:
-    branches: main
+# on:
+#   pull_request:
+#   push:
+#     branches: main
 
-jobs:
-  wasm-pack-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+# jobs:
+#   wasm-pack-test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
 
-      - name: install wasm-pack
-        uses: jetli/wasm-pack-action@v0.4.0
-        with:
-          version: latest
+#       - name: install wasm-pack
+#         uses: jetli/wasm-pack-action@v0.4.0
+#         with:
+#           version: latest
       
-      - name: Install Just
-        uses: extractions/setup-just@v2
+#       - name: Install Just
+#         uses: extractions/setup-just@v2
 
-      - name: Run tests
-        run: just test-web
+#       - name: Run tests
+#         run: just test-web

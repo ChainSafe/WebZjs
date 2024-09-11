@@ -3,7 +3,9 @@
 
 use wasm_bindgen::prelude::*;
 
-use tracing_web::MakeWebConsoleWriter;
+use tracing_subscriber::fmt::format::Pretty;
+use tracing_subscriber::prelude::*;
+use tracing_web::{performance_layer, MakeWebConsoleWriter};
 
 fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the
@@ -17,12 +19,16 @@ fn set_panic_hook() {
 }
 
 fn setup_tracing() {
-    let subscriber = tracing_subscriber::fmt()
-        .with_ansi(false)
-        .with_writer(MakeWebConsoleWriter::new())
-        .without_time() // time breaks if used in browser
-        .finish();
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .with_ansi(false) // Only partially supported across browsers
+        .without_time() // std::time is not available in browsers
+        .with_writer(MakeWebConsoleWriter::new()); // write events to the console
+    let perf_layer = performance_layer().with_details_from_fields(Pretty::default());
+
+    tracing_subscriber::registry()
+        .with(fmt_layer)
+        .with(perf_layer)
+        .init();
 }
 
 #[wasm_bindgen(start)]
