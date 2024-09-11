@@ -11,15 +11,17 @@ use tonic::{
 
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::scanning::ScanRange;
-use zcash_client_backend::data_api::wallet::input_selection::GreedyInputSelector;
-use zcash_client_backend::data_api::wallet::{create_proposed_transactions, propose_transfer};
+use zcash_client_backend::data_api::wallet::{
+    create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
+};
 use zcash_client_backend::data_api::{
     AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead, WalletSummary,
     WalletWrite,
 };
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
-use zcash_client_backend::proto::service;
-use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
+use zcash_client_backend::proto::service::{
+    self, compact_tx_streamer_client::CompactTxStreamerClient,
+};
 use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};

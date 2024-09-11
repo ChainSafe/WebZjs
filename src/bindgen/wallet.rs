@@ -1,19 +1,14 @@
 use std::collections::HashMap;
 use std::num::NonZeroU32;
 
-use nonempty::NonEmpty;
 use wasm_bindgen::prelude::*;
 
-use bip0039::{English, Mnemonic};
-use secrecy::{ExposeSecret, SecretVec, Zeroize};
 use tonic_web_wasm_client::Client;
 
-use zcash_keys::keys::UnifiedSpendingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
-use zcash_primitives::transaction::TxId;
 
 use crate::error::Error;
-use crate::{BlockRange, Proposal, WalletInner};
+use crate::{BlockRange, WalletInner};
 
 /// # A Zcash wallet
 ///
@@ -104,44 +99,12 @@ impl Wallet {
         Ok(())
     }
 
-    /// Download and process all blocks in the given range
-    async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
-        self.inner.fetch_and_scan_range(start, end).await
-    }
-
     pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
         Ok(self.inner.get_wallet_summary()?.map(Into::into))
     }
 
     async fn update_chain_tip(&mut self) -> Result<BlockHeight, Error> {
         self.inner.update_chain_tip().await
-    }
-
-    ///
-    /// Create a transaction proposal to send funds from the wallet to a given address
-    ///
-    fn propose_transfer(
-        &mut self,
-        account_index: usize,
-        to_address: String,
-        value: u64,
-    ) -> Result<Proposal, Error> {
-        self.inner
-            .propose_transfer(account_index, to_address, value)
-    }
-
-    ///
-    /// Do the proving and signing required to create one or more transaction from the proposal. Created transactions are stored in the wallet database.
-    ///
-    /// Note: At the moment this requires a USK but ideally we want to be able to hand the signing off to a separate service
-    ///     e.g. browser plugin, hardware wallet, etc. Will need to look into refactoring librustzcash create_proposed_transactions to allow for this
-    ///
-    fn create_proposed_transactions(
-        &mut self,
-        proposal: Proposal,
-        usk: &UnifiedSpendingKey,
-    ) -> Result<NonEmpty<TxId>, Error> {
-        self.inner.create_proposed_transactions(proposal, usk)
     }
 
     ///
@@ -163,23 +126,6 @@ impl Wallet {
             .transfer(seed_phrase, from_account_index, to_address, value)
             .await
     }
-}
-
-fn usk_from_seed_str(
-    seed: &str,
-    account_index: u32,
-    network: &consensus::Network,
-) -> Result<UnifiedSpendingKey, Error> {
-    let mnemonic = <Mnemonic<English>>::from_phrase(seed).unwrap();
-    let seed = {
-        let mut seed = mnemonic.to_seed("");
-        let secret = seed.to_vec();
-        seed.zeroize();
-        SecretVec::new(secret)
-    };
-    let usk =
-        UnifiedSpendingKey::from_seed(network, seed.expose_secret(), account_index.try_into()?)?;
-    Ok(usk)
 }
 
 #[wasm_bindgen]
