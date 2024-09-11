@@ -1,10 +1,11 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use tracing::level_filters::LevelFilter;
 use wasm_bindgen::prelude::*;
 
 use tracing_subscriber::fmt::format::Pretty;
-use tracing_subscriber::prelude::*;
+use tracing_subscriber::{prelude::*, EnvFilter};
 use tracing_web::{performance_layer, MakeWebConsoleWriter};
 
 fn set_panic_hook() {
@@ -19,6 +20,10 @@ fn set_panic_hook() {
 }
 
 fn setup_tracing() {
+    let filter = EnvFilter::default()
+        .add_directive(LevelFilter::INFO.into()) // The default directive
+        .add_directive("zcash_client_backend=debug".parse().unwrap());
+
     let fmt_layer = tracing_subscriber::fmt::layer()
         .with_ansi(false) // Only partially supported across browsers
         .without_time() // std::time is not available in browsers
@@ -26,6 +31,7 @@ fn setup_tracing() {
     let perf_layer = performance_layer().with_details_from_fields(Pretty::default());
 
     tracing_subscriber::registry()
+        .with(filter)
         .with(fmt_layer)
         .with(perf_layer)
         .init();
