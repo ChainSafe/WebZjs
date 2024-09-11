@@ -160,7 +160,9 @@ where
 
     /// Synchronize the wallet with the blockchain up to the tip
     /// The passed callback will be called for every batch of blocks processed with the current progress
-    pub async fn sync(&mut self, callback: impl Fn(BlockHeight)) -> Result<(), Error> {
+    pub async fn sync(&mut self, callback: impl Fn(BlockHeight, BlockHeight)) -> Result<(), Error> {
+        let tip = self.update_chain_tip().await?;
+
         tracing::info!("Retrieving suggested scan ranges from wallet");
         let scan_ranges = self.db.suggest_scan_ranges()?;
         tracing::info!("Suggested scan ranges: {:?}", scan_ranges);
@@ -192,7 +194,7 @@ where
                 scan_range.block_range().end.into(),
             )
             .await?;
-            callback(scan_range.block_range().end);
+            callback(scan_range.block_range().end, tip);
         }
 
         Ok(())

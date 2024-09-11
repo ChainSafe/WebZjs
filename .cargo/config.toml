@@ -1,8 +1,11 @@
 [target.wasm32-unknown-unknown]
 rustflags = ["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals"]
 
-[unstable]
-build-std = ["panic_abort", "std"]
+# These are commented out and instead set in the justfile because we can't enable per-target unstable
+# features which are needed for WASM but not compatible with native builds.
 
-[build]
-target = "wasm32-unknown-unknown"
+# [unstable]
+# build-std = ["panic_abort", "std"]
+
+# [build]
+# target = "wasm32-unknown-unknown"

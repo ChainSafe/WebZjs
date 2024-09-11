@@ -9,7 +9,7 @@ use zcash_address::ZcashAddress;
 use zcash_primitives::consensus::{self, BlockHeight};
 
 use crate::error::Error;
-use crate::{BlockRange, WalletInner};
+use crate::{BlockRange, Wallet};
 
 /// # A Zcash wallet
 ///
@@ -31,19 +31,19 @@ use crate::{BlockRange, WalletInner};
 /// TODO
 ///
 #[wasm_bindgen]
-pub struct Wallet {
-    inner: WalletInner<tonic_web_wasm_client::Client>,
+pub struct WebWallet {
+    inner: Wallet<tonic_web_wasm_client::Client>,
 }
 
 #[wasm_bindgen]
-impl Wallet {
+impl WebWallet {
     /// Create a new instance of a Zcash wallet for a given network
     #[wasm_bindgen(constructor)]
     pub fn new(
         network: &str,
         lightwalletd_url: &str,
         min_confirmations: u32,
-    ) -> Result<Wallet, Error> {
+    ) -> Result<WebWallet, Error> {
         let network = match network {
             "main" => consensus::Network::MainNetwork,
             "test" => consensus::Network::TestNetwork,
@@ -56,7 +56,7 @@ impl Wallet {
         let client = Client::new(lightwalletd_url.to_string());
 
         Ok(Self {
-            inner: WalletInner::new(client, network, min_confirmations)?,
+            inner: Wallet::new(client, network, min_confirmations)?,
         })
     }
 
@@ -85,8 +85,7 @@ impl Wallet {
     /// Synchronize the wallet with the blockchain up to the tip
     /// The passed callback will be called for every batch of blocks processed with the current progress
     pub async fn sync(&mut self, callback: &js_sys::Function) -> Result<(), Error> {
-        let tip = self.update_chain_tip().await?;
-        let callback = move |scanned_to: BlockHeight| {
+        let callback = move |scanned_to: BlockHeight, tip: BlockHeight| {
             let this = JsValue::null();
             let _ = callback.call2(
                 &this,
@@ -102,10 +101,6 @@ impl Wallet {
 
     pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
         Ok(self.inner.get_wallet_summary()?.map(Into::into))
-    }
-
-    async fn update_chain_tip(&mut self) -> Result<BlockHeight, Error> {
-        self.inner.update_chain_tip().await
     }
 
     ///

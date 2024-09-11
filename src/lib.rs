@@ -7,10 +7,10 @@ pub mod bindgen;
 pub mod error;
 pub mod init;
 
-pub use bindgen::wallet::Wallet;
+pub use bindgen::wallet::WebWallet;
 
 pub mod wallet;
-pub use wallet::Wallet as WalletInner;
+pub use wallet::Wallet;
 
 use wasm_bindgen::prelude::*;
 
