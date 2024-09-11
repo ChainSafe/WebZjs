@@ -2,7 +2,7 @@
 
 ![GitHub License](https://img.shields.io/github/license/ChainSafe/WebZjs)
 
-A performant javascript client library for building Zcash browser wallets
+A javascript client library for building Zcash browser wallets
 
 ## Overview
 

@@ -19,12 +19,9 @@ codegen-units = 1
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-O4", "-O4"]
 
-
-
 [features]
 default = ["console_error_panic_hook"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
-# native = ["tokio"]
 
 [dependencies]
 ## Web dependencies
@@ -63,7 +60,6 @@ tracing = "0.1.40"
 nonempty = "0.7"
 hex = "0.4.3"
 postcard = { version = "1.0.10", features = ["alloc"] }
-tokio = { version = "1.0", features = ["rt", "macros"], optional = true }
 serde = { version = "1", features = ["derive"], default-features =  false }
 
 [dev-dependencies]
