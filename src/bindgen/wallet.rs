@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::num::NonZeroU32;
 
 use nonempty::NonEmpty;
-use sha2::digest::block_buffer::Block;
 use wasm_bindgen::prelude::*;
 
 use bip0039::{English, Mnemonic};
@@ -94,7 +93,7 @@ impl Wallet {
             db: MemoryWalletDb::new(network, PRUNING_DEPTH),
             client: CompactTxStreamerClient::new(Client::new(lightwalletd_url.to_string())),
             network,
-            min_confirmations: min_confirmations,
+            min_confirmations,
         })
     }
 
@@ -416,8 +415,7 @@ impl Wallet {
             Err(Error::SendFailed {
                 code: response.error_code,
                 reason: response.error_message,
-            }
-            .into())
+            })
         } else {
             tracing::info!("Transaction {} send successfully :)", txid);
             Ok(())
