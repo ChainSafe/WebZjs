@@ -26,13 +26,13 @@ use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedSpendingKey;
-use zcash_primitives::consensus::{self, BlockHeight};
+use zcash_primitives::consensus::BlockHeight;
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
-use crate::error::Error;
+use crate::{error::Error, Network};
 
 const BATCH_SIZE: u32 = 10000;
 
@@ -64,10 +64,10 @@ type Proposal =
 #[wasm_bindgen]
 pub struct Wallet {
     /// Internal database used to maintain wallet data (e.g. accounts, transactions, cached blocks)
-    db: MemoryWalletDb<consensus::Network>,
+    db: MemoryWalletDb<Network>,
     // gRPC client used to connect to a lightwalletd instance for network data
     client: CompactTxStreamerClient<tonic_web_wasm_client::Client>,
-    network: consensus::Network,
+    network: Network,
     min_confirmations: NonZeroU32,
 }
 
@@ -81,8 +81,8 @@ impl Wallet {
         min_confirmations: u32,
     ) -> Result<Wallet, Error> {
         let network = match network {
-            "main" => consensus::Network::MainNetwork,
-            "test" => consensus::Network::TestNetwork,
+            "main" => Network::MainNetwork,
+            "test" => Network::TestNetwork,
             _ => {
                 return Err(Error::InvalidNetwork(network.to_string()));
             }
@@ -324,20 +324,16 @@ impl Wallet {
                 .get_target_and_anchor_heights(self.min_confirmations)?
         );
 
-        let proposal = propose_transfer::<
-            _,
-            _,
-            _,
-            <MemoryWalletDb<consensus::Network> as InputSource>::Error,
-        >(
-            &mut self.db,
-            &self.network,
-            account_id,
-            &input_selector,
-            request,
-            self.min_confirmations,
-        )
-        .unwrap();
+        let proposal =
+            propose_transfer::<_, _, _, <MemoryWalletDb<Network> as InputSource>::Error>(
+                &mut self.db,
+                &self.network,
+                account_id,
+                &input_selector,
+                request,
+                self.min_confirmations,
+            )
+            .unwrap();
         tracing::info!("Proposal: {:#?}", proposal);
         Ok(proposal)
     }
@@ -358,7 +354,7 @@ impl Wallet {
         let transactions = create_proposed_transactions::<
             _,
             _,
-            <MemoryWalletDb<consensus::Network> as InputSource>::Error,
+            <MemoryWalletDb<Network> as InputSource>::Error,
             _,
             _,
         >(
@@ -425,6 +421,28 @@ impl Wallet {
     }
 }
 
+impl Wallet {
+    pub fn db(&self) -> &MemoryWalletDb<Network> {
+        &self.db
+    }
+
+    pub fn load(
+        lightwalletd_url: &str,
+        min_confirmations: u32,
+        db: MemoryWalletDb<Network>,
+    ) -> Result<Wallet, Error> {
+        let min_confirmations = NonZeroU32::try_from(min_confirmations)
+            .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
+        let network = db.params().clone();
+        Ok(Wallet {
+            db,
+            client: CompactTxStreamerClient::new(Client::new(lightwalletd_url.to_string())),
+            network,
+            min_confirmations: min_confirmations,
+        })
+    }
+}
+
 #[wasm_bindgen]
 pub struct BlockRange(pub u32, pub u32);
 
@@ -483,7 +501,7 @@ where
 fn usk_from_seed_str(
     seed: &str,
     account_index: u32,
-    network: &consensus::Network,
+    network: &Network,
 ) -> Result<UnifiedSpendingKey, Error> {
     let mnemonic = <Mnemonic<English>>::from_phrase(seed).unwrap();
     let seed = {
