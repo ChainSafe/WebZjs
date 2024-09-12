@@ -1,9 +1,11 @@
+use wasm_bindgen_futures::JsFuture;
 use wasm_bindgen_test::*;
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 use webz_core::{bindgen::wallet::WebWallet, Wallet};
 use zcash_address::ZcashAddress;
 use zcash_primitives::consensus::Network;
+
+wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 const SEED: &str = "visit armed kite pen cradle toward reward clay marble oil write dove blind oyster silk oyster original message skate bench tone enable stadium element";
 const HD_INDEX: u32 = 0;
@@ -21,6 +23,8 @@ pub fn initialize() {
 #[wasm_bindgen_test]
 async fn test_get_and_scan_range() {
     initialize();
+    #[cfg(all(feature = "wasm-parallel"))]
+    let _ = JsFuture::from(wasm_bindgen_rayon::init_thread_pool(5)).await;
 
     let mut w = WebWallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();
 
