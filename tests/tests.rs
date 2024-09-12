@@ -1,4 +1,3 @@
-use wasm_bindgen_futures::JsFuture;
 use wasm_bindgen_test::*;
 
 use webz_core::{bindgen::wallet::WebWallet, Wallet};
@@ -11,6 +10,8 @@ const SEED: &str = "visit armed kite pen cradle toward reward clay marble oil wr
 const HD_INDEX: u32 = 0;
 const BIRTHDAY: Option<u32> = Some(2577329);
 
+const THREADS: usize = 5;
+
 // Required to initialize the logger and panic hooks only once
 use std::{num::NonZeroU32, sync::Once};
 static INIT: Once = Once::new();
@@ -19,12 +20,21 @@ pub fn initialize() {
         webz_core::init::start();
     });
 }
+#[cfg(all(feature = "wasm-parallel"))]
+async fn init_threadpool(threads: usize) -> wasm_bindgen_futures::JsFuture {
+    tracing::info!("Initializing thread pool with {} threads", threads);
+    wasm_bindgen_futures::JsFuture::from(wasm_bindgen_rayon::init_thread_pool(threads))
+}
 
 #[wasm_bindgen_test]
 async fn test_get_and_scan_range() {
     initialize();
+
     #[cfg(all(feature = "wasm-parallel"))]
-    let _ = JsFuture::from(wasm_bindgen_rayon::init_thread_pool(5)).await;
+    let _ = init_threadpool(THREADS).await;
+
+    let num_parallel = rayon::current_num_threads();
+    tracing::info!("WASM rayon has {} threads", num_parallel);
 
     let mut w = WebWallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();
 
@@ -55,6 +65,8 @@ async fn test_get_and_scan_range() {
 #[tokio::test]
 async fn test_get_and_scan_range_native() {
     initialize();
+    let num_parallel = rayon::current_num_threads();
+    tracing::info!("Native rayon has {} threads", num_parallel);
     let url = "https://testnet.zec.rocks:443";
     let c = tonic::transport::Channel::from_shared(url).unwrap();
 
