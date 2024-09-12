@@ -50,6 +50,7 @@ async fn test_get_and_scan_range() {
 #[cfg(feature = "native")]
 #[tokio::test]
 async fn test_get_and_scan_range_native() {
+    initialize();
     let url = "https://testnet.zec.rocks:443";
     let c = tonic::transport::Channel::from_shared(url).unwrap();
 
