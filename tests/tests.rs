@@ -47,6 +47,7 @@ async fn test_get_and_scan_range() {
     tracing::info!("Wallet summary: {:?}", summary);
 }
 
+#[cfg(feature = "native")]
 #[tokio::test]
 async fn test_get_and_scan_range_native() {
     let url = "https://testnet.zec.rocks:443";
@@ -67,12 +68,6 @@ async fn test_get_and_scan_range_native() {
     tracing::info!("Created account with id: {}", id);
 
     tracing::info!("Syncing wallet");
-    // w.sync(&js_sys::Function::new_with_args(
-    //     "scanned_to, tip",
-    //     "console.log('Scanned: ', scanned_to, '/', tip)",
-    // ))
-    // .await
-    // .unwrap();
     w.sync(|scanned_to, tip| {
         println!("Scanned: {}/{}", scanned_to, tip);
     })
