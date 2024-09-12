@@ -7,4 +7,12 @@ pub mod bindgen;
 pub mod error;
 pub mod init;
 
-pub use bindgen::wallet::Wallet;
+pub use bindgen::wallet::WebWallet;
+
+pub mod wallet;
+pub use wallet::Wallet;
+
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub struct BlockRange(pub u32, pub u32);
