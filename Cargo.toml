@@ -35,10 +35,10 @@ no-bundler = ["wasm-bindgen-rayon?/no-bundler"]
 
 [dependencies]
 ## Web dependencies
-wasm-bindgen = "0.2.84"
-js-sys = "0.3.69"
-wasm-bindgen-futures = "0.4.42"
-web-sys = { version  = "0.3.69", features = ["console"] }
+wasm-bindgen = "0.2.93"
+js-sys = "0.3.70"
+wasm-bindgen-futures = "0.4.43"
+web-sys = { version  = "0.3.70", features = ["console"] }
 wasm-bindgen-rayon = { version = "1.2.1", optional = true }
 
 # WASM specific dependencies
@@ -76,9 +76,21 @@ tracing = "0.1.40"
 rayon = "1.8"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.42"
+wasm-bindgen-test = "0.3.43"
 # Used in Native tests
 tokio = { version = "1.0", features = ["rt", "macros"] }
 
+
 [patch.crates-io]
-zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord"}
+zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord" }
+shardtree = {  git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
+incrementalmerkletree = {  git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
+wasm-bindgen-rayon = { git = "https://github.com/th4s/wasm-bindgen-rayon.git", branch = "update-deps-fix-thread-local"}
+[patch.'https://github.com/chainsafe/librustzcash']
+zcash_address = { path = "../librustzcash/components/zcash_address" }
+zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
+zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
+zcash_keys = { path = "../librustzcash/zcash_keys" }
+zcash_primitives =  { path = "../librustzcash/zcash_primitives" }
+zcash_proofs = {path = "../librustzcash/zcash_proofs" }
+zcash_protocol =  { path = "../librustzcash/components/zcash_protocol"}
