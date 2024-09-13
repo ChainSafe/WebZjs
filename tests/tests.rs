@@ -37,7 +37,7 @@ async fn test_get_and_scan_range() {
     #[cfg(all(feature = "wasm-parallel"))]
     init_threadpool(THREADS).await;
 
-    let mut w = WebWallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();
+    let mut w = WebWallet::new("test", "http://localhost:443", 1).unwrap();
     is_sync::<WebWallet>();
     is_send::<WebWallet>();
     let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();

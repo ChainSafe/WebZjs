@@ -243,7 +243,7 @@ where
             self.db.put_blocks(
                 &chainstate,
                 blocks
-                    .into_iter()
+                    .into_par_iter()
                     .map(|compact_block| {
                         scan_block(
                             &self.network,
