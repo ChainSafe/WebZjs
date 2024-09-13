@@ -50,6 +50,10 @@ async fn test_get_and_scan_range() {
 #[cfg(feature = "native")]
 #[tokio::test]
 async fn test_get_and_scan_range_native() {
+    use webz_core::PRUNING_DEPTH;
+    use zcash_client_memory::MemoryWalletDb;
+    use zcash_primitives::consensus;
+
     initialize();
     let url = "https://testnet.zec.rocks:443";
     let c = tonic::transport::Channel::from_shared(url).unwrap();
@@ -58,7 +62,9 @@ async fn test_get_and_scan_range_native() {
         .domain_name("testnet.zec.rocks")
         .with_webpki_roots();
     let channel = c.tls_config(tls).unwrap();
+    let wallet_db = MemoryWalletDb::new(consensus::Network::TestNetwork, PRUNING_DEPTH);
     let mut w = Wallet::new(
+        wallet_db,
         channel.connect().await.unwrap(),
         Network::TestNetwork,
         NonZeroU32::try_from(1).unwrap(),

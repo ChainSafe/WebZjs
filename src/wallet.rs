@@ -9,11 +9,16 @@ use tonic::{
     codegen::{Body, Bytes, StdError},
 };
 
+use crate::error::Error;
+use crate::BlockRange;
+use std::fmt::Debug;
+use std::hash::Hash;
+use subtle::ConditionallySelectable;
 use zcash_address::ZcashAddress;
-use zcash_client_backend::data_api::scanning::ScanRange;
 use zcash_client_backend::data_api::wallet::{
     create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
 };
+use zcash_client_backend::data_api::{scanning::ScanRange, WalletCommitmentTrees};
 use zcash_client_backend::data_api::{
     AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead, WalletSummary,
     WalletWrite,
@@ -34,15 +39,12 @@ use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
-use crate::error::Error;
-use crate::BlockRange;
+use zcash_client_backend::proposal::Proposal;
+
 const BATCH_SIZE: u32 = 10000;
 
-/// The maximum number of checkpoints to store in each shard-tree
-const PRUNING_DEPTH: usize = 100;
-
-type Proposal =
-    zcash_client_backend::proposal::Proposal<FeeRule, zcash_client_backend::wallet::NoteId>;
+// type Proposal =
+//     zcash_client_backend::proposal::Proposal<FeeRule, zcash_client_backend::wallet::NoteId>;
 
 /// # A Zcash wallet
 ///
@@ -63,18 +65,30 @@ type Proposal =
 ///
 /// TODO
 ///
-
-pub struct Wallet<T> {
+pub struct Wallet<W, T> {
     /// Internal database used to maintain wallet data (e.g. accounts, transactions, cached blocks)
-    pub(crate) db: MemoryWalletDb<consensus::Network>,
+    pub(crate) db: W,
     // gRPC client used to connect to a lightwalletd instance for network data
     pub(crate) client: CompactTxStreamerClient<T>,
     pub(crate) network: consensus::Network,
     pub(crate) min_confirmations: NonZeroU32,
 }
 
-impl<T> Wallet<T>
+impl<W, T, AccountId, NoteRef> Wallet<W, T>
 where
+    W: WalletRead<AccountId = AccountId>
+        + WalletWrite
+        + InputSource<
+            AccountId = <W as WalletRead>::AccountId,
+            Error = <W as WalletRead>::Error,
+            NoteRef = NoteRef,
+        > + WalletCommitmentTrees,
+
+    AccountId: Copy + Debug + Eq + Hash + Default + Send + ConditionallySelectable + 'static,
+    NoteRef: Copy + Eq + Ord + Debug,
+    Error: From<<W as WalletRead>::Error>,
+
+    // GRPC connection Trait Bounds
     T: GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
     T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
@@ -82,12 +96,13 @@ where
 {
     /// Create a new instance of a Zcash wallet for a given network
     pub fn new(
+        db: W,
         client: T,
         network: Network,
         min_confirmations: NonZeroU32,
-    ) -> Result<Wallet<T>, Error> {
+    ) -> Result<Self, Error> {
         Ok(Wallet {
-            db: MemoryWalletDb::new(network, PRUNING_DEPTH),
+            db,
             client: CompactTxStreamerClient::new(client),
             network,
             min_confirmations,
@@ -257,16 +272,7 @@ where
         Ok(())
     }
 
-    pub fn get_wallet_summary(
-        &self,
-    ) -> Result<
-        Option<
-            WalletSummary<
-                <MemoryWalletDb<zcash_primitives::consensus::Network> as WalletRead>::AccountId,
-            >,
-        >,
-        Error,
-    > {
+    pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary<AccountId>>, Error> {
         Ok(self.db.get_wallet_summary(self.min_confirmations.into())?)
     }
 
@@ -296,7 +302,7 @@ where
         account_index: usize,
         to_address: ZcashAddress,
         value: u64,
-    ) -> Result<Proposal, Error> {
+    ) -> Result<Proposal<FeeRule, NoteRef>, Error> {
         let account_id = self.db.get_account_ids()?[account_index];
 
         let input_selector = GreedyInputSelector::new(
@@ -317,12 +323,7 @@ where
                 .get_target_and_anchor_heights(self.min_confirmations)?
         );
 
-        let proposal = propose_transfer::<
-            _,
-            _,
-            _,
-            <MemoryWalletDb<consensus::Network> as InputSource>::Error,
-        >(
+        let proposal = propose_transfer::<_, _, _, <W as WalletCommitmentTrees>::Error>(
             &mut self.db,
             &self.network,
             account_id,
@@ -343,7 +344,7 @@ where
     ///
     pub(crate) fn create_proposed_transactions(
         &mut self,
-        proposal: Proposal,
+        proposal: Proposal<FeeRule, NoteRef>,
         usk: &UnifiedSpendingKey,
     ) -> Result<NonEmpty<TxId>, Error> {
         let prover = LocalTxProver::bundled();

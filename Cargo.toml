@@ -68,7 +68,7 @@ nonempty = "0.7"
 hex = "0.4.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = "0.1.40"
-
+subtle = "2.6.1"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
