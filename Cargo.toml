@@ -24,7 +24,7 @@ default = ["native"]
 
 wasm = ["console_error_panic_hook", "dep:tracing-web"]
 native = ["dep:tokio", "tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots"]
-
+sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 
 [dependencies]
@@ -55,6 +55,7 @@ tonic = { version = "0.12", default-features = false, features = [
 
 # Used in Native tests
 tokio = { version = "1.0", features = ["rt", "macros"], optional = true }
+zcash_client_sqlite  = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -72,6 +73,7 @@ subtle = "2.6.1"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.42"
+tempfile = "3.12"
 
 [patch.crates-io]
 zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord"}
