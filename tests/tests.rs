@@ -79,7 +79,6 @@ async fn test_get_and_scan_range() {
 #[tokio::test]
 async fn test_get_and_scan_range_native() {
     initialize();
-
     rayon::spawn(|| {
         let num_parallel = rayon::current_num_threads();
         tracing::info!("Native rayon has {} threads", num_parallel);
