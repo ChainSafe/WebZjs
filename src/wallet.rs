@@ -1,16 +1,16 @@
 use std::num::NonZeroU32;
 
 use bip0039::{English, Mnemonic};
-use futures_util::{StreamExt, TryStreamExt};
+use futures_util::{Stream, StreamExt, TryStreamExt};
 use nonempty::NonEmpty;
 use secrecy::{ExposeSecret, SecretVec, Zeroize};
 use tonic::{
     client::GrpcService,
     codegen::{Body, Bytes, StdError},
+    Status,
 };
 
 use zcash_address::ZcashAddress;
-use zcash_client_backend::data_api::scanning::ScanRange;
 use zcash_client_backend::data_api::wallet::{
     create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
 };
@@ -26,6 +26,7 @@ use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
+use zcash_client_backend::{data_api::scanning::ScanRange, proto::compact_formats::CompactBlock};
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedSpendingKey;
 use zcash_primitives::consensus::{self, BlockHeight, Network};
@@ -200,6 +201,27 @@ where
         Ok(())
     }
 
+    async fn fetch_blocks(
+        &mut self,
+        start: u32,
+        end: u32,
+    ) -> Result<impl StreamExt<Item = Result<CompactBlock, Status>>, Error> {
+        let range = service::BlockRange {
+            start: Some(service::BlockId {
+                height: start.into(),
+                ..Default::default()
+            }),
+            end: Some(service::BlockId {
+                height: end.into(),
+                ..Default::default()
+            }),
+        };
+
+        let blocks = self.client.get_block_range(range).await?.into_inner();
+
+        Ok(blocks)
+    }
+
     /// Download and process all blocks in the given range
     async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
         // get the chainstate prior to the range
@@ -222,24 +244,11 @@ where
             self.db.get_orchard_nullifiers(NullifierQuery::Unspent)?,
         );
 
-        let range = service::BlockRange {
-            start: Some(service::BlockId {
-                height: start.into(),
-                ..Default::default()
-            }),
-            end: Some(service::BlockId {
-                height: (end - 1).into(),
-                ..Default::default()
-            }),
-        };
-
         tracing::info!("Scanning block range: {:?} to {:?}", start, end);
 
         let scanned_blocks = self
-            .client
-            .get_block_range(range)
+            .fetch_blocks(start, end)
             .await?
-            .into_inner()
             .map(|compact_block| {
                 scan_block(
                     &self.network,
@@ -401,7 +410,7 @@ where
             })
             .unwrap();
 
-        tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
+        // tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
 
         let response = self.client.send_transaction(raw_tx).await?.into_inner();
 

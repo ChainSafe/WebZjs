@@ -19,7 +19,6 @@ static INIT: Once = Once::new();
 // Required to initialize the logger and panic hooks only once
 use std::{num::NonZeroU32, sync::Once};
 pub fn initialize() {
-    console_log!("Calling initialize");
     INIT.call_once(|| {
         webz_core::init::start();
     });
@@ -29,7 +28,8 @@ async fn init_threadpool(threads: usize) -> wasm_bindgen_futures::JsFuture {
     console_log!("Initializing thread pool with {} threads", threads);
     wasm_bindgen_futures::JsFuture::from(wasm_bindgen_rayon::init_thread_pool(threads))
 }
-
+fn is_sync<T: Sync>() {}
+fn is_send<T: Send>() {}
 #[wasm_bindgen_test]
 async fn test_get_and_scan_range() {
     initialize();
@@ -38,11 +38,14 @@ async fn test_get_and_scan_range() {
     init_threadpool(THREADS).await;
 
     let mut w = WebWallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();
-
+    is_sync::<WebWallet>();
+    is_send::<WebWallet>();
     let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
     tracing::info!("Created account with id: {}", id);
 
     tracing::info!("Syncing wallet");
+    // Note to self: js_sys::Function is NOT send or sync
+    // TODO: Find a better way to do this... Perhaps passing a Stream or something instead?
     w.sync(&js_sys::Function::new_with_args(
         "scanned_to, tip",
         "console.log('Scanned: ', scanned_to, '/', tip)",
