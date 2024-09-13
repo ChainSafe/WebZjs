@@ -11,7 +11,7 @@ test-native:
     cargo test -r -- --nocapture
 
 test-sqlite:
-    cargo test -r --features="sqlite-db" test_get_and_scan_range_native_sqlite -- --nocapture
+    cargo test -r --features="sqlite-db" -- --nocapture
 
 check:
     cargo check 
