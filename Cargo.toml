@@ -45,6 +45,7 @@ wasm-bindgen-rayon = { version = "1.2.1", optional = true }
 tracing-web = { version = "0.1.3", optional = true }
 console_error_panic_hook = { version = "0.1.7", optional = true }
 tonic-web-wasm-client = "0.6.0"
+tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "sync", "macros"] }
 
 ## Zcash dependencies
 zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
@@ -83,14 +84,17 @@ tokio = { version = "1.0", features = ["rt", "macros"] }
 
 [patch.crates-io]
 zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord" }
-shardtree = {  git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
-incrementalmerkletree = {  git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
-wasm-bindgen-rayon = { git = "https://github.com/th4s/wasm-bindgen-rayon.git", branch = "update-deps-fix-thread-local"}
-[patch.'https://github.com/chainsafe/librustzcash']
-zcash_address = { path = "../librustzcash/components/zcash_address" }
-zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
-zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
-zcash_keys = { path = "../librustzcash/zcash_keys" }
-zcash_primitives =  { path = "../librustzcash/zcash_primitives" }
-zcash_proofs = {path = "../librustzcash/zcash_proofs" }
-zcash_protocol =  { path = "../librustzcash/components/zcash_protocol"}
+# shardtree = {  git = "https://github.com/zcash/incrementalmerkletree", rev = "8aa12e4fe321ccd72e22a4fbeac6c8dd3f0785fd" }
+# incrementalmerkletree = {  git = "https://github.com/zcash/incrementalmerkletree", rev = "8aa12e4fe321ccd72e22a4fbeac6c8dd3f0785fd" }
+# See: https://github.com/RReverser/wasm-bindgen-rayon/pull/12
+wasm-bindgen-rayon = { git = "https://github.com/9SMTM6/wasm-bindgen-rayon", rev = "d1816e5bc2bf928ff5442355c04500a381d66a41" }
+
+# [patch.'https://github.com/chainsafe/librustzcash']
+# zcash_address = { path = "../librustzcash/components/zcash_address" }
+# zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
+# zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
+# zcash_keys = { path = "../librustzcash/zcash_keys" }
+# zcash_primitives =  { path = "../librustzcash/zcash_primitives" }
+# zcash_proofs = {path = "../librustzcash/zcash_proofs" }
+# zcash_protocol =  { path = "../librustzcash/components/zcash_protocol"}
+# zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord"}
