@@ -55,7 +55,7 @@ async fn main() {
 
     let s = zcash_keys::encoding::decode_extended_full_viewing_key(
         constants::mainnet::HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY,
-        &SAPLING_EFVK.trim(),
+        SAPLING_EFVK.trim(),
     )
     .unwrap();
 

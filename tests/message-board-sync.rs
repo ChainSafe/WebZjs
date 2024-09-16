@@ -24,9 +24,9 @@ async fn test_message_board() {
 
     let s = zcash_keys::encoding::decode_extended_full_viewing_key(
         constants::mainnet::HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY,
-        &SAPLING_EFVK.trim(),
+        SAPLING_EFVK.trim(),
     )
-    .unwrap();
+        .unwrap();
 
     let ufvk = UnifiedFullViewingKey::from_sapling_extended_full_viewing_key(s).unwrap();
     let ufvk_str = ufvk.encode(&Network::MainNetwork);
@@ -38,8 +38,8 @@ async fn test_message_board() {
         "scanned_to, tip",
         "console.log('Scanned: ', scanned_to, '/', tip)",
     ))
-    .await
-    .unwrap();
+        .await
+        .unwrap();
     tracing::info!("Syncing complete :)");
 
     let summary = w.get_wallet_summary().unwrap();
