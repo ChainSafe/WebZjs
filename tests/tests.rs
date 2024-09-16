@@ -3,7 +3,11 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 use webz_core::{bindgen::wallet::WebWallet, Wallet};
 use zcash_address::ZcashAddress;
-use zcash_primitives::consensus::Network;
+use zcash_keys::keys::UnifiedFullViewingKey;
+use zcash_primitives::{
+    consensus::{MainNetwork, Network},
+    constants,
+};
 
 const SEED: &str = "visit armed kite pen cradle toward reward clay marble oil write dove blind oyster silk oyster original message skate bench tone enable stadium element";
 const HD_INDEX: u32 = 0;
@@ -17,6 +21,7 @@ pub fn initialize() {
         webz_core::init::start();
     });
 }
+const key_str: &'static str = "zxviews1q0duytgcqqqqpqre26wkl45gvwwwd706xw608hucmvfalr759ejwf7qshjf5r9aa7323zulvz6plhttp5mltqcgs9t039cx2d09mgq05ts63n8u35hyv6h9nc9ctqqtue2u7cer2mqegunuulq2luhq3ywjcz35yyljewa4mgkgjzyfwh6fr6jd0dzd44ghk0nxdv2hnv4j5nxfwv24rwdmgllhe0p8568sgqt9ckt02v2kxf5ahtql6s0ltjpkckw8gtymxtxuu9gcr0swvz";
 
 #[wasm_bindgen_test]
 async fn test_get_and_scan_range() {
@@ -24,7 +29,15 @@ async fn test_get_and_scan_range() {
 
     let mut w = WebWallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();
 
-    let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
+    // let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
+    let s = zcash_keys::encoding::decode_extended_full_viewing_key(
+        constants::mainnet::HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY,
+        &key_str.trim(),
+    )
+    .unwrap();
+
+    let id = w.import_ufvk(&key_str, Some(2477329)).await.unwrap();
+
     tracing::info!("Created account with id: {}", id);
 
     tracing::info!("Syncing wallet");
@@ -126,8 +139,6 @@ async fn test_get_and_scan_range_native() {
 #[cfg(feature = "native")]
 #[tokio::test]
 async fn test_post_board() {
-    let key_str = "zxviews1q0duytgcqqqqpqre26wkl45gvwwwd706xw608hucmvfalr759ejwf7qshjf5r9aa7323zulvz6plhttp5mltqcgs9t039cx2d09mgq05ts63n8u35hyv6h9nc9ctqqtue2u7cer2mqegunuulq2luhq3ywjcz35yyljewa4mgkgjzyfwh6fr6jd0dzd44ghk0nxdv2hnv4j5nxfwv24rwdmgllhe0p8568sgqt9ckt02v2kxf5ahtql6s0ltjpkckw8gtymxtxuu9gcr0swvz";
-
     use zcash_keys::keys::UnifiedFullViewingKey;
     use zcash_primitives::{consensus, constants};
     let db_cache = tempfile::tempdir().unwrap();

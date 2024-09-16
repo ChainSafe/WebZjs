@@ -192,7 +192,7 @@ where
 
         let _account = self
             .db
-            .import_account_ufvk(&ufvk, &birthday, AccountPurpose::Spending)?;
+            .import_account_ufvk(&ufvk, &birthday, AccountPurpose::ViewOnly)?;
 
         Ok("0".to_string())
     }

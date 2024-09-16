@@ -7,7 +7,8 @@ use tonic_web_wasm_client::Client;
 
 use zcash_address::ZcashAddress;
 use zcash_client_memory::MemoryWalletDb;
-use zcash_primitives::consensus::{self, BlockHeight};
+use zcash_keys::keys::UnifiedFullViewingKey;
+use zcash_primitives::consensus::{self, BlockHeight, NetworkConstants, MAIN_NETWORK};
 
 use crate::error::Error;
 use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
@@ -82,6 +83,21 @@ impl WebWallet {
         self.inner
             .create_account(seed_phrase, account_index, birthday_height)
             .await
+    }
+
+    pub async fn import_ufvk(
+        &mut self,
+        key: &str,
+        birthday_height: Option<u32>,
+    ) -> Result<String, Error> {
+        let s = zcash_keys::encoding::decode_extended_full_viewing_key(
+            MAIN_NETWORK.hrp_sapling_extended_full_viewing_key(),
+            &key.trim(),
+        )
+        .unwrap();
+        let ufvk = UnifiedFullViewingKey::from_sapling_extended_full_viewing_key(s).unwrap();
+
+        self.inner.import_ufvk(ufvk, birthday_height).await
     }
 
     pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
