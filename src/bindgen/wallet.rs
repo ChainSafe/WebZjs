@@ -38,15 +38,11 @@ pub struct WebWallet {
 }
 
 impl WebWallet {
-    fn network_from_str (
-        network: &str
-    ) -> Result<consensus::Network, Error> {
+    fn network_from_str(network: &str) -> Result<consensus::Network, Error> {
         match network {
             "main" => Ok(consensus::Network::MainNetwork),
             "test" => Ok(consensus::Network::TestNetwork),
-            _ => {
-                 Err(Error::InvalidNetwork(network.to_string()))
-            }
+            _ => Err(Error::InvalidNetwork(network.to_string())),
         }
     }
 }
@@ -75,7 +71,6 @@ impl WebWallet {
         })
     }
 
-
     /// Add a new account to the wallet
     ///
     /// # Arguments
@@ -99,8 +94,8 @@ impl WebWallet {
         key: &str,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
-
-        let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, key).map_err(Error::KeyParseError)?;
+        let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, key)
+            .map_err(Error::KeyParseError)?;
 
         self.inner.import_ufvk(&ufvk, birthday_height).await
     }

@@ -51,13 +51,13 @@ async fn main() {
         Network::MainNetwork,
         NonZeroU32::try_from(1).unwrap(),
     )
-        .unwrap();
+    .unwrap();
 
     let s = zcash_keys::encoding::decode_extended_full_viewing_key(
         constants::mainnet::HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY,
         &SAPLING_EFVK.trim(),
     )
-        .unwrap();
+    .unwrap();
 
     let ufvk = UnifiedFullViewingKey::from_sapling_extended_full_viewing_key(s).unwrap();
     let id = w.import_ufvk(ufvk, Some(2477329)).await.unwrap();
@@ -67,8 +67,8 @@ async fn main() {
     w.sync(|scanned_to, tip| {
         println!("Scanned: {}/{}", scanned_to, tip);
     })
-        .await
-        .unwrap();
+    .await
+    .unwrap();
 
     tracing::info!("Syncing complete :)");
 

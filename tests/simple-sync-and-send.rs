@@ -44,4 +44,3 @@ async fn test_get_and_scan_range() {
     let summary = w.get_wallet_summary().unwrap();
     tracing::info!("Wallet summary: {:?}", summary);
 }
-
