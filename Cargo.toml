@@ -10,6 +10,10 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[[example]]
+name = "simple-sync"
+path = "examples/simple-sync.rs"
+
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 opt-level = 3
@@ -54,7 +58,7 @@ tonic = { version = "0.12", default-features = false, features = [
 ] }
 
 # Used in Native tests
-tokio = { version = "1.0", features = ["rt", "macros"], optional = true }
+tokio = { version = "1.0", features = ["rt", "macros", "rt-multi-thread"], optional = true }
 zcash_client_sqlite  = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }

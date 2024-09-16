@@ -7,11 +7,11 @@ build:
 test-web:
     WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features="wasm" -Z build-std="panic_abort,std"
 
-test-native:
-    cargo test -r -- --nocapture
+run-example-native:
+    cargo run -r --example simple-sync
 
-test-sqlite:
-    cargo test -r --features="sqlite-db" -- --nocapture
+run-example-sqlite:
+    cargo run -r --example simple-sync --features="sqlite-db"
 
 check:
     cargo check 
