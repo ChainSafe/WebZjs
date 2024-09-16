@@ -8,7 +8,7 @@ use tonic_web_wasm_client::Client;
 use zcash_address::ZcashAddress;
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
-use zcash_primitives::consensus::{self, BlockHeight, NetworkConstants, MAIN_NETWORK};
+use zcash_primitives::consensus::{self, BlockHeight};
 
 use crate::error::Error;
 use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
