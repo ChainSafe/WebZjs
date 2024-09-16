@@ -43,9 +43,6 @@ use zcash_client_backend::proposal::Proposal;
 
 const BATCH_SIZE: u32 = 10000;
 
-// type Proposal =
-//     zcash_client_backend::proposal::Proposal<FeeRule, zcash_client_backend::wallet::NoteId>;
-
 /// # A Zcash wallet
 ///
 /// A wallet is a set of accounts that can be synchronized together with the blockchain.
