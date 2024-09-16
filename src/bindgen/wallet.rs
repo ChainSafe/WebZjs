@@ -37,6 +37,20 @@ pub struct WebWallet {
     inner: MemoryWallet<tonic_web_wasm_client::Client>,
 }
 
+impl WebWallet {
+    fn network_from_str (
+        network: &str
+    ) -> Result<consensus::Network, Error> {
+        match network {
+            "main" => Ok(consensus::Network::MainNetwork),
+            "test" => Ok(consensus::Network::TestNetwork),
+            _ => {
+                 Err(Error::InvalidNetwork(network.to_string()))
+            }
+        }
+    }
+}
+
 #[wasm_bindgen]
 impl WebWallet {
     /// Create a new instance of a Zcash wallet for a given network
@@ -46,13 +60,7 @@ impl WebWallet {
         lightwalletd_url: &str,
         min_confirmations: u32,
     ) -> Result<WebWallet, Error> {
-        let network = match network {
-            "main" => consensus::Network::MainNetwork,
-            "test" => consensus::Network::TestNetwork,
-            _ => {
-                return Err(Error::InvalidNetwork(network.to_string()));
-            }
-        };
+        let network = Self::network_from_str(network)?;
         let min_confirmations = NonZeroU32::try_from(min_confirmations)
             .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
         let client = Client::new(lightwalletd_url.to_string());
@@ -66,6 +74,7 @@ impl WebWallet {
             )?,
         })
     }
+
 
     /// Add a new account to the wallet
     ///
@@ -90,14 +99,10 @@ impl WebWallet {
         key: &str,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
-        let s = zcash_keys::encoding::decode_extended_full_viewing_key(
-            MAIN_NETWORK.hrp_sapling_extended_full_viewing_key(),
-            &key.trim(),
-        )
-        .unwrap();
-        let ufvk = UnifiedFullViewingKey::from_sapling_extended_full_viewing_key(s).unwrap();
 
-        self.inner.import_ufvk(ufvk, birthday_height).await
+        let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, key).map_err(Error::KeyParseError)?;
+
+        self.inner.import_ufvk(&ufvk, birthday_height).await
     }
 
     pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {

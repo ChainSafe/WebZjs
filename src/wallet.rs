@@ -158,7 +158,7 @@ where
 
     pub async fn import_ufvk(
         &mut self,
-        ufvk: UnifiedFullViewingKey,
+        ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
         let birthday = match birthday_height {
@@ -189,7 +189,7 @@ where
 
         let _account = self
             .db
-            .import_account_ufvk(&ufvk, &birthday, AccountPurpose::ViewOnly)?;
+            .import_account_ufvk(ufvk, &birthday, AccountPurpose::ViewOnly)?;
 
         Ok("0".to_string())
     }
