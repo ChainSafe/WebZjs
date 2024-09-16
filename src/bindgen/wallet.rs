@@ -6,10 +6,11 @@ use wasm_bindgen::prelude::*;
 use tonic_web_wasm_client::Client;
 
 use zcash_address::ZcashAddress;
+use zcash_client_memory::MemoryWalletDb;
 use zcash_primitives::consensus::{self, BlockHeight};
 
 use crate::error::Error;
-use crate::{BlockRange, Wallet};
+use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 
 /// # A Zcash wallet
 ///
@@ -32,7 +33,7 @@ use crate::{BlockRange, Wallet};
 ///
 #[wasm_bindgen]
 pub struct WebWallet {
-    inner: Wallet<tonic_web_wasm_client::Client>,
+    inner: MemoryWallet<tonic_web_wasm_client::Client>,
 }
 
 #[wasm_bindgen]
@@ -56,7 +57,12 @@ impl WebWallet {
         let client = Client::new(lightwalletd_url.to_string());
 
         Ok(Self {
-            inner: Wallet::new(client, network, min_confirmations)?,
+            inner: Wallet::new(
+                MemoryWalletDb::new(network, PRUNING_DEPTH),
+                client,
+                network,
+                min_confirmations,
+            )?,
         })
     }
 
