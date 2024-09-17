@@ -3,8 +3,6 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 use std::sync::Once;
 use webz_core::bindgen::wallet::WebWallet;
-use zcash_client_backend::sync::run;
-use zcash_client_memory::MemBlockCache;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::Network;
 use zcash_primitives::constants;
@@ -38,9 +36,10 @@ async fn test_message_board() {
     #[cfg(not(feature = "sync2"))]
     {
         tracing::info!("Syncing wallet with our sync impl");
-        w.sync(|scanned_to, tip| {
-            println!("Scanned: {}/{}", scanned_to, tip);
-        })
+        w.sync(&js_sys::Function::new_with_args(
+            "scanned_to, tip",
+            "console.log('Scanned: ', scanned_to, '/', tip)",
+        ))
         .await
         .unwrap();
     }

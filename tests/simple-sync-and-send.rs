@@ -27,10 +27,10 @@ async fn test_get_and_scan_range() {
 
     #[cfg(not(feature = "sync2"))]
     {
-        tracing::info!("Syncing wallet with our sync impl");
-        w.sync(|scanned_to, tip| {
-            println!("Scanned: {}/{}", scanned_to, tip);
-        })
+        w.sync(&js_sys::Function::new_with_args(
+            "scanned_to, tip",
+            "console.log('Scanned: ', scanned_to, '/', tip)",
+        ))
         .await
         .unwrap();
     }
