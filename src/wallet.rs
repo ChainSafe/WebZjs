@@ -249,25 +249,6 @@ where
         Ok(())
     }
 
-    async fn fetch_blocks(
-        &mut self,
-        start: u32,
-        end: u32,
-    ) -> Result<Streaming<CompactBlock>, Error> {
-        let range = service::BlockRange {
-            start: Some(service::BlockId {
-                height: start.into(),
-                ..Default::default()
-            }),
-            end: Some(service::BlockId {
-                height: end.into(),
-                ..Default::default()
-            }),
-        };
-
-        Ok(self.client.get_block_range(range).await?.into_inner())
-    }
-
     /// Download and process all blocks in the given range
     async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
         // get the chainstate prior to the range
@@ -290,34 +271,37 @@ where
             self.db.get_orchard_nullifiers(NullifierQuery::Unspent)?,
         );
 
-        let mut chunked_block_stream = self
-            .fetch_blocks(start, end)
+        let range = service::BlockRange {
+            start: Some(service::BlockId {
+                height: start.into(),
+                ..Default::default()
+            }),
+            end: Some(service::BlockId {
+                height: (end - 1).into(),
+                ..Default::default()
+            }),
+        };
+
+        tracing::info!("Scanning block range: {:?} to {:?}", start, end);
+
+        let scanned_blocks = self
+            .client
+            .get_block_range(range)
             .await?
-            .try_chunks(BATCH_SIZE as usize);
+            .into_inner()
+            .map(|compact_block| {
+                scan_block(
+                    &self.network,
+                    compact_block.unwrap(),
+                    &scanning_keys,
+                    &nullifiers,
+                    None,
+                )
+            })
+            .try_collect()
+            .await?;
 
-        while let Ok(Some(blocks)) = chunked_block_stream.try_next().await {
-            tracing::info!(
-                "Scanning block range: {:?} to {:?}",
-                blocks.first().unwrap().height,
-                blocks.last().unwrap().height
-            );
-
-            self.db.put_blocks(
-                &chainstate,
-                blocks
-                    .into_iter()
-                    .map(|compact_block| {
-                        scan_block(
-                            &self.network,
-                            compact_block,
-                            &scanning_keys,
-                            &nullifiers,
-                            None,
-                        )
-                    })
-                    .collect::<Result<Vec<_>, _>>()?,
-            )?;
-        }
+        self.db.put_blocks(&chainstate, scanned_blocks)?;
 
         Ok(())
     }
