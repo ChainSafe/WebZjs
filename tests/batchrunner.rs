@@ -21,7 +21,7 @@ pub fn initialize() {
 }
 
 #[wasm_bindgen_test]
-async fn test_get_and_scan_range() {
+async fn batchrunner() {
     initialize();
 
     let mut w = WebWallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();

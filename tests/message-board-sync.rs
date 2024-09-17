@@ -2,6 +2,8 @@ use wasm_bindgen_test::*;
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 use std::sync::Once;
+use zcash_client_backend::sync::run;
+use zcash_client_memory::MemBlockCache;
 use webz_core::bindgen::wallet::WebWallet;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::Network;
@@ -33,14 +35,27 @@ async fn test_message_board() {
     let id = w.import_ufvk(&ufvk_str, Some(2477329)).await.unwrap();
     tracing::info!("Created account with id: {}", id);
 
-    tracing::info!("Syncing wallet");
-    w.sync(&js_sys::Function::new_with_args(
-        "scanned_to, tip",
-        "console.log('Scanned: ', scanned_to, '/', tip)",
-    ))
+    // tracing::info!("Syncing wallet");
+    // w.sync(&js_sys::Function::new_with_args(
+    //     "scanned_to, tip",
+    //     "console.log('Scanned: ', scanned_to, '/', tip)",
+    // ))
+    // .await
+    // .unwrap();
+    // tracing::info!("Syncing complete :)");
+
+    let db_cache = MemBlockCache::new();
+    let mut cpt_client = w.client().clone();
+
+    run(
+        &mut cpt_client,
+        &Network::TestNetwork,
+        &db_cache,
+        w.inner_mut().inner_mut(),
+        10000,
+    )
     .await
     .unwrap();
-    tracing::info!("Syncing complete :)");
 
     let summary = w.get_wallet_summary().unwrap();
     tracing::info!("Wallet summary: {:?}", summary);

@@ -14,6 +14,10 @@ test-message-board-web:
 test-simple-web:
     WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features="wasm" -Z build-std="panic_abort,std" --test simple-sync-and-send
 
+test-batchrunner-web:
+    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features="wasm" -Z build-std="panic_abort,std" --test batchrunner 
+
+
 
 ## Native Examples
 example-simple:
