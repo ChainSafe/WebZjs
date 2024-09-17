@@ -37,7 +37,7 @@ use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
-use zcash_client_memory::MemoryWalletDb;
+use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
 use zcash_primitives::consensus::{self, BlockHeight, Network};
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
@@ -45,6 +45,7 @@ use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
+use zcash_client_backend::sync::run;
 /// The maximum number of checkpoints to store in each shard-tree
 const PRUNING_DEPTH: usize = 100;
 
@@ -94,8 +95,11 @@ where
     NoteRef: Copy + Eq + Ord + Debug,
     Error: From<<W as WalletRead>::Error>,
 
+    <W as WalletRead>::Error: std::error::Error + Send + Sync + 'static,
+    <W as WalletCommitmentTrees>::Error: std::error::Error + Send + Sync + 'static,
+
     // GRPC connection Trait Bounds
-    T: GrpcService<tonic::body::BoxBody>,
+    T: GrpcService<tonic::body::BoxBody> + Clone,
     T::Error: Into<StdError>,
     T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
     <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
@@ -113,6 +117,14 @@ where
             network,
             min_confirmations,
         })
+    }
+
+    pub fn db_mut(&mut self) -> &mut W {
+        &mut self.db
+    }
+
+    pub fn client(&mut self) -> &mut CompactTxStreamerClient<T> {
+        &mut self.client
     }
 
     /// Add a new account to the wallet
@@ -195,6 +207,22 @@ where
                 })
                 .collect()
         })?)
+    }
+
+    pub async fn sync2(&mut self) -> Result<(), Error> {
+        let mut client = self.client().clone();
+        // TODO: This should be held in the Wallet struct so we can download in parallel
+        let db_cache = MemBlockCache::new();
+
+        run(
+            &mut client,
+            &self.network.clone(),
+            &db_cache,
+            self.db_mut(),
+            BATCH_SIZE,
+        )
+        .await
+        .map_err(Into::into)
     }
 
     /// Synchronize the wallet with the blockchain up to the tip

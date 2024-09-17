@@ -33,13 +33,21 @@ async fn test_message_board() {
     let id = w.import_ufvk(&ufvk_str, Some(2477329)).await.unwrap();
     tracing::info!("Created account with id: {}", id);
 
-    tracing::info!("Syncing wallet");
-    w.sync(&js_sys::Function::new_with_args(
-        "scanned_to, tip",
-        "console.log('Scanned: ', scanned_to, '/', tip)",
-    ))
-    .await
-    .unwrap();
+    #[cfg(not(feature = "sync2"))]
+    {
+        tracing::info!("Syncing wallet with our sync impl");
+        w.sync(&js_sys::Function::new_with_args(
+            "scanned_to, tip",
+            "console.log('Scanned: ', scanned_to, '/', tip)",
+        ))
+        .await
+        .unwrap();
+    }
+    #[cfg(feature = "sync2")]
+    {
+        tracing::info!("Syncing wallet with sync2");
+        w.sync2().await.unwrap();
+    }
     tracing::info!("Syncing complete :)");
 
     let summary = w.get_wallet_summary().unwrap();

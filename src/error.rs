@@ -1,6 +1,7 @@
 // Copyright 2024 ChainSafe Systems
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::fmt::Display;
 use wasm_bindgen::JsValue;
 
 #[derive(thiserror::Error, Debug)]
@@ -47,6 +48,12 @@ pub enum Error {
     #[error("Failed to parse key: {0}")]
     KeyParseError(String),
 
+    // TODO: The error type from librustzcash backend is generic. Handle that later.
+    // Perhaps we make our error struct generic as well
+    // See: zcash_client_backend::sync::Error
+    #[error("Syncing Error: {0}")]
+    SyncError(String),
+
     #[cfg(feature = "sqlite-db")]
     #[error("Sqlite error: {0}")]
     SqliteError(#[from] zcash_client_sqlite::error::SqliteClientError),
@@ -77,5 +84,16 @@ impl From<indexed_db_futures::web_sys::DomException> for Error {
 impl From<zcash_client_backend::scanning::ScanError> for Error {
     fn from(e: zcash_client_backend::scanning::ScanError) -> Self {
         Self::ScanError(e)
+    }
+}
+
+impl<A, B, C> From<zcash_client_backend::sync::Error<A, B, C>> for Error
+where
+    A: Display,
+    B: Display,
+    C: Display,
+{
+    fn from(e: zcash_client_backend::sync::Error<A, B, C>) -> Self {
+        Self::SyncError(e.to_string())
     }
 }
