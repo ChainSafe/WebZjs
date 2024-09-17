@@ -32,7 +32,7 @@ use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::MemoryWalletDb;
-use zcash_keys::keys::UnifiedSpendingKey;
+use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
 use zcash_primitives::consensus::{self, BlockHeight, Network};
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
@@ -123,6 +123,26 @@ where
         let usk = usk_from_seed_str(seed_phrase, account_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
 
+        self.import_account_ufvk(&ufvk, birthday_height, AccountPurpose::Spending)
+            .await
+    }
+
+    pub async fn import_ufvk(
+        &mut self,
+        ufvk: &UnifiedFullViewingKey,
+        birthday_height: Option<u32>,
+    ) -> Result<String, Error> {
+        self.import_account_ufvk(ufvk, birthday_height, AccountPurpose::ViewOnly)
+            .await
+    }
+
+    /// Helper method for importing an account directly from a Ufvk or from seed.
+    async fn import_account_ufvk(
+        &mut self,
+        ufvk: &UnifiedFullViewingKey,
+        birthday_height: Option<u32>,
+        purpose: AccountPurpose,
+    ) -> Result<String, Error> {
         let birthday = match birthday_height {
             Some(height) => height,
             None => {
@@ -149,10 +169,8 @@ where
             AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
         };
 
-        let _account = self
-            .db
-            .import_account_ufvk(&ufvk, &birthday, AccountPurpose::Spending)?;
-        // TOOD: Make this public on account Ok(account.account_id().to_string())
+        let _account = self.db.import_account_ufvk(ufvk, &birthday, purpose)?;
+
         Ok("0".to_string())
     }
 

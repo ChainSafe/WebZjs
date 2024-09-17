@@ -44,6 +44,8 @@ pub enum Error {
     InvalidAmount(#[from] zcash_primitives::transaction::components::amount::BalanceError),
     #[error("Failed to send transaction")]
     SendFailed { code: i32, reason: String },
+    #[error("Failed to parse key: {0}")]
+    KeyParseError(String),
 
     #[cfg(feature = "sqlite-db")]
     #[error("Sqlite error: {0}")]
