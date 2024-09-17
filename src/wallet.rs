@@ -123,43 +123,25 @@ where
         let usk = usk_from_seed_str(seed_phrase, account_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
 
-        let birthday = match birthday_height {
-            Some(height) => height,
-            None => {
-                let chain_tip: u32 = self
-                    .client
-                    .get_latest_block(service::ChainSpec::default())
-                    .await?
-                    .into_inner()
-                    .height
-                    .try_into()
-                    .expect("block heights must fit into u32");
-                chain_tip - 100
-            }
-        };
-        // Construct an `AccountBirthday` for the account's birthday.
-        let birthday = {
-            // Fetch the tree state corresponding to the last block prior to the wallet's
-            // birthday height. NOTE: THIS APPROACH LEAKS THE BIRTHDAY TO THE SERVER!
-            let request = service::BlockId {
-                height: (birthday - 1).into(),
-                ..Default::default()
-            };
-            let treestate = self.client.get_tree_state(request).await?.into_inner();
-            AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
-        };
-
-        let _account = self
-            .db
-            .import_account_ufvk(&ufvk, &birthday, AccountPurpose::Spending)?;
-        // TOOD: Make this public on account Ok(account.account_id().to_string())
-        Ok("0".to_string())
+        self.import_account_ufvk(&ufvk, birthday_height, AccountPurpose::Spending)
+            .await
     }
 
     pub async fn import_ufvk(
         &mut self,
         ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
+    ) -> Result<String, Error> {
+        self.import_account_ufvk(ufvk, birthday_height, AccountPurpose::ViewOnly)
+            .await
+    }
+
+    /// Helper method for importing an account directly from a Ufvk or from seed.
+    async fn import_account_ufvk(
+        &mut self,
+        ufvk: &UnifiedFullViewingKey,
+        birthday_height: Option<u32>,
+        purpose: AccountPurpose,
     ) -> Result<String, Error> {
         let birthday = match birthday_height {
             Some(height) => height,
@@ -187,9 +169,7 @@ where
             AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
         };
 
-        let _account = self
-            .db
-            .import_account_ufvk(ufvk, &birthday, AccountPurpose::ViewOnly)?;
+        let _account = self.db.import_account_ufvk(ufvk, &birthday, purpose)?;
 
         Ok("0".to_string())
     }
