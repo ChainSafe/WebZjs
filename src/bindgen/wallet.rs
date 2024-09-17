@@ -50,7 +50,7 @@ impl WebWallet {
     pub fn client(&mut self) -> &mut CompactTxStreamerClient<tonic_web_wasm_client::Client> {
         self.inner.client()
     }
-    
+
     pub fn inner_mut(&mut self) -> &mut MemoryWallet<tonic_web_wasm_client::Client> {
         &mut self.inner
     }
@@ -128,6 +128,11 @@ impl WebWallet {
         self.inner.sync(callback).await?;
 
         Ok(())
+    }
+
+    /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
+    pub async fn sync2(&mut self) -> Result<(), Error> {
+        self.inner.sync2().await
     }
 
     pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {

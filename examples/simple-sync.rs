@@ -59,12 +59,20 @@ async fn main() {
     let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
     tracing::info!("Created account with id: {}", id);
 
-    tracing::info!("Syncing wallet");
-    w.sync(|scanned_to, tip| {
-        println!("Scanned: {}/{}", scanned_to, tip);
-    })
-    .await
-    .unwrap();
+    #[cfg(not(feature = "sync2"))]
+    {
+        tracing::info!("Syncing wallet with our sync impl");
+        w.sync(|scanned_to, tip| {
+            println!("Scanned: {}/{}", scanned_to, tip);
+        })
+        .await
+        .unwrap();
+    }
+    #[cfg(feature = "sync2")]
+    {
+        tracing::info!("Syncing wallet with sync2");
+        w.sync2().await.unwrap();
+    }
 
     tracing::info!("Syncing complete :)");
 

@@ -18,9 +18,6 @@ path = "examples/simple-sync.rs"
 name = "message-board-sync"
 path = "examples/message-board-sync.rs"
 
-[[example]]
-name = "batchrunner"
-path = "examples/batchrunner.rs"
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.
@@ -39,6 +36,8 @@ native = ["dep:tokio", "tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots"]
 sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 
+sync2 = []
+
 [dependencies]
 ## Web dependencies
 wasm-bindgen = "0.2.84"
@@ -52,12 +51,12 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 tonic-web-wasm-client = "0.6.0"
 
 ## Zcash dependencies
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["bundled-prover"] }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["bundled-prover"] }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }
@@ -67,7 +66,7 @@ tonic = { version = "0.12", default-features = false, features = [
 
 # Used in Native tests
 tokio = { version = "1.0", features = ["rt", "macros", "rt-multi-thread"], optional = true }
-zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["unstable", "orchard"], optional = true }
+zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -93,12 +92,12 @@ zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_inde
 shardtree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 incrementalmerkletree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 
-[patch.'https://github.com/chainsafe/librustzcash']
-zcash_address = { path = "../librustzcash/components/zcash_address" }
-zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
-#zcash_client_sqlite = { path = "../librustzcash/zcash_client_sqlite" }
-zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
-zcash_keys = { path = "../librustzcash/zcash_keys" }
-zcash_primitives = { path = "../librustzcash/zcash_primitives" }
-zcash_proofs = { path = "../librustzcash/zcash_proofs" }
-zcash_protocol = { path = "../librustzcash/components/zcash_protocol" }
+#[patch.'https://github.com/chainsafe/librustzcash']
+#zcash_address = { path = "../librustzcash/components/zcash_address" }
+#zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
+##zcash_client_sqlite = { path = "../librustzcash/zcash_client_sqlite" }
+#zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
+#zcash_keys = { path = "../librustzcash/zcash_keys" }
+#zcash_primitives = { path = "../librustzcash/zcash_primitives" }
+#zcash_proofs = { path = "../librustzcash/zcash_proofs" }
+#zcash_protocol = { path = "../librustzcash/components/zcash_protocol" }
