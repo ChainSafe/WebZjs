@@ -237,7 +237,25 @@ where
         // TODO: Ensure wallet's view of the chain tip as of the previous wallet session is valid.
         // See https://github.com/Electric-Coin-Company/zec-sqlite-cli/blob/8c2e49f6d3067ec6cc85248488915278c3cb1c5a/src/commands/sync.rs#L157
 
-        for scan_range in scan_ranges {
+        // Download and process all blocks in the requested ranges
+        // Split each range into BATCH_SIZE chunks to avoid requesting too many blocks at once
+        for scan_range in scan_ranges.into_iter().flat_map(|r| {
+            // Limit the number of blocks we download and scan at any one time.
+            (0..).scan(r, |acc, _| {
+                if acc.is_empty() {
+                    None
+                } else if let Some((cur, next)) = acc.split_at(acc.block_range().start + BATCH_SIZE)
+                {
+                    *acc = next;
+                    Some(cur)
+                } else {
+                    let cur = acc.clone();
+                    let end = acc.block_range().end;
+                    *acc = ScanRange::from_parts(end..end, acc.priority());
+                    Some(cur)
+                }
+            })
+        }) {
             self.fetch_and_scan_range(
                 scan_range.block_range().start.into(),
                 scan_range.block_range().end.into(),
