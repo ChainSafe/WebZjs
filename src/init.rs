@@ -26,7 +26,7 @@ fn setup_tracing() {
             .with_default_directive(LevelFilter::INFO.into())
             .from_env()
             .unwrap();
-        let fmt_layer = tracing_subscriber::fmt::layer().with_ansi(true).pretty();
+        let fmt_layer = tracing_subscriber::fmt::layer().with_ansi(true);
         tracing_subscriber::registry()
             .with(filter_layer)
             .with(fmt_layer)

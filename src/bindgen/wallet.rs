@@ -6,10 +6,12 @@ use wasm_bindgen::prelude::*;
 use tonic_web_wasm_client::Client;
 
 use zcash_address::ZcashAddress;
+use zcash_client_memory::MemoryWalletDb;
+use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
 
 use crate::error::Error;
-use crate::{BlockRange, Wallet};
+use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 
 /// # A Zcash wallet
 ///
@@ -32,7 +34,17 @@ use crate::{BlockRange, Wallet};
 ///
 #[wasm_bindgen]
 pub struct WebWallet {
-    inner: Wallet<tonic_web_wasm_client::Client>,
+    inner: MemoryWallet<tonic_web_wasm_client::Client>,
+}
+
+impl WebWallet {
+    fn network_from_str(network: &str) -> Result<consensus::Network, Error> {
+        match network {
+            "main" => Ok(consensus::Network::MainNetwork),
+            "test" => Ok(consensus::Network::TestNetwork),
+            _ => Err(Error::InvalidNetwork(network.to_string())),
+        }
+    }
 }
 
 #[wasm_bindgen]
@@ -44,19 +56,18 @@ impl WebWallet {
         lightwalletd_url: &str,
         min_confirmations: u32,
     ) -> Result<WebWallet, Error> {
-        let network = match network {
-            "main" => consensus::Network::MainNetwork,
-            "test" => consensus::Network::TestNetwork,
-            _ => {
-                return Err(Error::InvalidNetwork(network.to_string()));
-            }
-        };
+        let network = Self::network_from_str(network)?;
         let min_confirmations = NonZeroU32::try_from(min_confirmations)
             .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
         let client = Client::new(lightwalletd_url.to_string());
 
         Ok(Self {
-            inner: Wallet::new(client, network, min_confirmations)?,
+            inner: Wallet::new(
+                MemoryWalletDb::new(network, PRUNING_DEPTH),
+                client,
+                network,
+                min_confirmations,
+            )?,
         })
     }
 
@@ -76,6 +87,17 @@ impl WebWallet {
         self.inner
             .create_account(seed_phrase, account_index, birthday_height)
             .await
+    }
+
+    pub async fn import_ufvk(
+        &mut self,
+        key: &str,
+        birthday_height: Option<u32>,
+    ) -> Result<String, Error> {
+        let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, key)
+            .map_err(Error::KeyParseError)?;
+
+        self.inner.import_ufvk(&ufvk, birthday_height).await
     }
 
     pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {

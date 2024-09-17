@@ -15,15 +15,21 @@ use crate::BlockRange;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
+use std::fmt::Debug;
+use std::hash::Hash;
+use subtle::ConditionallySelectable;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
     create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
 };
+use zcash_client_backend::data_api::{scanning::ScanRange, WalletCommitmentTrees};
 use zcash_client_backend::data_api::{
     AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead, WalletSummary,
     WalletWrite,
 };
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
+use zcash_client_backend::proposal::Proposal;
+use zcash_client_backend::proto::compact_formats::CompactBlock;
 use zcash_client_backend::proto::service::{
     self, compact_tx_streamer_client::CompactTxStreamerClient,
 };
@@ -31,24 +37,21 @@ use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
-use zcash_client_backend::{data_api::scanning::ScanRange, proto::compact_formats::CompactBlock};
 use zcash_client_memory::MemoryWalletDb;
-use zcash_keys::keys::UnifiedSpendingKey;
+use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
 use zcash_primitives::consensus::{self, BlockHeight, Network};
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
-const BATCH_SIZE: u32 = 10000;
 
 /// The maximum number of checkpoints to store in each shard-tree
 const PRUNING_DEPTH: usize = 100;
 
-type Proposal =
-    zcash_client_backend::proposal::Proposal<FeeRule, zcash_client_backend::wallet::NoteId>;
-
 fn is_sync<T: Sync>() {}
 fn is_send<T: Send>() {}
+const BATCH_SIZE: u32 = 10000;
+
 /// # A Zcash wallet
 ///
 /// A wallet is a set of accounts that can be synchronized together with the blockchain.
@@ -68,18 +71,30 @@ fn is_send<T: Send>() {}
 ///
 /// TODO
 ///
-
-pub struct Wallet<T> {
+pub struct Wallet<W, T> {
     /// Internal database used to maintain wallet data (e.g. accounts, transactions, cached blocks)
-    pub(crate) db: MemoryWalletDb<consensus::Network>,
+    pub(crate) db: W,
     // gRPC client used to connect to a lightwalletd instance for network data
     pub(crate) client: CompactTxStreamerClient<T>,
     pub(crate) network: consensus::Network,
     pub(crate) min_confirmations: NonZeroU32,
 }
 
-impl<T> Wallet<T>
+impl<W, T, AccountId, NoteRef> Wallet<W, T>
 where
+    W: WalletRead<AccountId = AccountId>
+        + WalletWrite
+        + InputSource<
+            AccountId = <W as WalletRead>::AccountId,
+            Error = <W as WalletRead>::Error,
+            NoteRef = NoteRef,
+        > + WalletCommitmentTrees,
+
+    AccountId: Copy + Debug + Eq + Hash + Default + Send + ConditionallySelectable + 'static,
+    NoteRef: Copy + Eq + Ord + Debug,
+    Error: From<<W as WalletRead>::Error>,
+
+    // GRPC connection Trait Bounds
     T: GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
     T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
@@ -87,12 +102,13 @@ where
 {
     /// Create a new instance of a Zcash wallet for a given network
     pub fn new(
+        db: W,
         client: T,
         network: Network,
         min_confirmations: NonZeroU32,
-    ) -> Result<Wallet<T>, Error> {
+    ) -> Result<Self, Error> {
         Ok(Wallet {
-            db: MemoryWalletDb::new(network, PRUNING_DEPTH),
+            db,
             client: CompactTxStreamerClient::new(client),
             network,
             min_confirmations,
@@ -116,6 +132,26 @@ where
         let usk = usk_from_seed_str(seed_phrase, account_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
 
+        self.import_account_ufvk(&ufvk, birthday_height, AccountPurpose::Spending)
+            .await
+    }
+
+    pub async fn import_ufvk(
+        &mut self,
+        ufvk: &UnifiedFullViewingKey,
+        birthday_height: Option<u32>,
+    ) -> Result<String, Error> {
+        self.import_account_ufvk(ufvk, birthday_height, AccountPurpose::ViewOnly)
+            .await
+    }
+
+    /// Helper method for importing an account directly from a Ufvk or from seed.
+    async fn import_account_ufvk(
+        &mut self,
+        ufvk: &UnifiedFullViewingKey,
+        birthday_height: Option<u32>,
+        purpose: AccountPurpose,
+    ) -> Result<String, Error> {
         let birthday = match birthday_height {
             Some(height) => height,
             None => {
@@ -142,10 +178,8 @@ where
             AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
         };
 
-        let _account = self
-            .db
-            .import_account_ufvk(&ufvk, &birthday, AccountPurpose::Spending)?;
-        // TOOD: Make this public on account Ok(account.account_id().to_string())
+        let _account = self.db.import_account_ufvk(ufvk, &birthday, purpose)?;
+
         Ok("0".to_string())
     }
 
@@ -243,7 +277,7 @@ where
             self.db.put_blocks(
                 &chainstate,
                 blocks
-                    .into_par_iter()
+                    .into_iter()
                     .map(|compact_block| {
                         scan_block(
                             &self.network,
@@ -260,16 +294,7 @@ where
         Ok(())
     }
 
-    pub fn get_wallet_summary(
-        &self,
-    ) -> Result<
-        Option<
-            WalletSummary<
-                <MemoryWalletDb<zcash_primitives::consensus::Network> as WalletRead>::AccountId,
-            >,
-        >,
-        Error,
-    > {
+    pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary<AccountId>>, Error> {
         Ok(self.db.get_wallet_summary(self.min_confirmations.into())?)
     }
 
@@ -299,7 +324,7 @@ where
         account_index: usize,
         to_address: ZcashAddress,
         value: u64,
-    ) -> Result<Proposal, Error> {
+    ) -> Result<Proposal<FeeRule, NoteRef>, Error> {
         let account_id = self.db.get_account_ids()?[account_index];
 
         let input_selector = GreedyInputSelector::new(
@@ -320,12 +345,7 @@ where
                 .get_target_and_anchor_heights(self.min_confirmations)?
         );
 
-        let proposal = propose_transfer::<
-            _,
-            _,
-            _,
-            <MemoryWalletDb<consensus::Network> as InputSource>::Error,
-        >(
+        let proposal = propose_transfer::<_, _, _, <W as WalletCommitmentTrees>::Error>(
             &mut self.db,
             &self.network,
             account_id,
@@ -346,7 +366,7 @@ where
     ///
     pub(crate) fn create_proposed_transactions(
         &mut self,
-        proposal: Proposal,
+        proposal: Proposal<FeeRule, NoteRef>,
         usk: &UnifiedSpendingKey,
     ) -> Result<NonEmpty<TxId>, Error> {
         let prover = LocalTxProver::bundled();

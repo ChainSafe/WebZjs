@@ -12,6 +12,14 @@ resolver = "2"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[[example]]
+name = "simple-sync"
+path = "examples/simple-sync.rs"
+
+[[example]]
+name = "message-board-sync"
+path = "examples/message-board-sync.rs"
+
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 opt-level = 3
@@ -24,12 +32,13 @@ wasm-opt = ["-O4", "-O4"]
 [features]
 default = ["native", "multicore"]
 
-native = ["tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots"]
 multicore = ["zcash_proofs/multicore", "zcash_primitives/multicore", "zcash_client_memory/multicore"]
 
 # WASM specific features
 wasm = ["console_error_panic_hook", "dep:tracing-web", "zcash_client_backend/wasm-bindgen"]
 wasm-parallel = ["wasm", "wasm-bindgen-rayon", "multicore"]
+native = ["dep:tokio", "tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots"]
+sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 no-bundler = ["wasm-bindgen-rayon?/no-bundler"]
 
@@ -38,7 +47,7 @@ no-bundler = ["wasm-bindgen-rayon?/no-bundler"]
 wasm-bindgen = "0.2.93"
 js-sys = "0.3.70"
 wasm-bindgen-futures = "0.4.43"
-web-sys = { version  = "0.3.70", features = ["console"] }
+web-sys = { version = "0.3.70", features = ["console"] }
 wasm-bindgen-rayon = { version = "1.2.1", optional = true }
 
 # WASM specific dependencies
@@ -48,19 +57,23 @@ tonic-web-wasm-client = "0.6.0"
 tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "sync", "macros"] }
 
 ## Zcash dependencies
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", default-features = false, features = ["lightwalletd-tonic"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "a77e8a0204dab421fdbf5822e585716339567b96", default-features = false, features = ["bundled-prover"] }
-
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["lightwalletd-tonic"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["bundled-prover"] }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }
 tonic = { version = "0.12", default-features = false, features = [
     "prost",
 ] }
+
+
+# Used in Native tests
+tokio = { version = "1.0", features = ["rt", "macros", "rt-multi-thread"], optional = true }
+zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -75,9 +88,11 @@ hex = "0.4.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = "0.1.40"
 rayon = "1.8"
+subtle = "2.6.1"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.43"
+tempfile = "3.12"
 # Used in Native tests
 tokio = { version = "1.0", features = ["rt", "macros"] }
 
@@ -98,3 +113,5 @@ wasm-bindgen-rayon = { git = "https://github.com/9SMTM6/wasm-bindgen-rayon", rev
 # zcash_proofs = {path = "../librustzcash/zcash_proofs" }
 # zcash_protocol =  { path = "../librustzcash/components/zcash_protocol"}
 # zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord"}
+
+
