@@ -106,6 +106,14 @@ where
         })
     }
 
+    pub fn inner_mut(&mut self) -> &mut W {
+        &mut self.db
+    }
+    
+    pub fn client(&mut self) -> &mut CompactTxStreamerClient<T> {
+        &mut self.client
+    }
+
     /// Add a new account to the wallet
     ///
     /// # Arguments

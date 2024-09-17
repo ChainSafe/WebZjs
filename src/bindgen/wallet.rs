@@ -6,6 +6,7 @@ use wasm_bindgen::prelude::*;
 use tonic_web_wasm_client::Client;
 
 use zcash_address::ZcashAddress;
+use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
@@ -44,6 +45,14 @@ impl WebWallet {
             "test" => Ok(consensus::Network::TestNetwork),
             _ => Err(Error::InvalidNetwork(network.to_string())),
         }
+    }
+
+    pub fn client(&mut self) -> &mut CompactTxStreamerClient<tonic_web_wasm_client::Client> {
+        self.inner.client()
+    }
+    
+    pub fn inner_mut(&mut self) -> &mut MemoryWallet<tonic_web_wasm_client::Client> {
+        &mut self.inner
     }
 }
 

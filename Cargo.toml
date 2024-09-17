@@ -18,6 +18,10 @@ path = "examples/simple-sync.rs"
 name = "message-board-sync"
 path = "examples/message-board-sync.rs"
 
+[[example]]
+name = "batchrunner"
+path = "examples/batchrunner.rs"
+
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 opt-level = 3
@@ -49,7 +53,7 @@ tonic-web-wasm-client = "0.6.0"
 
 ## Zcash dependencies
 zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["lightwalletd-tonic", "wasm-bindgen"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen"] }
 zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b", features = ["orchard"] }
 zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b" }
 zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "c97a3f6e60446523fafa63cdf77b6c2584ac9f3b" }
@@ -85,3 +89,16 @@ tempfile = "3.12"
 
 [patch.crates-io]
 zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord" }
+# TODO: Remove these once the PRs are merged
+shardtree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
+incrementalmerkletree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
+
+[patch.'https://github.com/chainsafe/librustzcash']
+zcash_address = { path = "../librustzcash/components/zcash_address" }
+zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
+#zcash_client_sqlite = { path = "../librustzcash/zcash_client_sqlite" }
+zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
+zcash_keys = { path = "../librustzcash/zcash_keys" }
+zcash_primitives = { path = "../librustzcash/zcash_primitives" }
+zcash_proofs = { path = "../librustzcash/zcash_proofs" }
+zcash_protocol = { path = "../librustzcash/components/zcash_protocol" }
