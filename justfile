@@ -1,36 +1,20 @@
 default:
     just --list
 
-
-
-
 build:
     wasm-pack build -t web  --release --out-dir ./packages/webz-core -Z --no-default-features --features="wasm-parallel,no-bundler" build-std="panic_abort,std"
 
-<<<<<<< HEAD
-## Wasm Tests
-test-web:
-    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features="wasm-parallel,no-bundler" -Z build-std="panic_abort,std"
-
-
-test-message-board-web:
-    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features="wasm-parallel,no-bundler" -Z build-std="panic_abort,std" --test message-board-sync
-    
-test-simple-web:
-    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features="wasm-parallel,no-bundler" -Z build-std="panic_abort,std" --test simple-sync-and-send
-=======
 # All Wasm Tests
 test-web *features:
-    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features "wasm {{features}}" -Z build-std="panic_abort,std"
+    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features "wasm no-bundler {{features}}" -Z build-std="panic_abort,std"
 
 # sync message board in the web: addigional args: sync2
 test-message-board-web *features:
-    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features "wasm {{features}}" -Z build-std="panic_abort,std" --test message-board-sync
+    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features "wasm no-bundler {{features}}" -Z build-std="panic_abort,std" --test message-board-sync
 
 # simple example in the web: additional args: sync2
 test-simple-web *features:
-    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features "wasm {{features}}" -Z build-std="panic_abort,std" --test simple-sync-and-send
->>>>>>> ec2/batchrunner
+    WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features "wasm no-bundler {{features}}" -Z build-std="panic_abort,std" --test simple-sync-and-send
 
 
 # simple example: additional args: sync2, sqlite-db
@@ -51,11 +35,11 @@ alias cw := check-wasm
 check-wasm:
     cargo check --no-default-features --features="wasm-parallel,no-bundler" --target=wasm32-unknown-unknown
 
-# run a local proxy to the lightwalletd server on port 443
+# run a local proxy to the mainnet lightwalletd server on port 443
 run-proxy:
     grpcwebproxy  --backend_max_call_recv_msg_size=10485760 --server_http_max_write_timeout=1000s --server_http_max_read_timeout=1000s \
     --backend_addr=zec.rocks:443 --run_tls_server=false --backend_tls --allow_all_origins --server_http_debug_port 443
-# run a local proxy to the lightwalletd server on port 443
+# run a local proxy to the testnet lightwalletd server on port 443
 run-test-proxy:
     grpcwebproxy  --backend_max_call_recv_msg_size=10485760 --server_http_max_write_timeout=1000s --server_http_max_read_timeout=1000s \
     --backend_addr=testnet.zec.rocks:443 --run_tls_server=false --backend_tls --allow_all_origins --server_http_debug_port 443
