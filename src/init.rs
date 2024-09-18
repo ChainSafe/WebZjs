@@ -40,7 +40,9 @@ fn setup_tracing() {
         // For WASM, we must set the directives here at compile time.
         let filter_layer = EnvFilter::default()
             .add_directive(LevelFilter::INFO.into())
-            .add_directive("zcash_client_backend=debug".parse().unwrap());
+            .add_directive("zcash_client_memory=info".parse().unwrap())
+            .add_directive("zcash_client_backend::scanning=debug".parse().unwrap())
+            .add_directive("zcash_client_backend::sync=debug".parse().unwrap());
 
         let fmt_layer = tracing_subscriber::fmt::layer()
             .with_ansi(false) // Only partially supported across browsers

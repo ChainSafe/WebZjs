@@ -7,6 +7,8 @@ use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::Network;
 use zcash_primitives::constants;
 
+use wasm_thread as thread;
+
 // Required to initialize the logger and panic hooks only once
 static INIT: Once = Once::new();
 pub fn initialize() {
@@ -19,7 +21,10 @@ const SAPLING_EFVK: &str = "zxviews1q0duytgcqqqqpqre26wkl45gvwwwd706xw608hucmvfa
 #[wasm_bindgen_test]
 async fn test_message_board() {
     initialize();
-
+    #[cfg(all(feature = "wasm-parallel"))]
+    let _ = wasm_bindgen_futures::JsFuture::from(wasm_bindgen_rayon::init_thread_pool(10)).await;
+    // let main_handler = thread::Builder::new()
+    //     .spawn_async(|| async {
     let mut w = WebWallet::new("main", "https://zcash-mainnet.chainsafe.dev", 1).unwrap();
 
     let s = zcash_keys::encoding::decode_extended_full_viewing_key(
@@ -52,4 +57,9 @@ async fn test_message_board() {
 
     let summary = w.get_wallet_summary().unwrap();
     tracing::info!("Wallet summary: {:?}", summary);
+    // })
+    // .unwrap()
+    // .join_async()
+    // .await
+    // .unwrap();
 }

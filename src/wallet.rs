@@ -51,7 +51,7 @@ const PRUNING_DEPTH: usize = 100;
 
 fn is_sync<T: Sync>() {}
 fn is_send<T: Send>() {}
-const BATCH_SIZE: u32 = 10000;
+const BATCH_SIZE: u32 = 3000;
 
 /// # A Zcash wallet
 ///
