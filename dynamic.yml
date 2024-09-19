@@ -1,9 +1,19 @@
 http:
   routers:
-    routerTest:
-      service: srv-grpc
-      rule: Host(`localhost`)
+    routerMainnet:
+      service: srv-grpc-mainnet
+      rule: PathPrefix(`/mainnet`)
       middlewares:
+        - strip-network-prefix
+        - "test-grpc-web"
+      entryPoints:
+        - web
+
+    routerTestnet:
+      service: srv-grpc-testnet
+      rule: PathPrefix(`/testnet`)
+      middlewares:
+        - strip-network-prefix
         - "test-grpc-web"
       entryPoints:
         - web
@@ -13,8 +23,20 @@ http:
       grpcWeb:
         allowOrigins:
           - "*"
+
+    strip-network-prefix:
+      stripPrefix:
+        prefixes:
+          - "/mainnet"
+          - "/testnet"
+  
   services:
-    srv-grpc:
+    srv-grpc-mainnet:
+      loadBalancer:
+        servers:
+          - url: https://zec.rocks:443
+
+    srv-grpc-testnet:
       loadBalancer:
         servers:
           - url: https://testnet.zec.rocks:443

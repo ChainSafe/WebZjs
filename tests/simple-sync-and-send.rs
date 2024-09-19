@@ -38,7 +38,7 @@ async fn test_get_and_scan_range() {
     assert!(!thread::is_web_worker_thread());
     let main_handler = thread::Builder::new().spawn_async(|| async {
         assert!(thread::is_web_worker_thread());
-        let mut w = WebWallet::new("test", "http://localhost:1234", 1).unwrap();
+        let mut w = WebWallet::new("test", "http://localhost:1234/testnet", 1).unwrap();
 
         let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
         tracing::info!("Created account with id: {}", id);
