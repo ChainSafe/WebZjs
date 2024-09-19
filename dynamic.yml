@@ -1,0 +1,29 @@
+http:
+  routers:
+    routerTest:
+      service: srv-grpc
+      rule: Host(`*`)
+      entryPoints:
+        - web
+
+  middlewares:
+    test-grpc-web:
+      grpcWeb:
+        allowOrigins:
+          - "*"
+      headers:
+        accessControlAllowMethods:
+          - "POST"
+          - "GET"
+          - "OPTIONS"
+          - "PUT"
+        accessControlAllowHeaders: "*"
+        accessControlAllowOriginList: "*"
+        addVaryHeader: true
+        accessControlMaxAge: 100
+
+  services:
+    srv-grpc:
+      loadBalancer:
+        servers:
+          - url: https://zec.rocks:443

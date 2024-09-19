@@ -14,9 +14,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, UnwrapThrowExt};
 use wasm_bindgen_futures::{spawn_local, JsFuture};
 use wasm_thread as thread;
-use web_sys::{
-    DedicatedWorkerGlobalScope, Headers, RequestCache, RequestCredentials, RequestInit, Response,
-};
+
 use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
 use zcash_client_backend::proto::service::ChainSpec;
 
@@ -40,7 +38,7 @@ async fn test_get_and_scan_range() {
     assert!(!thread::is_web_worker_thread());
     let main_handler = thread::Builder::new().spawn_async(|| async {
         assert!(thread::is_web_worker_thread());
-        let mut w = WebWallet::new("test", "https://zcash-testnet.chainsafe.dev", 1).unwrap();
+        let mut w = WebWallet::new("test", "http://localhost:1234", 1).unwrap();
 
         let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
         tracing::info!("Created account with id: {}", id);
