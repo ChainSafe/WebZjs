@@ -18,4 +18,3 @@ http:
       loadBalancer:
         servers:
           - url: https://testnet.zec.rocks:443
-        passHostHeader: true
