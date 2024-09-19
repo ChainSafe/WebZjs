@@ -3335,6 +3335,7 @@ dependencies = [
 name = "zcash_client_memory"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "bs58",
  "byteorder",
  "group",

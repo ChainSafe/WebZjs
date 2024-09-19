@@ -48,9 +48,6 @@ use zcash_proofs::prover::LocalTxProver;
 use zcash_client_backend::sync::run;
 /// The maximum number of checkpoints to store in each shard-tree
 const PRUNING_DEPTH: usize = 100;
-
-fn is_sync<T: Sync>() {}
-fn is_send<T: Send>() {}
 const BATCH_SIZE: u32 = 10000;
 
 /// # A Zcash wallet
