@@ -5,7 +5,6 @@ http:
       rule: Host(`localhost`)
       middlewares:
         - "test-grpc-web"
-        - "test-headers"
       entryPoints:
         - web
 
@@ -14,20 +13,6 @@ http:
       grpcWeb:
         allowOrigins:
           - "*"
-    test-headers:
-      headers:
-        accessControlAllowMethods:
-          - "POST"
-          - "GET"
-          - "OPTIONS"
-          - "PUT"
-        accessControlAllowHeaders: "*"
-        accessControlAllowOriginList: "*"
-        addVaryHeader: true
-        accessControlMaxAge: 100
-        customRequestHeaders:
-          - te: trailers
-
   services:
     srv-grpc:
       loadBalancer:
