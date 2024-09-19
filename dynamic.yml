@@ -2,7 +2,10 @@ http:
   routers:
     routerTest:
       service: srv-grpc
-      rule: Host(`*`)
+      rule: Host(`localhost`)
+      middlewares:
+        - "test-grpc-web"
+        - "test-headers"
       entryPoints:
         - web
 
@@ -11,6 +14,7 @@ http:
       grpcWeb:
         allowOrigins:
           - "*"
+    test-headers:
       headers:
         accessControlAllowMethods:
           - "POST"
@@ -21,9 +25,12 @@ http:
         accessControlAllowOriginList: "*"
         addVaryHeader: true
         accessControlMaxAge: 100
+        customRequestHeaders:
+          - te: trailers
 
   services:
     srv-grpc:
       loadBalancer:
         servers:
-          - url: https://zec.rocks:443
+          - url: https://testnet.zec.rocks:443
+        passHostHeader: true

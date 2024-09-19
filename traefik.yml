@@ -6,12 +6,12 @@ api:
   insecure: true
 
 log:
-  level: DEBUG
+  level: INFO
   format: common
 
 entryPoints:
   web:
-    address: :1234
+    address: :80
 
 providers:
   file:
