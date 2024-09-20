@@ -55,7 +55,7 @@ async fn test_message_board() {
             }
             tracing::info!("Syncing complete :)");
 
-            let summary = w.get_wallet_summary().unwrap();
+            let summary = w.get_wallet_summary().await.unwrap();
             tracing::info!("Wallet summary: {:?}", summary);
         })
         .unwrap()

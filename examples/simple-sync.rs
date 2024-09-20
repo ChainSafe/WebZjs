@@ -86,7 +86,7 @@ async fn main() {
 
     tracing::info!("Syncing complete :)");
 
-    let summary = w.get_wallet_summary().unwrap();
+    let summary = w.get_wallet_summary().await.unwrap();
     tracing::info!("Wallet summary: {:?}", summary);
 
     tracing::info!("Proposing a transaction");
@@ -95,6 +95,6 @@ async fn main() {
     w.transfer(SEED, 0, addr.unwrap(), 1000).await.unwrap();
     tracing::info!("Transaction proposed");
 
-    let summary = w.get_wallet_summary().unwrap();
+    let summary = w.get_wallet_summary().await.unwrap();
     tracing::info!("Wallet summary: {:?}", summary);
 }

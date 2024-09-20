@@ -4,6 +4,7 @@ use bip0039::{English, Mnemonic};
 use futures_util::{Stream, StreamExt, TryStreamExt};
 use nonempty::NonEmpty;
 use secrecy::{ExposeSecret, SecretVec, Zeroize};
+use std::borrow::BorrowMut;
 use tonic::{
     client::GrpcService,
     codegen::{Body, Bytes, StdError},
@@ -17,7 +18,10 @@ use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use std::fmt::Debug;
 use std::hash::Hash;
+use std::ops::DerefMut;
+use std::sync::Arc;
 use subtle::ConditionallySelectable;
+use tokio::sync::{Mutex, RwLock};
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
     create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
@@ -71,7 +75,7 @@ const BATCH_SIZE: u32 = 10000;
 ///
 pub struct Wallet<W, T> {
     /// Internal database used to maintain wallet data (e.g. accounts, transactions, cached blocks)
-    pub(crate) db: W,
+    pub(crate) db: Arc<RwLock<W>>,
     // gRPC client used to connect to a lightwalletd instance for network data
     pub(crate) client: CompactTxStreamerClient<T>,
     pub(crate) network: consensus::Network,
@@ -109,19 +113,11 @@ where
         min_confirmations: NonZeroU32,
     ) -> Result<Self, Error> {
         Ok(Wallet {
-            db,
+            db: Arc::new(RwLock::new(db)),
             client: CompactTxStreamerClient::new(client),
             network,
             min_confirmations,
         })
-    }
-
-    pub fn db_mut(&mut self) -> &mut W {
-        &mut self.db
-    }
-
-    pub fn client(&mut self) -> &mut CompactTxStreamerClient<T> {
-        &mut self.client
     }
 
     /// Add a new account to the wallet
@@ -132,7 +128,7 @@ where
     /// birthday_height - The block height at which the account was created, optionally None and the current height is used
     ///
     pub async fn create_account(
-        &mut self,
+        &self,
         seed_phrase: &str,
         account_index: u32,
         birthday_height: Option<u32>,
@@ -146,7 +142,7 @@ where
     }
 
     pub async fn import_ufvk(
-        &mut self,
+        &self,
         ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
@@ -156,16 +152,16 @@ where
 
     /// Helper method for importing an account directly from a Ufvk or from seed.
     async fn import_account_ufvk(
-        &mut self,
+        &self,
         ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
         purpose: AccountPurpose,
     ) -> Result<String, Error> {
+        let mut client = self.client.clone();
         let birthday = match birthday_height {
             Some(height) => height,
             None => {
-                let chain_tip: u32 = self
-                    .client
+                let chain_tip: u32 = client
                     .get_latest_block(service::ChainSpec::default())
                     .await?
                     .into_inner()
@@ -183,17 +179,21 @@ where
                 height: (birthday - 1).into(),
                 ..Default::default()
             };
-            let treestate = self.client.get_tree_state(request).await?.into_inner();
+            let treestate = client.get_tree_state(request).await?.into_inner();
             AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
         };
 
-        let _account = self.db.import_account_ufvk(ufvk, &birthday, purpose)?;
+        let _account = self
+            .db
+            .write()
+            .await
+            .import_account_ufvk(ufvk, &birthday, purpose)?;
 
         Ok("0".to_string())
     }
 
-    pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
-        Ok(self.db.suggest_scan_ranges().map(|ranges| {
+    pub async fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
+        Ok(self.db.read().await.suggest_scan_ranges().map(|ranges| {
             ranges
                 .iter()
                 .map(|scan_range| {
@@ -206,16 +206,17 @@ where
         })?)
     }
 
-    pub async fn sync2(&mut self) -> Result<(), Error> {
-        let mut client = self.client().clone();
+    pub async fn sync2(&self) -> Result<(), Error> {
+        let mut client = self.client.clone();
         // TODO: This should be held in the Wallet struct so we can download in parallel
         let db_cache = MemBlockCache::new();
 
+        let mut db = self.db.write().await;
         run(
             &mut client,
             &self.network.clone(),
             &db_cache,
-            self.db_mut(),
+            &mut *db,
             BATCH_SIZE,
         )
         .await
@@ -224,11 +225,11 @@ where
 
     /// Synchronize the wallet with the blockchain up to the tip
     /// The passed callback will be called for every batch of blocks processed with the current progress
-    pub async fn sync(&mut self, callback: impl Fn(BlockHeight, BlockHeight)) -> Result<(), Error> {
+    pub async fn sync(&self, callback: impl Fn(BlockHeight, BlockHeight)) -> Result<(), Error> {
         let tip = self.update_chain_tip().await?;
 
         tracing::info!("Retrieving suggested scan ranges from wallet");
-        let scan_ranges = self.db.suggest_scan_ranges()?;
+        let scan_ranges = self.db.read().await.suggest_scan_ranges()?;
         tracing::info!("Suggested scan ranges: {:?}", scan_ranges);
 
         // TODO: Ensure wallet's view of the chain tip as of the previous wallet session is valid.
@@ -265,10 +266,10 @@ where
     }
 
     /// Download and process all blocks in the given range
-    async fn fetch_and_scan_range(&mut self, start: u32, end: u32) -> Result<(), Error> {
+    async fn fetch_and_scan_range(&self, start: u32, end: u32) -> Result<(), Error> {
+        let mut client = self.client.clone();
         // get the chainstate prior to the range
-        let tree_state = self
-            .client
+        let tree_state = client
             .get_tree_state(service::BlockId {
                 height: (start - 1).into(),
                 ..Default::default()
@@ -277,13 +278,19 @@ where
         let chainstate = tree_state.into_inner().to_chain_state()?;
 
         // Get the scanning keys from the DB
-        let account_ufvks = self.db.get_unified_full_viewing_keys()?;
+        let account_ufvks = self.db.read().await.get_unified_full_viewing_keys()?;
         let scanning_keys = ScanningKeys::from_account_ufvks(account_ufvks);
 
         // Get the nullifiers for the unspent notes we are tracking
         let nullifiers = Nullifiers::new(
-            self.db.get_sapling_nullifiers(NullifierQuery::Unspent)?,
-            self.db.get_orchard_nullifiers(NullifierQuery::Unspent)?,
+            self.db
+                .read()
+                .await
+                .get_sapling_nullifiers(NullifierQuery::Unspent)?,
+            self.db
+                .read()
+                .await
+                .get_orchard_nullifiers(NullifierQuery::Unspent)?,
         );
 
         let range = service::BlockRange {
@@ -299,8 +306,7 @@ where
 
         tracing::info!("Scanning block range: {:?} to {:?}", start, end);
 
-        let scanned_blocks = self
-            .client
+        let scanned_blocks = client
             .get_block_range(range)
             .await?
             .into_inner()
@@ -316,20 +322,28 @@ where
             .try_collect()
             .await?;
 
-        self.db.put_blocks(&chainstate, scanned_blocks)?;
+        self.db
+            .write()
+            .await
+            .put_blocks(&chainstate, scanned_blocks)?;
 
         Ok(())
     }
 
-    pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary<AccountId>>, Error> {
-        Ok(self.db.get_wallet_summary(self.min_confirmations.into())?)
+    pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary<AccountId>>, Error> {
+        Ok(self
+            .db
+            .read()
+            .await
+            .get_wallet_summary(self.min_confirmations.into())?)
     }
 
-    pub(crate) async fn update_chain_tip(&mut self) -> Result<BlockHeight, Error> {
+    pub(crate) async fn update_chain_tip(&self) -> Result<BlockHeight, Error> {
         tracing::info!("Retrieving chain tip from lightwalletd");
 
         let tip_height = self
             .client
+            .clone()
             .get_latest_block(service::ChainSpec::default())
             .await?
             .get_ref()
@@ -338,7 +352,7 @@ where
             .unwrap();
 
         tracing::info!("Latest block height is {}", tip_height);
-        self.db.update_chain_tip(tip_height)?;
+        self.db.write().await.update_chain_tip(tip_height)?;
 
         Ok(tip_height)
     }
@@ -346,13 +360,13 @@ where
     ///
     /// Create a transaction proposal to send funds from the wallet to a given address
     ///
-    fn propose_transfer(
-        &mut self,
+    async fn propose_transfer(
+        &self,
         account_index: usize,
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<Proposal<FeeRule, NoteRef>, Error> {
-        let account_id = self.db.get_account_ids()?[account_index];
+        let account_id = self.db.read().await.get_account_ids()?[account_index];
 
         let input_selector = GreedyInputSelector::new(
             SingleOutputChangeStrategy::new(FeeRule::standard(), None, ShieldedProtocol::Orchard),
@@ -365,15 +379,17 @@ where
         )])
         .unwrap();
 
-        tracing::info!("Chain height: {:?}", self.db.chain_height()?);
+        tracing::info!("Chain height: {:?}", self.db.read().await.chain_height()?);
         tracing::info!(
             "target and anchor heights: {:?}",
             self.db
+                .read()
+                .await
                 .get_target_and_anchor_heights(self.min_confirmations)?
         );
-
+        let mut db = self.db.write().await;
         let proposal = propose_transfer::<_, _, _, <W as WalletCommitmentTrees>::Error>(
-            &mut self.db,
+            &mut *db,
             &self.network,
             account_id,
             &input_selector,
@@ -391,13 +407,13 @@ where
     /// Note: At the moment this requires a USK but ideally we want to be able to hand the signing off to a separate service
     ///     e.g. browser plugin, hardware wallet, etc. Will need to look into refactoring librustzcash create_proposed_transactions to allow for this
     ///
-    pub(crate) fn create_proposed_transactions(
-        &mut self,
+    pub(crate) async fn create_proposed_transactions(
+        &self,
         proposal: Proposal<FeeRule, NoteRef>,
         usk: &UnifiedSpendingKey,
     ) -> Result<NonEmpty<TxId>, Error> {
         let prover = LocalTxProver::bundled();
-
+        let mut db = self.db.write().await;
         let transactions = create_proposed_transactions::<
             _,
             _,
@@ -405,7 +421,7 @@ where
             _,
             _,
         >(
-            &mut self.db,
+            &mut *db,
             &self.network,
             &prover,
             &prover,
@@ -427,22 +443,27 @@ where
     /// # Arguments
     ///
     pub async fn transfer(
-        &mut self,
+        &self,
         seed_phrase: &str,
         from_account_index: usize,
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<(), Error> {
+        let mut client = self.client.clone();
         let usk = usk_from_seed_str(seed_phrase, 0, &self.network)?;
-        let proposal = self.propose_transfer(from_account_index, to_address, value)?;
+        let proposal = self
+            .propose_transfer(from_account_index, to_address, value)
+            .await?;
         // TODO: Add callback for approving the transaction here
-        let txids = self.create_proposed_transactions(proposal, &usk)?;
+        let txids = self.create_proposed_transactions(proposal, &usk).await?;
 
         // send the transactions to the network!!
         tracing::info!("Sending transaction...");
         let txid = *txids.first();
         let (txid, raw_tx) = self
             .db
+            .read()
+            .await
             .get_transaction(txid)?
             .map(|tx| {
                 let mut raw_tx = service::RawTransaction::default();
@@ -453,7 +474,7 @@ where
 
         // tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
 
-        let response = self.client.send_transaction(raw_tx).await?.into_inner();
+        let response = client.send_transaction(raw_tx).await?.into_inner();
 
         if response.error_code != 0 {
             Err(Error::SendFailed {

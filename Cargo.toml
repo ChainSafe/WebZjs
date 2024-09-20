@@ -38,7 +38,7 @@ multicore = ["zcash_proofs/multicore", "zcash_primitives/multicore", "zcash_clie
 # WASM specific features
 wasm = ["console_error_panic_hook", "dep:tracing-web", "zcash_client_backend/wasm-bindgen"]
 wasm-parallel = ["wasm", "wasm-bindgen-rayon", "multicore"]
-native = ["dep:tokio", "tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots"]
+native = ["tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots", "tokio/macros", "tokio/rt", "tokio/rt-multi-thread"]
 sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 no-bundler = ["wasm-bindgen-rayon?/no-bundler"]
@@ -90,7 +90,7 @@ tonic = { version = "0.12", default-features = false, features = [
 
 
 # Used in Native tests
-tokio = { version = "1.0", features = ["rt", "macros", "rt-multi-thread"], optional = true }
+tokio = { version = "1.0" }
 zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
