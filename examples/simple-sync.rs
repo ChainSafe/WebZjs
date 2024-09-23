@@ -96,7 +96,6 @@ async fn main() {
     let summary = w.get_wallet_summary().await.unwrap();
     tracing::info!("Wallet summary: {:?}", summary);
 
-
     #[cfg(not(feature = "sqlite-db"))]
     {
         tracing::info!("Serializing wallet");
