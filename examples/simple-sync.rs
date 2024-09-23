@@ -97,4 +97,19 @@ async fn main() {
 
     let summary = w.get_wallet_summary().await.unwrap();
     tracing::info!("Wallet summary: {:?}", summary);
+
+
+    #[cfg(not(feature = "sqlite-db"))]
+    {
+        tracing::info!("Serializing wallet");
+        let serialized_wallet = w.to_vec_postcard().await;
+        let byte_count = byte_unit::Byte::from_u64(serialized_wallet.len() as u64);
+
+        tracing::info!(
+            "Wallet serialized: {}",
+            byte_count
+                .get_adjusted_unit(byte_unit::Unit::MB)
+                .to_string()
+        )
+    }
 }

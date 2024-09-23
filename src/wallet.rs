@@ -16,6 +16,7 @@ use crate::BlockRange;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
+use serde::{Serialize, Serializer};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::DerefMut;
@@ -118,6 +119,21 @@ where
             network,
             min_confirmations,
         })
+    }
+
+    pub async fn serialize_wallet<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        W: Serialize,
+        S: Serializer,
+    {
+        self.db.read().await.serialize(serializer)
+    }
+
+    pub async fn to_vec_postcard(&self) -> Vec<u8>
+    where
+        W: Serialize,
+    {
+        postcard::to_allocvec(&*self.db.read().await).unwrap()
     }
 
     /// Add a new account to the wallet
