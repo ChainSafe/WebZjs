@@ -5,11 +5,14 @@ use webz_core::Wallet;
 use zcash_address::ZcashAddress;
 use zcash_primitives::consensus::Network;
 
+wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
 const SEED: &str = "visit armed kite pen cradle toward reward clay marble oil write dove blind oyster silk oyster original message skate bench tone enable stadium element";
 const HD_INDEX: u32 = 0;
 const BIRTHDAY: Option<u32> = Some(2577329);
 
 static INIT: Once = Once::new();
+
 pub fn initialize() {
     INIT.call_once(|| {
         webz_core::init::start();
@@ -23,6 +26,11 @@ async fn main() {
     let _db_data = tempfile::NamedTempFile::new_in(db_cache.path()).unwrap();
 
     initialize();
+    rayon::spawn(|| {
+        let num_parallel = rayon::current_num_threads();
+        tracing::info!("Native rayon has {} threads", num_parallel);
+    });
+
     let url = "https://testnet.zec.rocks:443";
     let c = tonic::transport::Channel::from_shared(url).unwrap();
 

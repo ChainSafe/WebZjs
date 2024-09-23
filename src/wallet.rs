@@ -24,6 +24,7 @@ use zcash_client_backend::data_api::{
     WalletWrite,
 };
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
+use zcash_client_backend::proposal::Proposal;
 use zcash_client_backend::proto::service::{
     self, compact_tx_streamer_client::CompactTxStreamerClient,
 };
@@ -39,9 +40,7 @@ use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
-use zcash_client_backend::proposal::Proposal;
 use zcash_client_backend::sync::run;
-
 const BATCH_SIZE: u32 = 10000;
 
 /// # A Zcash wallet
@@ -445,7 +444,7 @@ where
             })
             .unwrap();
 
-        tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
+        // tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
 
         let response = self.client.send_transaction(raw_tx).await?.into_inner();
 

@@ -7,6 +7,8 @@ use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::Network;
 use zcash_primitives::constants;
 
+use wasm_thread as thread;
+
 // Required to initialize the logger and panic hooks only once
 static INIT: Once = Once::new();
 pub fn initialize() {
@@ -19,37 +21,45 @@ const SAPLING_EFVK: &str = "zxviews1q0duytgcqqqqpqre26wkl45gvwwwd706xw608hucmvfa
 #[wasm_bindgen_test]
 async fn test_message_board() {
     initialize();
+    #[cfg(feature = "wasm-parallel")]
+    let _ = wasm_bindgen_futures::JsFuture::from(wasm_bindgen_rayon::init_thread_pool(10)).await;
+    let main_handler = thread::Builder::new()
+        .spawn_async(|| async {
+            let mut w = WebWallet::new("main", "http://localhost:1234/mainnet", 1).unwrap();
 
-    let mut w = WebWallet::new("main", "https://zcash-mainnet.chainsafe.dev", 1).unwrap();
+            let s = zcash_keys::encoding::decode_extended_full_viewing_key(
+                constants::mainnet::HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY,
+                SAPLING_EFVK.trim(),
+            )
+            .unwrap();
 
-    let s = zcash_keys::encoding::decode_extended_full_viewing_key(
-        constants::mainnet::HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY,
-        SAPLING_EFVK.trim(),
-    )
-    .unwrap();
+            let ufvk = UnifiedFullViewingKey::from_sapling_extended_full_viewing_key(s).unwrap();
+            let ufvk_str = ufvk.encode(&Network::MainNetwork);
+            let id = w.import_ufvk(&ufvk_str, Some(2477329)).await.unwrap();
+            tracing::info!("Created account with id: {}", id);
 
-    let ufvk = UnifiedFullViewingKey::from_sapling_extended_full_viewing_key(s).unwrap();
-    let ufvk_str = ufvk.encode(&Network::MainNetwork);
-    let id = w.import_ufvk(&ufvk_str, Some(2477329)).await.unwrap();
-    tracing::info!("Created account with id: {}", id);
+            #[cfg(not(feature = "sync2"))]
+            {
+                tracing::info!("Syncing wallet with our sync impl");
+                w.sync(&js_sys::Function::new_with_args(
+                    "scanned_to, tip",
+                    "console.log('Scanned: ', scanned_to, '/', tip)",
+                ))
+                .await
+                .unwrap();
+            }
+            #[cfg(feature = "sync2")]
+            {
+                tracing::info!("Syncing wallet with sync2");
+                w.sync2().await.unwrap();
+            }
+            tracing::info!("Syncing complete :)");
 
-    #[cfg(not(feature = "sync2"))]
-    {
-        tracing::info!("Syncing wallet with our sync impl");
-        w.sync(&js_sys::Function::new_with_args(
-            "scanned_to, tip",
-            "console.log('Scanned: ', scanned_to, '/', tip)",
-        ))
-        .await
-        .unwrap();
-    }
-    #[cfg(feature = "sync2")]
-    {
-        tracing::info!("Syncing wallet with sync2");
-        w.sync2().await.unwrap();
-    }
-    tracing::info!("Syncing complete :)");
+            let summary = w.get_wallet_summary().unwrap();
+            tracing::info!("Wallet summary: {:?}", summary);
+        })
+        .unwrap()
+        .join_async();
 
-    let summary = w.get_wallet_summary().unwrap();
-    tracing::info!("Wallet summary: {:?}", summary);
+    main_handler.await.unwrap();
 }

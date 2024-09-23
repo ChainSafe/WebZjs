@@ -6,6 +6,8 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/ChainSafe/WebZjs"
 description = "A browser client-side library for implementing Zcash wallets"
 edition = "2021"
+resolver = "2"
+
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -29,30 +31,40 @@ codegen-units = 1
 wasm-opt = ["-O4", "-O4"]
 
 [features]
-default = ["native"]
+default = ["native", "multicore"]
 
-wasm = ["console_error_panic_hook", "dep:tracing-web"]
+multicore = ["zcash_proofs/multicore", "zcash_primitives/multicore", "zcash_client_memory/multicore"]
+
+# WASM specific features
+wasm = ["console_error_panic_hook", "dep:tracing-web", "zcash_client_backend/wasm-bindgen"]
+wasm-parallel = ["wasm", "wasm-bindgen-rayon", "multicore"]
 native = ["dep:tokio", "tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots"]
 sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
+no-bundler = ["wasm-bindgen-rayon?/no-bundler"]
 
 sync2 = []
 
 [dependencies]
 ## Web dependencies
-wasm-bindgen = "0.2.84"
-js-sys = "0.3.69"
-wasm-bindgen-futures = "0.4.42"
-web-sys = { version = "0.3.69", features = ["console"] }
+wasm-bindgen = "0.2.93"
+js-sys = "0.3.70"
+wasm-bindgen-futures = "0.4.43"
+web-sys = { version = "0.3.70", features = [
+    "console",
+] }
+wasm-bindgen-rayon = { version = "1.2.1", optional = true }
 
 # WASM specific dependencies
 tracing-web = { version = "0.1.3", optional = true }
 console_error_panic_hook = { version = "0.1.7", optional = true }
 tonic-web-wasm-client = "0.6.0"
+tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "sync", "macros", "time"] }
 
 ## Zcash dependencies
+
 zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
 zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", features = ["orchard"] }
 zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b" }
 zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b" }
@@ -63,6 +75,7 @@ prost = { version = "0.12", default-features = false }
 tonic = { version = "0.12", default-features = false, features = [
     "prost",
 ] }
+
 
 # Used in Native tests
 tokio = { version = "1.0", features = ["rt", "macros", "rt-multi-thread"], optional = true }
@@ -80,22 +93,33 @@ nonempty = "0.7"
 hex = "0.4.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = "0.1.40"
+rayon = { version = "1.8", features = ["web_spin_lock"] }
 subtle = "2.6.1"
+wasm_thread = { git = "https://github.com/WilsonGramer/wasm_thread.git", rev = "eb41bcc0d98ce0620a313687c0344341391b9d78", features = ["keep_worker_alive"] }
+
+wasm_sync = "0.1.2"
+http = { version = "1.1.0", default-features = false }
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.42"
+wasm-bindgen-test = "0.3.43"
 tempfile = "3.12"
+# Used in Native tests
+tokio = { version = "1.0", features = ["rt", "macros"] }
+
 
 [patch.crates-io]
 zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord" }
+# TODO: See: https://github.com/RReverser/wasm-bindgen-rayon/pull/12
+wasm-bindgen-rayon = { git = "https://github.com/9SMTM6/wasm-bindgen-rayon", rev = "d1816e5bc2bf928ff5442355c04500a381d66a41" }
 # TODO: Remove these once the PRs are merged
 shardtree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 incrementalmerkletree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 
+
 #[patch.'https://github.com/chainsafe/librustzcash']
 #zcash_address = { path = "../librustzcash/components/zcash_address" }
 #zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
-##zcash_client_sqlite = { path = "../librustzcash/zcash_client_sqlite" }
+#zcash_client_sqlite = { path = "../librustzcash/zcash_client_sqlite" }
 #zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
 #zcash_keys = { path = "../librustzcash/zcash_keys" }
 #zcash_primitives = { path = "../librustzcash/zcash_primitives" }
