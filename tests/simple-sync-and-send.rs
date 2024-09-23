@@ -1,22 +1,12 @@
 use wasm_bindgen_test::*;
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
-use http::Uri;
-use js_sys::Promise;
 use std::sync::Once;
 use webz_core::bindgen::wallet::WebWallet;
 
-use tokio_with_wasm::alias as tokio;
-use tonic::{Request, Status};
-use tonic_web_wasm_client::options::{Credentials, FetchOptions, Mode, ReferrerPolicy};
-use tonic_web_wasm_client::Client;
-use wasm_bindgen::prelude::wasm_bindgen;
-use wasm_bindgen::{JsCast, UnwrapThrowExt};
-use wasm_bindgen_futures::{spawn_local, JsFuture};
+use wasm_bindgen::UnwrapThrowExt;
+use wasm_bindgen_futures::JsFuture;
 use wasm_thread as thread;
-
-use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
-use zcash_client_backend::proto::service::ChainSpec;
 
 const SEED: &str = "visit armed kite pen cradle toward reward clay marble oil write dove blind oyster silk oyster original message skate bench tone enable stadium element";
 const HD_INDEX: u32 = 0;
