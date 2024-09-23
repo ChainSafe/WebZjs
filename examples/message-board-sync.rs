@@ -60,7 +60,7 @@ async fn main() {
     .unwrap();
 
     let ufvk = UnifiedFullViewingKey::from_sapling_extended_full_viewing_key(s).unwrap();
-    let id = w.import_ufvk(&ufvk, Some(2477329)).await.unwrap();
+    let id = w.import_ufvk(&ufvk, Some(2277329)).await.unwrap();
     tracing::info!("Created account with id: {}", id);
 
     #[cfg(not(feature = "sync2"))]
@@ -80,6 +80,20 @@ async fn main() {
 
     tracing::info!("Syncing complete :)");
 
-    let summary = w.get_wallet_summary().unwrap();
+    let summary = w.get_wallet_summary().await.unwrap();
     tracing::info!("Wallet summary: {:?}", summary);
+
+    #[cfg(not(feature = "sqlite-db"))]
+    {
+        tracing::info!("Serializing wallet");
+        let serialized_wallet = w.to_vec_postcard().await;
+        let byte_count = byte_unit::Byte::from_u64(serialized_wallet.len() as u64);
+
+        tracing::info!(
+            "Wallet serialized: {}",
+            byte_count
+                .get_adjusted_unit(byte_unit::Unit::MB)
+                .to_string()
+        )
+    }
 }

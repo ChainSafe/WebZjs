@@ -47,8 +47,8 @@ impl WebWallet {
         }
     }
 
-    pub fn client(&mut self) -> &mut CompactTxStreamerClient<tonic_web_wasm_client::Client> {
-        self.inner.client()
+    pub fn client(&self) -> CompactTxStreamerClient<tonic_web_wasm_client::Client> {
+        self.inner.client.clone()
     }
 
     pub fn inner_mut(&mut self) -> &mut MemoryWallet<tonic_web_wasm_client::Client> {
@@ -109,8 +109,8 @@ impl WebWallet {
         self.inner.import_ufvk(&ufvk, birthday_height).await
     }
 
-    pub fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
-        self.inner.suggest_scan_ranges()
+    pub async fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
+        self.inner.suggest_scan_ranges().await
     }
 
     /// Synchronize the wallet with the blockchain up to the tip
@@ -135,8 +135,8 @@ impl WebWallet {
         self.inner.sync2().await
     }
 
-    pub fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
-        Ok(self.inner.get_wallet_summary()?.map(Into::into))
+    pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
+        Ok(self.inner.get_wallet_summary().await?.map(Into::into))
     }
 
     ///

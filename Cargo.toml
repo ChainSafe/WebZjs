@@ -38,7 +38,7 @@ multicore = ["zcash_proofs/multicore", "zcash_primitives/multicore", "zcash_clie
 # WASM specific features
 wasm = ["console_error_panic_hook", "dep:tracing-web", "zcash_client_backend/wasm-bindgen"]
 wasm-parallel = ["wasm", "wasm-bindgen-rayon", "multicore"]
-native = ["dep:tokio", "tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots"]
+native = ["tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots", "tokio/macros", "tokio/rt", "tokio/rt-multi-thread"]
 sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 no-bundler = ["wasm-bindgen-rayon?/no-bundler"]
@@ -63,12 +63,12 @@ tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "syn
 
 ## Zcash dependencies
 
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["bundled-prover"] }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "b6d32dd9a57165fb1508e9c1c8ab1a3aba09c7f4", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "b6d32dd9a57165fb1508e9c1c8ab1a3aba09c7f4", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "b6d32dd9a57165fb1508e9c1c8ab1a3aba09c7f4", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "b6d32dd9a57165fb1508e9c1c8ab1a3aba09c7f4" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "b6d32dd9a57165fb1508e9c1c8ab1a3aba09c7f4" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "b6d32dd9a57165fb1508e9c1c8ab1a3aba09c7f4", default-features = false, features = ["bundled-prover"] }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }
@@ -78,8 +78,8 @@ tonic = { version = "0.12", default-features = false, features = [
 
 
 # Used in Native tests
-tokio = { version = "1.0", features = ["rt", "macros", "rt-multi-thread"], optional = true }
-zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "0fdd2fbb992a6f84eba45f488ee74a75d08d449b", default-features = false, features = ["unstable", "orchard"], optional = true }
+tokio = { version = "1.0" }
+zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "b6d32dd9a57165fb1508e9c1c8ab1a3aba09c7f4", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -99,12 +99,15 @@ wasm_thread = { git = "https://github.com/WilsonGramer/wasm_thread.git", rev = "
 
 wasm_sync = "0.1.2"
 http = { version = "1.1.0", default-features = false }
+serde = { version = "1", features = ["derive"], default-features = false }
+postcard = { version = "1.0.10", features = ["alloc"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.43"
 tempfile = "3.12"
 # Used in Native tests
 tokio = { version = "1.0", features = ["rt", "macros"] }
+byte-unit = { version = "5.1.4", features = ["byte"] }
 
 
 [patch.crates-io]
