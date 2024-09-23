@@ -1,20 +1,16 @@
 use std::num::NonZeroU32;
 
 use bip0039::{English, Mnemonic};
-use futures_util::{Stream, StreamExt, TryStreamExt};
+use futures_util::{StreamExt, TryStreamExt};
 use nonempty::NonEmpty;
 use secrecy::{ExposeSecret, SecretVec, Zeroize};
 use tonic::{
     client::GrpcService,
     codegen::{Body, Bytes, StdError},
-    Status, Streaming,
 };
 
 use crate::error::Error;
 use crate::BlockRange;
-use rayon::iter::IntoParallelIterator;
-use rayon::iter::IntoParallelRefIterator;
-use rayon::iter::ParallelIterator;
 use std::fmt::Debug;
 use std::hash::Hash;
 use subtle::ConditionallySelectable;
@@ -29,7 +25,6 @@ use zcash_client_backend::data_api::{
 };
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::proposal::Proposal;
-use zcash_client_backend::proto::compact_formats::CompactBlock;
 use zcash_client_backend::proto::service::{
     self, compact_tx_streamer_client::CompactTxStreamerClient,
 };
@@ -46,8 +41,6 @@ use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
 use zcash_client_backend::sync::run;
-/// The maximum number of checkpoints to store in each shard-tree
-const PRUNING_DEPTH: usize = 100;
 const BATCH_SIZE: u32 = 10000;
 
 /// # A Zcash wallet
