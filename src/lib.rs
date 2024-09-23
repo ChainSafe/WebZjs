@@ -19,7 +19,7 @@ use zcash_primitives::consensus;
 /// The maximum number of checkpoints to store in each shard-tree
 pub const PRUNING_DEPTH: usize = 100;
 
-#[cfg(all(feature = "wasm-parallel"))]
+#[cfg(feature = "wasm-parallel")]
 pub use wasm_bindgen_rayon::init_thread_pool;
 
 #[wasm_bindgen]
