@@ -705,6 +705,7 @@ checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
 [[package]]
 name = "equihash"
 version = "0.2.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "blake2b_simd",
  "byteorder",
@@ -756,6 +757,7 @@ dependencies = [
 [[package]]
 name = "f4jumble"
 version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "blake2b_simd",
 ]
@@ -1394,6 +1396,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4ce301924b7887e9d637144fdade93f9dfff9b60981d4ac161db09720d39aa5"
 
 [[package]]
+name = "lock_api"
+version = "0.4.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07af8b9cdd281b7915f413fa73f29ebd5d55d0d3f0155584dade1ff18cea1b17"
+dependencies = [
+ "autocfg",
+ "scopeguard",
+]
+
+[[package]]
 name = "log"
 version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1668,6 +1680,29 @@ name = "parking"
 version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f38d5652c16fde515bb1ecef450ab0f6a219d619a7274976324d5e377f7dceba"
+
+[[package]]
+name = "parking_lot"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1bf18183cf54e8d6059647fc3063646a1801cf30896933ec2311622cc4b9a27"
+dependencies = [
+ "lock_api",
+ "parking_lot_core",
+]
+
+[[package]]
+name = "parking_lot_core"
+version = "0.9.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e401f977ab385c9e4e3ab30627d6f26d00e2c73eef317493c4ec6d468726cf8"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "redox_syscall",
+ "smallvec",
+ "windows-targets",
+]
 
 [[package]]
 name = "password-hash"
@@ -1991,6 +2026,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "redox_syscall"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0884ad60e090bf1345b93da0a5de8923c93884cd03f40dfcfddd3b4bee661853"
+dependencies = [
+ "bitflags",
+]
+
+[[package]]
 name = "regex"
 version = "1.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2209,6 +2253,12 @@ name = "scoped-tls"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1cf6437eb19a8f4a6cc0f7dca544973b0b78843adbfeb3683d1a94a0024a294"
+
+[[package]]
+name = "scopeguard"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "secp256k1"
@@ -3278,6 +3328,7 @@ dependencies = [
 [[package]]
 name = "zcash_address"
 version = "0.5.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "bech32",
  "bs58",
@@ -3289,6 +3340,7 @@ dependencies = [
 [[package]]
 name = "zcash_client_backend"
 version = "0.13.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "async-trait",
  "base64 0.21.7",
@@ -3334,8 +3386,8 @@ dependencies = [
 [[package]]
 name = "zcash_client_memory"
 version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
- "async-trait",
  "bs58",
  "byteorder",
  "group",
@@ -3343,6 +3395,7 @@ dependencies = [
  "jubjub",
  "nonempty",
  "orchard",
+ "parking_lot",
  "prost 0.13.2",
  "rayon",
  "sapling-crypto",
@@ -3355,7 +3408,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "wasm_sync",
  "zcash_address",
  "zcash_client_backend",
  "zcash_encoding",
@@ -3368,6 +3420,7 @@ dependencies = [
 [[package]]
 name = "zcash_client_sqlite"
 version = "0.11.2"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "bs58",
  "byteorder",
@@ -3403,6 +3456,7 @@ dependencies = [
 [[package]]
 name = "zcash_encoding"
 version = "0.2.1"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "byteorder",
  "nonempty",
@@ -3411,6 +3465,7 @@ dependencies = [
 [[package]]
 name = "zcash_keys"
 version = "0.3.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "bech32",
  "bip32",
@@ -3451,6 +3506,7 @@ dependencies = [
 [[package]]
 name = "zcash_primitives"
 version = "0.17.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "aes",
  "bip32",
@@ -3488,6 +3544,7 @@ dependencies = [
 [[package]]
 name = "zcash_proofs"
 version = "0.17.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "bellman",
  "blake2b_simd",
@@ -3507,6 +3564,7 @@ dependencies = [
 [[package]]
 name = "zcash_protocol"
 version = "0.3.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "document-features",
  "memuse",
@@ -3575,6 +3633,7 @@ dependencies = [
 [[package]]
 name = "zip321"
 version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=0fdd2fbb992a6f84eba45f488ee74a75d08d449b#0fdd2fbb992a6f84eba45f488ee74a75d08d449b"
 dependencies = [
  "base64 0.21.7",
  "nom",
