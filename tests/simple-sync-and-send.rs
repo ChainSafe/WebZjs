@@ -23,7 +23,7 @@ pub fn initialize() {
 #[wasm_bindgen_test]
 async fn test_get_and_scan_range() {
     initialize();
-    #[cfg(all(feature = "wasm-parallel"))]
+    #[cfg(feature = "wasm-parallel")]
     let _ = JsFuture::from(wasm_bindgen_rayon::init_thread_pool(10)).await;
     assert!(!thread::is_web_worker_thread());
     let main_handler = thread::Builder::new().spawn_async(|| async {
