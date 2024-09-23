@@ -6,9 +6,7 @@ use zcash_address::ZcashAddress;
 use zcash_primitives::consensus::Network;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-macro_rules! console_log {
-    ($($t:tt)*) => (web_sys::console::log_1(&format!($($t)*).into()))
-}
+
 const SEED: &str = "visit armed kite pen cradle toward reward clay marble oil write dove blind oyster silk oyster original message skate bench tone enable stadium element";
 const HD_INDEX: u32 = 0;
 const BIRTHDAY: Option<u32> = Some(2577329);
