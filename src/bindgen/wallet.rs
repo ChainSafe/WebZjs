@@ -5,14 +5,14 @@ use wasm_bindgen::prelude::*;
 
 use tonic_web_wasm_client::Client;
 
+use crate::error::Error;
+use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
+use wasm_thread as thread;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
-
-use crate::error::Error;
-use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 
 /// # A Zcash wallet
 ///
@@ -133,7 +133,17 @@ impl WebWallet {
 
     /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
     pub async fn sync2(&self) -> Result<(), Error> {
-        self.inner.sync2().await
+        let db = self.inner.clone();
+        let main_handler = thread::Builder::new()
+            .spawn_async(|| async {
+                assert!(thread::is_web_worker_thread());
+                let db = db;
+                db.sync2().await.unwrap();
+            })
+            .unwrap()
+            .join_async();
+        main_handler.await.unwrap();
+        Ok(())
     }
 
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
