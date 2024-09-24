@@ -23,10 +23,11 @@ async fn test_message_board() {
     initialize();
     #[cfg(feature = "wasm-parallel")]
     let _ = wasm_bindgen_futures::JsFuture::from(wasm_bindgen_rayon::init_thread_pool(10)).await;
+    let w = WebWallet::new("main", "http://localhost:1234/mainnet", 1).unwrap();
+    let w_clone = w.clone();
     let main_handler = thread::Builder::new()
-        .spawn_async(|| async {
-            let w = WebWallet::new("main", "http://localhost:1234/mainnet", 1).unwrap();
-
+        .spawn_async(move || async {
+            let w = w_clone;
             let s = zcash_keys::encoding::decode_extended_full_viewing_key(
                 constants::mainnet::HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY,
                 SAPLING_EFVK.trim(),
