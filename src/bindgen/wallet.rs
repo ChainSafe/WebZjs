@@ -135,9 +135,11 @@ impl WebWallet {
 
     /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
     pub async fn sync2(&self) -> Result<(), Error> {
+        tracing::info!("Sync2 called");
         let db = self.inner.clone();
         let main_handler = thread::Builder::new()
             .spawn_async(|| async {
+                tracing::info!("Sync2 thread spawned");
                 assert!(thread::is_web_worker_thread());
                 let db = db;
                 db.sync2().await.unwrap();

@@ -28,7 +28,7 @@ export function App() {
   useEffect(() => {
     async function init() {
       await initWasm();
-      await initThreadPool(1);
+      await initThreadPool(10);
       setWebWallet(new WebWallet("main", MAINNET_LIGHTWALLETD_PROXY, 1));
     }
     init();
