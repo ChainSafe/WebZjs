@@ -1,0 +1,14 @@
+{
+  "name": "@webzjs/demo-wallet",
+  "source": "src/index.html",
+  "scripts": {
+    "start:dev": "parcel --no-autoinstall --no-cache src/index.html"
+  },
+  "dependencies": {
+    "@webzjs/webz-core": "workspace:^",
+    "bootstrap": "^5.3.3",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.10.4",
+    "react-dom": "^18.2.0"
+  }
+}
