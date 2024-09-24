@@ -34,6 +34,7 @@ use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 /// TODO
 ///
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct WebWallet {
     inner: MemoryWallet<tonic_web_wasm_client::Client>,
 }
