@@ -36,6 +36,32 @@ just build-web
 
 After building the resulting lib can be found in `packages/webz-core`.
 
+### Building the example web-wallet
+
+#### Prerequisites
+
+[Install pnpm](https://pnpm.io/installation)
+
+### Building
+
+Install dependencies with
+
+```shell
+pnpm i
+```
+
+Build WebZjs with
+
+```shell
+just build
+```
+
+Start a dev server with the page
+
+```shell
+pnpm start:dev
+```
+
 ## Development
 
 The [`.cargo/config.toml`](./.cargo/config.toml) file sets the build target to `wasm32-unknown-unknown` so the regular cargo commands (e.g. `check`, `build`) will run against this target.
@@ -47,6 +73,8 @@ Tests are run in a headless browser environment and can be run with
 ```shell
 just test-web
 ```
+
+
 
 ## Security Warnings
 
