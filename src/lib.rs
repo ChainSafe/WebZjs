@@ -3,11 +3,15 @@
 
 //! This is the top level documentation!
 
+#[cfg(feature = "wasm-parallel")]
 pub mod bindgen;
+#[cfg(feature = "wasm-parallel")]
+pub use bindgen::wallet::WebWallet;
+
+
 pub mod error;
 pub mod init;
 
-pub use bindgen::wallet::WebWallet;
 
 pub mod wallet;
 pub use wallet::Wallet;

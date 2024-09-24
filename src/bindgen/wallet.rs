@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::num::NonZeroU32;
 
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use tonic_web_wasm_client::Client;
@@ -163,24 +164,30 @@ impl WebWallet {
 }
 
 #[wasm_bindgen]
-#[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct WalletSummary {
     account_balances: HashMap<u32, AccountBalance>,
-    chain_tip_height: u32,
-    fully_scanned_height: u32,
+    pub chain_tip_height: u32,
+    pub fully_scanned_height: u32,
     // scan_progress: Option<Ratio<u64>>,
-    next_sapling_subtree_index: u64,
-    next_orchard_subtree_index: u64,
+    pub next_sapling_subtree_index: u64,
+    pub next_orchard_subtree_index: u64,
 }
 
 #[wasm_bindgen]
-#[allow(dead_code)]
-#[derive(Debug)]
+impl WalletSummary {
+    #[wasm_bindgen(getter)]
+    pub fn account_balances(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.account_balances).unwrap()
+    }
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AccountBalance {
-    sapling_balance: u64,
-    orchard_balance: u64,
-    unshielded_balance: u64,
+    pub sapling_balance: u64,
+    pub orchard_balance: u64,
+    pub unshielded_balance: u64,
 }
 
 impl From<zcash_client_backend::data_api::AccountBalance> for AccountBalance {

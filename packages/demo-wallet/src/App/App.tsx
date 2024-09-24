@@ -1,7 +1,6 @@
 import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
 
-import { useState, useEffect, createContext } from "react";
+import React, { useState, useEffect, createContext } from "react";
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
@@ -12,6 +11,8 @@ import { ImportAccount } from "./components/ImportAccount";
 import { SendFunds } from "./components/SendFunds";
 import { ReceiveFunds } from "./components/ReceiveFunds";
 import { Balance } from "./components/Balance";
+import { Scan } from "./components/Scan";
+
 
 const SAPLING_ACTIVATION = 419200;
 const ORCHARD_ACTIVATION = 1687104;
@@ -20,7 +21,7 @@ const TIP = 2442739;
 const MAINNET_LIGHTWALLETD_PROXY = "https://zcash-mainnet.chainsafe.dev";
 const TESTNET_LIGHTWALLETD_PROXY = "https://zcash-testnet.chainsafe.dev";
 
-export const WalletContext = createContext();
+export const WalletContext = createContext<WebWallet | null>(null);
 
 export function App() {
 
@@ -33,7 +34,7 @@ export function App() {
     init();
   }, []);
 
-  let [webWallet, setWebWallet] = useState();
+  let [webWallet, setWebWallet] = useState<WebWallet | null>(null);
 
   return (
     <div>
@@ -43,6 +44,9 @@ export function App() {
         <Tabs defaultActiveKey="import" id="base-wallet-tabs" className="mb-3">
           <Tab eventKey="import" title="Import Account">
             <ImportAccount />
+          </Tab>
+          <Tab eventKey="scan" title="Scan">
+            <Scan />
           </Tab>
           <Tab eventKey="balance" title="Balance">
             <Balance />
