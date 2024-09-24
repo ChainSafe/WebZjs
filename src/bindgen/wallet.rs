@@ -35,6 +35,7 @@ use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 /// TODO
 ///
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct WebWallet {
     inner: MemoryWallet<tonic_web_wasm_client::Client>,
 }
@@ -89,7 +90,7 @@ impl WebWallet {
     /// birthday_height - The block height at which the account was created, optionally None and the current height is used
     ///
     pub async fn create_account(
-        &mut self,
+        &self,
         seed_phrase: &str,
         account_index: u32,
         birthday_height: Option<u32>,
@@ -101,7 +102,7 @@ impl WebWallet {
     }
 
     pub async fn import_ufvk(
-        &mut self,
+        &self,
         key: &str,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
@@ -117,7 +118,7 @@ impl WebWallet {
 
     /// Synchronize the wallet with the blockchain up to the tip
     /// The passed callback will be called for every batch of blocks processed with the current progress
-    pub async fn sync(&mut self, callback: &js_sys::Function) -> Result<(), Error> {
+    pub async fn sync(&self, callback: &js_sys::Function) -> Result<(), Error> {
         let callback = move |scanned_to: BlockHeight, tip: BlockHeight| {
             let this = JsValue::null();
             let _ = callback.call2(
@@ -133,7 +134,7 @@ impl WebWallet {
     }
 
     /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
-    pub async fn sync2(&mut self) -> Result<(), Error> {
+    pub async fn sync2(&self) -> Result<(), Error> {
         self.inner.sync2().await
     }
 
@@ -150,7 +151,7 @@ impl WebWallet {
     /// # Arguments
     ///
     pub async fn transfer(
-        &mut self,
+        &self,
         seed_phrase: &str,
         from_account_index: usize,
         to_address: String,

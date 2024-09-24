@@ -26,12 +26,15 @@ async fn test_get_and_scan_range() {
     #[cfg(feature = "wasm-parallel")]
     let _ = JsFuture::from(wasm_bindgen_rayon::init_thread_pool(10)).await;
     assert!(!thread::is_web_worker_thread());
-    let main_handler = thread::Builder::new().spawn_async(|| async {
-        assert!(thread::is_web_worker_thread());
-        let mut w = WebWallet::new("test", "http://localhost:1234/testnet", 1).unwrap();
+    let w = WebWallet::new("test", "http://localhost:1234/testnet", 1).unwrap();
 
-        let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
-        tracing::info!("Created account with id: {}", id);
+    let id = w.create_account(SEED, HD_INDEX, BIRTHDAY).await.unwrap();
+    tracing::info!("Created account with id: {}", id);
+    let w_clone = w.clone();
+    let main_handler = thread::Builder::new().spawn_async(move || async {
+        let w  = w_clone;
+        assert!(thread::is_web_worker_thread());
+
 
         #[cfg(not(feature = "sync2"))]
         {

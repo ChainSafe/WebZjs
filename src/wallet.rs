@@ -75,6 +75,17 @@ pub struct Wallet<W, T> {
     pub(crate) min_confirmations: NonZeroU32,
 }
 
+impl<W, T: Clone> Clone for Wallet<W, T> {
+    fn clone(&self) -> Self {
+        Self {
+            db: self.db.clone(),
+            client: self.client.clone(),
+            network: self.network.clone(),
+            min_confirmations: self.min_confirmations.clone(),
+        }
+    }
+}
+
 impl<W, T, AccountId, NoteRef> Wallet<W, T>
 where
     W: WalletRead<AccountId = AccountId>
