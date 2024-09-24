@@ -93,6 +93,7 @@ impl WebWallet {
         account_index: u32,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
+        tracing::info!("Create account called");
         self.inner
             .create_account(seed_phrase, account_index, birthday_height)
             .await

@@ -1,4 +1,11 @@
 {
-    "name": "webzjs",
-    "workspaces": ["packages/*"]
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "start:dev": "pnpm --stream -r run start:dev"
+  },
+  "devDependencies": {
+    "@parcel/core": "^2.12.0",
+    "parcel": "^2.12.0",
+    "process": "^0.11.10"
   }
+}

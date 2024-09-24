@@ -145,6 +145,8 @@ where
         let usk = usk_from_seed_str(seed_phrase, account_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
 
+        tracing::info!("Key successfully decoded. Importing into wallet");
+
         self.import_account_ufvk(&ufvk, birthday_height, AccountPurpose::Spending)
             .await
     }
@@ -165,6 +167,7 @@ where
         birthday_height: Option<u32>,
         purpose: AccountPurpose,
     ) -> Result<String, Error> {
+        tracing::info!("Importing account with Ufvk: {:?}", ufvk);
         let mut client = self.client.clone();
         let birthday = match birthday_height {
             Some(height) => height,
