@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::num::NonZeroU32;
 
 use serde::{Deserialize, Serialize};
@@ -10,7 +9,10 @@ use crate::error::Error;
 use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use zcash_address::ZcashAddress;
-use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
+use zcash_client_backend::proto::service::{
+    ChainSpec,
+    compact_tx_streamer_client::CompactTxStreamerClient
+};
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
@@ -174,12 +176,21 @@ impl WebWallet {
             .transfer(seed_phrase, from_account_index, to_address, value)
             .await
     }
+
+    /// Forwards a call to lightwalletd to retrieve the height of the latest block in the chain
+    pub async fn get_latest_block(
+        &self,
+    ) -> Result<u64, Error> {
+        self.client().get_latest_block(ChainSpec{}).await.map(|response| {
+            response.into_inner().height
+        }).map_err(Error::from)
+    }
 }
 
-#[wasm_bindgen]
 #[derive(Debug, Serialize, Deserialize)]
+#[wasm_bindgen(inspectable)]
 pub struct WalletSummary {
-    account_balances: HashMap<u32, AccountBalance>,
+    account_balances: Vec<(u32, AccountBalance)>,
     pub chain_tip_height: u32,
     pub fully_scanned_height: u32,
     // scan_progress: Option<Ratio<u64>>,
@@ -194,7 +205,6 @@ impl WalletSummary {
         serde_wasm_bindgen::to_value(&self.account_balances).unwrap()
     }
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AccountBalance {

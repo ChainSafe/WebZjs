@@ -6,7 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 
 import { WalletContext } from "../App";
 
-export function ImportAccount() {
+export function ImportAccount({refreshSummary}: {refreshSummary: () => Promise<void>}) {
   let webWallet = useContext(WalletContext);
 
   let [birthdayHeight, setBirthdayHeight] = useState(2657762);
@@ -18,6 +18,7 @@ export function ImportAccount() {
     toast.success("Account imported successfully", {
       position: "top-center",
     });
+    await refreshSummary();
     setBirthdayHeight(0);
     setSeedPhrase("");
   };
