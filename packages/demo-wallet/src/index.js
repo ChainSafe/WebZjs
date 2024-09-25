@@ -2,7 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import 'react-toastify/dist/ReactToastify.css'
 
 import { createRoot } from "react-dom/client";
-import { App } from "./app/App";
+import { App } from "./App/App";
 
 const container = document.getElementById("app");
 const root = createRoot(container)

@@ -1,8 +1,12 @@
 {
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "start:dev": "pnpm --stream -r run start:dev"
+    "start:dev": "parcel --no-autoinstall packages/demo-wallet"
   },
+  "dependencies": {
+		"@webzjs/webz-core": "workspace:^",
+		"@webzjs/demo-wallet": "workspace:^"
+	},
   "devDependencies": {
     "@parcel/core": "^2.12.0",
     "parcel": "^2.12.0",

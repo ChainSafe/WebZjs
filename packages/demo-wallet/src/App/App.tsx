@@ -4,14 +4,16 @@ import React, { useState, useEffect, createContext } from "react";
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
+import Stack from "react-bootstrap/Stack";
+
 
 import initWasm, { initThreadPool, start, WebWallet } from "@webzjs/webz-core";
 
+import { Header } from "./components/Header";
 import { ImportAccount } from "./components/ImportAccount";
 import { SendFunds } from "./components/SendFunds";
 import { ReceiveFunds } from "./components/ReceiveFunds";
 import { Balance } from "./components/Balance";
-import { Scan } from "./components/Scan";
 
 
 const SAPLING_ACTIVATION = 419200;
@@ -39,14 +41,12 @@ export function App() {
   return (
     <div>
       <WalletContext.Provider value={webWallet}>
+        <Stack>
         <h1>WebZjs Wallet Demo</h1>
-
+        <Header />
         <Tabs defaultActiveKey="import" id="base-wallet-tabs" className="mb-3">
           <Tab eventKey="import" title="Import Account">
             <ImportAccount />
-          </Tab>
-          <Tab eventKey="scan" title="Scan">
-            <Scan />
           </Tab>
           <Tab eventKey="balance" title="Balance">
             <Balance />
@@ -58,6 +58,7 @@ export function App() {
             <ReceiveFunds />
           </Tab>
         </Tabs>
+        </Stack>
       </WalletContext.Provider>
     </div>
   );
