@@ -1,4 +1,6 @@
+use std::sync::Arc;
 use subtle::ConditionallySelectable;
+use tokio::sync::RwLock;
 use tonic::codegen::{Body, Bytes, StdError};
 use tonic::{body::BoxBody, client::GrpcService};
 use tracing::{debug, info};
@@ -17,7 +19,7 @@ pub async fn run<P, ChT, CaT, DbT>(
     client: &mut CompactTxStreamerClient<ChT>,
     params: &P,
     db_cache: &CaT,
-    db_data: &mut DbT,
+    db_data: Arc<RwLock<DbT>>,
     batch_size: u32,
 ) -> Result<(), Error<CaT::Error, <DbT as WalletRead>::Error, <DbT as WalletCommitmentTrees>::Error>>
 where
@@ -35,6 +37,8 @@ where
 {
     // #[cfg(feature = "transparent-inputs")]
     let wallet_birthday = db_data
+        .read()
+        .await
         .get_wallet_birthday()
         .map_err(Error::Wallet)?
         .unwrap_or_else(|| params.activation_height(NetworkUpgrade::Sapling).unwrap());
@@ -42,13 +46,13 @@ where
 
     // 1) Download note commitment tree data from lightwalletd
     // 2) Pass the commitment tree data to the database.
-    update_subtree_roots(client, db_data).await?;
+    update_subtree_roots(client, &mut *db_data.write().await).await?;
 
     while running(
         client,
         params,
         db_cache,
-        db_data,
+        db_data.clone(),
         batch_size,
         // #[cfg(feature = "transparent-inputs")]
         wallet_birthday,
@@ -63,7 +67,7 @@ pub async fn running<P, ChT, CaT, DbT, TrErr>(
     client: &mut CompactTxStreamerClient<ChT>,
     params: &P,
     db_cache: &CaT,
-    db_data: &mut DbT,
+    db_data: Arc<RwLock<DbT>>,
     batch_size: u32,
     // #[cfg(feature = "transparent-inputs")]
     wallet_birthday: BlockHeight,
@@ -82,14 +86,18 @@ where
 {
     // 3) Download chain tip metadata from lightwalletd
     // 4) Notify the wallet of the updated chain tip.
-    update_chain_tip(client, db_data).await?;
+    update_chain_tip(client, &mut *db_data.write().await).await?;
 
     // Refresh UTXOs for the accounts in the wallet. We do this before we perform
     // any shielded scanning, to ensure that we discover any UTXOs between the old
     // fully-scanned height and the current chain tip.
     // #[cfg(feature = "transparent-inputs")]
-    for account_id in db_data.get_account_ids().map_err(Error::Wallet)? {
+    let account_ids = db_data.read().await.get_account_ids().map_err(Error::Wallet)?;
+    for account_id in account_ids
+    {
         let start_height = db_data
+            .read()
+            .await
             .block_fully_scanned()
             .map_err(Error::Wallet)?
             .map(|meta| meta.block_height())
@@ -98,11 +106,22 @@ where
             "Refreshing UTXOs for {:?} from height {}",
             account_id, start_height,
         );
-        refresh_utxos(params, client, db_data, account_id, start_height).await?;
+        refresh_utxos(
+            params,
+            client,
+            &mut *db_data.write().await,
+            account_id,
+            start_height,
+        )
+        .await?;
     }
 
     // 5) Get the suggested scan ranges from the wallet database
-    let mut scan_ranges = db_data.suggest_scan_ranges().map_err(Error::Wallet)?;
+    let mut scan_ranges = db_data
+        .read()
+        .await
+        .suggest_scan_ranges()
+        .map_err(Error::Wallet)?;
 
     // Store the handles to cached block deletions (which we spawn into separate
     // tasks to allow us to continue downloading and scanning other ranges).
@@ -125,8 +144,14 @@ where
                 // Scan the downloaded blocks and check for scanning errors that
                 // indicate the wallet's chain tip is out of sync with blockchain
                 // history.
-                let scan_ranges_updated =
-                    scan_blocks(params, db_cache, db_data, &chain_state, scan_range).await?;
+                let scan_ranges_updated = scan_blocks(
+                    params,
+                    db_cache,
+                    &mut *db_data.write().await,
+                    &chain_state,
+                    scan_range,
+                )
+                .await?;
 
                 // Delete the now-scanned blocks, because keeping the entire chain
                 // in CompactBlock files on disk is horrendous for the filesystem.
@@ -134,7 +159,11 @@ where
 
                 if scan_ranges_updated {
                     // The suggested scan ranges have been updated, so we re-request.
-                    scan_ranges = db_data.suggest_scan_ranges().map_err(Error::Wallet)?;
+                    scan_ranges = db_data
+                        .read()
+                        .await
+                        .suggest_scan_ranges()
+                        .map_err(Error::Wallet)?;
                 } else {
                     // At this point, the cache and scanned data are locally
                     // consistent (though not necessarily consistent with the
@@ -153,7 +182,11 @@ where
 
     // 7) Loop over the remaining suggested scan ranges, retrieving the requested data
     //    and calling `scan_cached_blocks` on each range.
-    let scan_ranges = db_data.suggest_scan_ranges().map_err(Error::Wallet)?;
+    let scan_ranges = db_data
+        .read()
+        .await
+        .suggest_scan_ranges()
+        .map_err(Error::Wallet)?;
     debug!("Suggested ranges: {:?}", scan_ranges);
     for scan_range in scan_ranges.into_iter().flat_map(|r| {
         // Limit the number of blocks we download and scan at any one time.
@@ -177,8 +210,14 @@ where
         let chain_state = download_chain_state(client, scan_range.block_range().start - 1).await?;
 
         // Scan the downloaded blocks.
-        let scan_ranges_updated =
-            scan_blocks(params, db_cache, db_data, &chain_state, &scan_range).await?;
+        let scan_ranges_updated = scan_blocks(
+            params,
+            db_cache,
+            &mut *db_data.write().await,
+            &chain_state,
+            &scan_range,
+        )
+        .await?;
 
         // Delete the now-scanned blocks.
         block_deletions.push(db_cache.delete(scan_range));

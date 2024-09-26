@@ -233,12 +233,11 @@ where
         // TODO: This should be held in the Wallet struct so we can download in parallel
         let db_cache = MemBlockCache::new();
 
-        let mut db = self.db.write().await;
         sync3::run(
             &mut client,
             &self.network.clone(),
             &db_cache,
-            &mut *db,
+           self.db.clone(),
             BATCH_SIZE,
         )
         .await
