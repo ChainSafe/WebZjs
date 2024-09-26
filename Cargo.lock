@@ -3415,7 +3415,7 @@ dependencies = [
 [[package]]
 name = "wasm_thread"
 version = "0.3.0"
-source = "git+https://github.com/WilsonGramer/wasm_thread.git?rev=eb41bcc0d98ce0620a313687c0344341391b9d78#eb41bcc0d98ce0620a313687c0344341391b9d78"
+source = "git+https://github.com/ec2/wasm_thread?rev=9e432077948d927d49373d1d039c23447d3648df#9e432077948d927d49373d1d039c23447d3648df"
 dependencies = [
  "async-std",
  "futures",

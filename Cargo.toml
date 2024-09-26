@@ -20,7 +20,6 @@ path = "examples/simple-sync.rs"
 name = "message-board-sync"
 path = "examples/message-board-sync.rs"
 
-
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 opt-level = 3
@@ -41,8 +40,7 @@ wasm-parallel = ["wasm", "wasm-bindgen-rayon", "multicore"]
 native = ["tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots", "tokio/macros", "tokio/rt", "tokio/rt-multi-thread"]
 sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
-no-bundler = ["wasm-bindgen-rayon?/no-bundler"]
-
+no-bundler = ["wasm-bindgen-rayon?/no-bundler", "wasm_thread/no-bundler"]
 sync2 = []
 
 [dependencies]
@@ -95,7 +93,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = "0.1.40"
 rayon = { version = "1.8", features = ["web_spin_lock"] }
 subtle = "2.6.1"
-wasm_thread = { git = "https://github.com/WilsonGramer/wasm_thread.git", rev = "eb41bcc0d98ce0620a313687c0344341391b9d78", features = ["keep_worker_alive"] }
+wasm_thread = { git = "https://github.com/WilsonGramer/wasm_thread", rev = "eb41bcc0d98ce0620a313687c0344341391b9d78", default-features = false, features = ["keep_worker_alive", "es_modules"] }
 
 wasm_sync = "0.1.2"
 http = { version = "1.1.0", default-features = false }
@@ -119,6 +117,8 @@ wasm-bindgen-rayon = { git = "https://github.com/9SMTM6/wasm-bindgen-rayon", rev
 shardtree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 incrementalmerkletree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 
+[patch.'https://github.com/WilsonGramer/wasm_thread']
+wasm_thread = { git = "https://github.com/ec2/wasm_thread", rev = "9e432077948d927d49373d1d039c23447d3648df" }
 
 #[patch.'https://github.com/chainsafe/librustzcash']
 #zcash_address = { path = "../librustzcash/components/zcash_address" }
