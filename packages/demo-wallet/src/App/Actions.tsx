@@ -27,6 +27,7 @@ export async function syncStateWithWallet(
   if (chainHeight) {
     dispatch({ type: "set-chain-height", payload: chainHeight });
   }
+  dispatch({ type: "set-active-account", payload: summary?.account_balances[0][0] });
 }
 
 export async function triggerRescan(
