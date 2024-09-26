@@ -17,7 +17,6 @@ export function Header() {
     state.summary?.account_balances.find(
       ([id]) => id === state.activeAccount
     );
-    console.log(activeBalanceReport);
     
     let totalBalance = activeBalanceReport ? activeBalanceReport[1].sapling_balance + activeBalanceReport[1].orchard_balance : 0
   return (
@@ -55,12 +54,12 @@ export function Header() {
       <Stack>
         <Button
           onClick={async () =>
-            await syncStateWithWallet(state.webWallet, dispatch)
+            await syncStateWithWallet(state, dispatch)
           }
         >
           Refresh
         </Button>
-        <Button onClick={() => triggerRescan(state.webWallet, dispatch)}>
+        <Button onClick={() => triggerRescan(state, dispatch)}>
           Sync
         </Button>
       </Stack>

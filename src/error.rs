@@ -57,6 +57,8 @@ pub enum Error {
     #[cfg(feature = "sqlite-db")]
     #[error("Sqlite error: {0}")]
     SqliteError(#[from] zcash_client_sqlite::error::SqliteClientError),
+    #[error("Invalid seed phrase")]
+    InvalidSeedPhrase,
 }
 
 impl From<Error> for JsValue {

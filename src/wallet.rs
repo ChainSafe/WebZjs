@@ -515,7 +515,7 @@ fn usk_from_seed_str(
     account_index: u32,
     network: &consensus::Network,
 ) -> Result<UnifiedSpendingKey, Error> {
-    let mnemonic = <Mnemonic<English>>::from_phrase(seed).unwrap();
+    let mnemonic = <Mnemonic<English>>::from_phrase(seed).map_err(|_| Error::InvalidSeedPhrase)?;
     let seed = {
         let mut seed = mnemonic.to_seed("");
         let secret = seed.to_vec();

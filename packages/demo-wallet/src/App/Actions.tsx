@@ -1,6 +1,6 @@
 import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-core";
 
-import { Action } from "./App";
+import { State, Action } from "./App";
 import { MAINNET_LIGHTWALLETD_PROXY } from "./constants";
 
 export async function init(dispatch: React.Dispatch<Action>) {
@@ -12,18 +12,24 @@ export async function init(dispatch: React.Dispatch<Action>) {
   });
 }
 
+export async function addNewAccount(state: State, dispatch: React.Dispatch<Action>, seedPhrase: string, birthdayHeight: number) {
+    await state.webWallet?.create_account(seedPhrase, 0, birthdayHeight);
+    dispatch({ type: "append-account-seed", payload: seedPhrase });
+    await syncStateWithWallet(state, dispatch);
+}
+
 export async function syncStateWithWallet(
-  webWallet: WebWallet | undefined,
+  state: State,
   dispatch: React.Dispatch<Action>
 ) {
-  if (!webWallet) {
-    return;
+  if (!state.webWallet) {
+    throw new Error("Wallet not initialized");
   }
-  let summary = await webWallet?.get_wallet_summary();
+  let summary = await state.webWallet?.get_wallet_summary();
   if (summary) {
     dispatch({ type: "set-summary", payload: summary });
   }
-  let chainHeight = await webWallet?.get_latest_block();
+  let chainHeight = await state.webWallet?.get_latest_block();
   if (chainHeight) {
     dispatch({ type: "set-chain-height", payload: chainHeight });
   }
@@ -31,12 +37,29 @@ export async function syncStateWithWallet(
 }
 
 export async function triggerRescan(
-  webWallet: WebWallet | undefined,
+  state: State,
   dispatch: React.Dispatch<Action>
 ) {
-    if (!webWallet) {
-        return;
+    if (!state.webWallet) {
+        throw new Error("Wallet not initialized");
     }
-    await webWallet?.sync2();
-    await syncStateWithWallet(webWallet, dispatch);
+    await state.webWallet?.sync2();
+    await syncStateWithWallet(state, dispatch);
+}
+
+export async function triggerTransfer(
+  state: State,
+  dispatch: React.Dispatch<Action>,
+  toAddress: string,
+  amount: bigint
+) {
+    if (!state.webWallet) {
+        throw new Error("Wallet not initialized");
+    }
+    if (state.activeAccount == null) {
+        throw new Error("No active account");
+    }
+
+    await state.webWallet?.transfer(state.accountSeeds[state.activeAccount], state.activeAccount, toAddress, amount);
+    await syncStateWithWallet(state, dispatch);
 }

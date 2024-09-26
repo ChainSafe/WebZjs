@@ -18,21 +18,24 @@ import { SendFunds } from "./components/SendFunds";
 import { ReceiveFunds } from "./components/ReceiveFunds";
 import { Summary } from "./components/Summary";
 
-type State = {
+export type State = {
   webWallet?: WebWallet;
   activeAccount?: number;
   summary?: WalletSummary;
   chainHeight?: bigint;
+  accountSeeds: string[];
 };
 
 const initialState: State = {
   activeAccount: undefined,
   summary: undefined,
   chainHeight: undefined,
+  accountSeeds: [],
 };
 
 export type Action =
   | { type: "set-active-account"; payload: number }
+  | { type: "append-account-seed"; payload: string }
   | { type: "set-web-wallet"; payload: WebWallet }
   | { type: "set-summary"; payload: WalletSummary }
   | { type: "set-chain-height"; payload: bigint };
@@ -41,6 +44,9 @@ const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "set-active-account": {
       return { ...state, activeAccount: action.payload };
+    }
+    case "append-account-seed": {
+      return { ...state, accountSeeds: [...state.accountSeeds, action.payload] };
     }
     case "set-web-wallet": {
       return { ...state, webWallet: action.payload };
@@ -67,16 +73,6 @@ export function App() {
   useEffect(() => {
     init(dispatch);
   }, [dispatch]);
-
-  const triggerRescan = () => {
-    if (!state.webWallet) {
-      return;
-    }
-    console.log("rescanning");
-    state.webWallet.sync2().then(() => {
-      console.log("rescan complete");
-    });
-  };
 
   return (
     <div>
