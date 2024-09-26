@@ -7,5 +7,5 @@ rustflags = ["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals"]
 # [unstable]
 # build-std = ["panic_abort", "std"]
 
-[build]
-target = "wasm32-unknown-unknown"
+# [build]
+# target = "wasm32-unknown-unknown"
