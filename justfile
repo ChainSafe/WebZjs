@@ -1,8 +1,8 @@
 default:
     just --list
 
-build:
-    wasm-pack build --target web --scope webzjs --release --out-dir ./packages/webz-core --no-default-features --features="wasm-parallel,sync2" -Z build-std="panic_abort,std"
+build *features:
+    wasm-pack build --no-opt -t web --scope webzjs --release --out-dir ./packages/webz-core --no-default-features --features="wasm wasm-parallel sync2 {{features}}" -Z build-std="panic_abort,std"
 
 # All Wasm Tests
 test-web *features:

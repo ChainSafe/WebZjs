@@ -136,28 +136,26 @@ impl WebWallet {
 
     /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
     pub async fn sync2(&self) -> Result<(), Error> {
-        tracing::info!("Sync2 called");
+        assert!(!thread::is_web_worker_thread());
+
         let db = self.inner.clone();
 
-        let shim_url = thread::get_wasm_bindgen_shim_script_path();
-
-        tracing::info!("shim script path: {}", shim_url);
-        tracing::info!(
-            "worker script: {}",
-            thread::get_worker_script(Some(shim_url.clone()))
-        );
-
-        let main_handler = thread::Builder::new()
+        let sync_handler = thread::Builder::new()
+            .name("sync2".to_string())
             .spawn_async(|| async {
-                tracing::info!("Sync2 thread spawned");
+                assert!(thread::is_web_worker_thread());
+                tracing::debug!(
+                    "Current num threads (wasm_thread) {}",
+                    rayon::current_num_threads()
+                );
+
                 let db = db;
-                db.sync2().await;
+                db.sync2().await.unwrap_throw();
             })
-            .unwrap()
+            .unwrap_throw()
             .join_async();
-        main_handler
-            .await
-            .map_err(|_| Error::SyncError("awaiting on main handler failed".to_string()))
+        sync_handler.await.unwrap();
+        Ok(())
     }
 
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {

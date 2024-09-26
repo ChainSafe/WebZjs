@@ -24,7 +24,7 @@ pub fn initialize() {
 async fn test_get_and_scan_range() {
     initialize();
     #[cfg(feature = "wasm-parallel")]
-    let _ = JsFuture::from(wasm_bindgen_rayon::init_thread_pool(10)).await;
+    let _ = JsFuture::from(wasm_bindgen_rayon::init_thread_pool(3)).await;
     assert!(!thread::is_web_worker_thread());
     let w = WebWallet::new("test", "http://localhost:1234/testnet", 1).unwrap();
 
