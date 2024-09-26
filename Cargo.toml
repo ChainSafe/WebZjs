@@ -95,7 +95,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = "0.1.40"
 rayon = { version = "1.8", features = ["web_spin_lock"] }
 subtle = "2.6.1"
-wasm_thread = { git = "https://github.com/WilsonGramer/wasm_thread.git", rev = "eb41bcc0d98ce0620a313687c0344341391b9d78", features = ["keep_worker_alive"] }
+wasm_thread = { git = "https://github.com/WilsonGramer/wasm_thread.git", rev = "eb41bcc0d98ce0620a313687c0344341391b9d78", default-features = false, features = ["keep_worker_alive"] }
 
 wasm_sync = "0.1.2"
 http = { version = "1.1.0", default-features = false }

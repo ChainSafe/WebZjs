@@ -1,21 +1,16 @@
-import React, { useContext, useEffect, useState } from "react";
-
-import Form from "react-bootstrap/Form";
-
-import { WalletContext } from "../App";
-import { WalletSummary, AccountBalance } from "@webzjs/webz-core";
-import { Button } from "react-bootstrap";
+import React from "react";
+import { WalletSummary } from "@webzjs/webz-core";
 
 export function Summary({
-  walletSummary,
+  summary,
 }: {
-  walletSummary: WalletSummary | null;
+  summary: WalletSummary | undefined;
 }) {
   return (
     <div>
       <pre>
         {JSON.stringify(
-          walletSummary?.toJSON(),
+          summary?.toJSON(),
           (key, value) =>
             typeof value === "bigint" ? value.toString() : value,
           2

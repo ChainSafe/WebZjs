@@ -1,35 +1,24 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 
 import { WalletContext } from "../App";
-import { WalletSummary } from "@webzjs/webz-core";
+import { syncStateWithWallet, triggerRescan } from "../Actions";
 import { Button } from "react-bootstrap";
 
-export function Header({
-  walletSummary,
-  refreshSummary,
-  activeAccount,
-  setActiveAccount,
-  triggerRescan,
-  chainHeight,
-}: {
-  walletSummary: WalletSummary | null;
-  refreshSummary: () => Promise<void>;
-  activeAccount: number;
-  setActiveAccount: (account: number) => void;
-  triggerRescan: () => void;
-  chainHeight: bigint | null;
-}) {
+export function Header() {
+
+  const { state, dispatch } = useContext(WalletContext);
+
   return (
     <Stack direction="horizontal" gap={3}>
       <Form.Select
-        value={activeAccount}
-        onChange={(e) => setActiveAccount(parseInt(e.target.value))}
+        value={state.activeAccount}
+        onChange={(e) => dispatch({ type: "set-active-account", payload: parseInt(e.target.value)})}
       >
-        {walletSummary?.account_balances.map(([id]) => (
+        {state.summary?.account_balances.map(([id]) => (
           <option key={id} value={id}>
             Account {id}
           </option>
@@ -40,12 +29,12 @@ export function Header({
         <Card.Text>Available Balance: {0} ZEC</Card.Text>
       </Card>
       <Card style={{ width: "30rem" }}>
-        <Card.Text>Chain Height: {chainHeight ? ""+chainHeight : '?'}</Card.Text>
-        <Card.Text>Synced Height: {walletSummary?.fully_scanned_height ? walletSummary?.fully_scanned_height : '?'}</Card.Text>
+        <Card.Text>Chain Height: {state.chainHeight ? ""+state.chainHeight : '?'}</Card.Text>
+        <Card.Text>Synced Height: {state.summary?.fully_scanned_height ? state.summary?.fully_scanned_height : '?'}</Card.Text>
       </Card>
       <Stack>
-        <Button onClick={async () => await refreshSummary()}>Refresh</Button>
-        <Button onClick={() => triggerRescan()}>Sync</Button>
+        <Button onClick={async () => await syncStateWithWallet(state.webWallet, dispatch)}>Refresh</Button>
+        <Button onClick={() => triggerRescan(state.webWallet, dispatch)}>Sync</Button>
       </Stack>
     </Stack>
   );

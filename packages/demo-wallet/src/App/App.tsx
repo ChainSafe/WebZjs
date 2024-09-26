@@ -1,90 +1,99 @@
 import "./App.css";
 
-import React, { useState, useEffect, createContext } from "react";
+import React, { useState, useEffect, createContext, useReducer } from "react";
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import Stack from "react-bootstrap/Stack";
 
-import initWasm, {
-  initThreadPool,
-  start,
+import {
   WebWallet,
   WalletSummary,
 } from "@webzjs/webz-core";
 
+import { init } from "./Actions";
 import { Header } from "./components/Header";
 import { ImportAccount } from "./components/ImportAccount";
 import { SendFunds } from "./components/SendFunds";
 import { ReceiveFunds } from "./components/ReceiveFunds";
 import { Summary } from "./components/Summary";
 
-const MAINNET_LIGHTWALLETD_PROXY = "https://zcash-mainnet.chainsafe.dev";
+type State = {
+  webWallet?: WebWallet;
+  activeAccount?: number;
+  summary?: WalletSummary;
+  chainHeight?: bigint;
+};
 
-export const WalletContext = createContext<WebWallet | null>(null);
+const initialState: State = {
+  activeAccount: undefined,
+  summary: undefined,
+  chainHeight: undefined,
+};
+
+export type Action =
+  | { type: "set-active-account"; payload: number }
+  | { type: "set-web-wallet"; payload: WebWallet }
+  | { type: "set-summary"; payload: WalletSummary }
+  | { type: "set-chain-height"; payload: bigint };
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "set-active-account": {
+      return { ...state, activeAccount: action.payload };
+    }
+    case "set-web-wallet": {
+      return { ...state, webWallet: action.payload };
+    }
+    case "set-summary": {
+      return { ...state, summary: action.payload };
+    }
+    case "set-chain-height": {
+      return { ...state, chainHeight: action.payload };
+    }
+    default:
+      return state;
+  }
+};
+
+export const WalletContext = createContext<{
+  state: State;
+  dispatch: React.Dispatch<Action>;
+}>({ state: initialState, dispatch: () => {} });
 
 export function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
   useEffect(() => {
-    async function init() {
-      await initWasm();
-      await initThreadPool(10);
-      setWebWallet(new WebWallet("main", MAINNET_LIGHTWALLETD_PROXY, 1));
-    }
-    init();
-  }, []);
-
-  let [webWallet, setWebWallet] = useState<WebWallet | null>(null);
-  let [summary, setSummary] = useState<WalletSummary | null>(null);
-  let [chainHeight, setChainHeight] = useState<bigint | null>(null);
-  let [activeAccoumt, setActiveAccount] = useState<number>(0);
-
-  const refreshSummary = async () => {
-    if (!webWallet) {
-      return;
-    }
-    let summary = await webWallet?.get_wallet_summary();
-    if (summary) {
-      setSummary(summary);
-    }
-    let chainHeight = await webWallet?.get_latest_block();
-    if (chainHeight) {
-      setChainHeight(chainHeight);
-    }
-  };
+    init(dispatch);
+  }, [dispatch]);
 
   const triggerRescan = () => {
-    if (!webWallet) {
+    if (!state.webWallet) {
       return;
     }
     console.log("rescanning");
-    webWallet.sync2().then(() => {
+    state.webWallet.sync2().then(() => {
       console.log("rescan complete");
     });
   };
 
   return (
     <div>
-      <WalletContext.Provider value={webWallet}>
+      <WalletContext.Provider value={{ state, dispatch }}>
         <Stack>
           <h1>WebZjs Wallet Demo</h1>
-          <Header
-            walletSummary={summary}
-            refreshSummary={refreshSummary}
-            activeAccount={activeAccoumt}
-            setActiveAccount={setActiveAccount}
-            triggerRescan={triggerRescan}
-            chainHeight={chainHeight}
-          />
+          <Header />
           <Tabs
             defaultActiveKey="import"
             id="base-wallet-tabs"
             className="mb-3"
           >
             <Tab eventKey="import" title="Import Account">
-              <ImportAccount refreshSummary={refreshSummary} />
+              <ImportAccount />
             </Tab>
             <Tab eventKey="summary" title="Summary">
-              <Summary walletSummary={summary} />
+              <Summary summary={state.summary}/>
             </Tab>
             <Tab eventKey="send" title="Send">
               <SendFunds />

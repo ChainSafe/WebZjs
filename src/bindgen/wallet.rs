@@ -10,8 +10,7 @@ use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::proto::service::{
-    ChainSpec,
-    compact_tx_streamer_client::CompactTxStreamerClient
+    compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
@@ -139,17 +138,26 @@ impl WebWallet {
     pub async fn sync2(&self) -> Result<(), Error> {
         tracing::info!("Sync2 called");
         let db = self.inner.clone();
+
+        let shim_url = thread::get_wasm_bindgen_shim_script_path();
+
+        tracing::info!("shim script path: {}", shim_url);
+        tracing::info!(
+            "worker script: {}",
+            thread::get_worker_script(Some(shim_url.clone()))
+        );
+
         let main_handler = thread::Builder::new()
             .spawn_async(|| async {
                 tracing::info!("Sync2 thread spawned");
-                assert!(thread::is_web_worker_thread());
                 let db = db;
-                db.sync2().await.unwrap();
+                db.sync2().await;
             })
             .unwrap()
             .join_async();
-        main_handler.await.unwrap();
-        Ok(())
+        main_handler
+            .await
+            .map_err(|_| Error::SyncError("awaiting on main handler failed".to_string()))
     }
 
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
@@ -178,12 +186,12 @@ impl WebWallet {
     }
 
     /// Forwards a call to lightwalletd to retrieve the height of the latest block in the chain
-    pub async fn get_latest_block(
-        &self,
-    ) -> Result<u64, Error> {
-        self.client().get_latest_block(ChainSpec{}).await.map(|response| {
-            response.into_inner().height
-        }).map_err(Error::from)
+    pub async fn get_latest_block(&self) -> Result<u64, Error> {
+        self.client()
+            .get_latest_block(ChainSpec {})
+            .await
+            .map(|response| response.into_inner().height)
+            .map_err(Error::from)
     }
 }
 

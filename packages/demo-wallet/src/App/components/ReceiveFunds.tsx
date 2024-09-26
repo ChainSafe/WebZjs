@@ -4,10 +4,6 @@ import Form from "react-bootstrap/Form";
 export function ReceiveFunds() {
   return (
     <Form>
-      <Form.Label>To Account:</Form.Label>
-      <Form.Select>
-        <option>Account 1</option>
-      </Form.Select>
       <Form.Text className="text-muted">
         Share one of these addresses to receive funds
       </Form.Text>
