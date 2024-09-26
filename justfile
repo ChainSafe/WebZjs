@@ -33,7 +33,7 @@ check:
 alias cw := check-wasm
 
 check-wasm:
-    cargo check --no-default-features --features="wasm-parallel,no-bundler" --target=wasm32-unknown-unknown
+    cargo check --no-default-features --features="wasm-parallel sync3 wasm" --target=wasm32-unknown-unknown
 
 # run a local proxy to the mainnet lightwalletd server on port 443
 run-proxy:

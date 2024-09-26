@@ -8,10 +8,8 @@ pub mod bindgen;
 #[cfg(feature = "wasm")]
 pub use bindgen::wallet::WebWallet;
 
-
 pub mod error;
 pub mod init;
-
 
 pub mod wallet;
 pub use wallet::Wallet;
@@ -34,3 +32,5 @@ pub fn init_thread_pool(_threads: usize) {}
 pub struct BlockRange(pub u32, pub u32);
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;
+
+pub mod sync3;

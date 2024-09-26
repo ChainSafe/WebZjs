@@ -10,7 +10,7 @@ use tonic::{
 };
 
 use crate::error::Error;
-use crate::BlockRange;
+use crate::{sync3, BlockRange};
 
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
@@ -226,6 +226,23 @@ where
                 })
                 .collect()
         })?)
+    }
+
+    pub async fn sync3(&self) -> Result<(), Error> {
+        let mut client = self.client.clone();
+        // TODO: This should be held in the Wallet struct so we can download in parallel
+        let db_cache = MemBlockCache::new();
+
+        let mut db = self.db.write().await;
+        sync3::run(
+            &mut client,
+            &self.network.clone(),
+            &db_cache,
+            &mut *db,
+            BATCH_SIZE,
+        )
+        .await
+        .map_err(Into::into)
     }
 
     pub async fn sync2(&self) -> Result<(), Error> {

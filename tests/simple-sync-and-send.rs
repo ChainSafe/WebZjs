@@ -47,6 +47,12 @@ async fn test_get_and_scan_range() {
         tracing::info!("Syncing wallet with sync2");
         w.sync2().await.unwrap();
     }
+
+    #[cfg(feature = "sync3")]
+    {
+        tracing::info!("Syncing wallet with sync2");
+        w.sync3().await.unwrap();
+    }
     tracing::info!("Syncing complete :)");
 
     let summary = w.get_wallet_summary().await.unwrap();

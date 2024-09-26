@@ -158,6 +158,30 @@ impl WebWallet {
         Ok(())
     }
 
+    /// Synchronize the wallet with the blockchain up to the tip using our newest and bestest
+    pub async fn sync3(&self) -> Result<(), Error> {
+        assert!(!thread::is_web_worker_thread());
+        tracing::debug!("SYNC 3 Main!!!!");
+        let db = self.inner.clone();
+
+        let sync_handler = thread::Builder::new()
+            .name("sync3".to_string())
+            .spawn_async(|| async {
+                assert!(thread::is_web_worker_thread());
+                tracing::debug!(
+                    "Current num threads (wasm_thread) {}",
+                    rayon::current_num_threads()
+                );
+
+                let db = db;
+                db.sync3().await.unwrap_throw();
+            })
+            .unwrap_throw()
+            .join_async();
+        sync_handler.await.unwrap();
+        Ok(())
+    }
+
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
         Ok(self.inner.get_wallet_summary().await?.map(Into::into))
     }
