@@ -451,27 +451,52 @@ where
             OvkPolicy::Sender,
             &proposal,
         )
-        .unwrap();
+        .map_err(|_| Error::FailedToCreateTransaction)?;
 
         Ok(transactions)
     }
 
+    pub async fn send_authorized_transactions(
+        &mut self,
+        txids: &NonEmpty<TxId>,
+    ) -> Result<(), Error> {
+        for txid in txids.iter() {
+            let (txid, raw_tx) = self
+                .db
+                .read()
+                .await
+                .get_transaction(*txid)?
+                .map(|tx| {
+                    let mut raw_tx = service::RawTransaction::default();
+                    tx.write(&mut raw_tx.data).unwrap();
+                    (tx.txid(), raw_tx)
+                })
+                .unwrap();
+
+            let response = self.client.send_transaction(raw_tx).await?.into_inner();
+
+            if response.error_code != 0 {
+                return Err(Error::SendFailed {
+                    code: response.error_code,
+                    reason: response.error_message,
+                });
+            } else {
+                tracing::info!("Transaction {} send successfully :)", txid);
+            }
+        }
+        Ok(())
+    }
+
     ///
-    /// Create a transaction proposal to send funds from the wallet to a given address and if approved will sign it and send the proposed transaction(s) to the network
-    ///
-    /// First a proposal is created by selecting inputs and outputs to cover the requested amount. This proposal is then sent to the approval callback.
-    /// This allows wallet developers to display a confirmation dialog to the user before continuing.
-    ///
-    /// # Arguments
+    /// A helper function that creates a proposal, creates a transation from the proposal and then submits it
     ///
     pub async fn transfer(
-        &self,
+        &mut self,
         seed_phrase: &str,
         from_account_index: usize,
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<(), Error> {
-        let mut client = self.client.clone();
         let usk = usk_from_seed_str(seed_phrase, 0, &self.network)?;
         let proposal = self
             .propose_transfer(from_account_index, to_address, value)
@@ -480,33 +505,8 @@ where
         let txids = self.create_proposed_transactions(proposal, &usk).await?;
 
         // send the transactions to the network!!
-        tracing::info!("Sending transaction...");
-        let txid = *txids.first();
-        let (txid, raw_tx) = self
-            .db
-            .read()
-            .await
-            .get_transaction(txid)?
-            .map(|tx| {
-                let mut raw_tx = service::RawTransaction::default();
-                tx.write(&mut raw_tx.data).unwrap();
-                (tx.txid(), raw_tx)
-            })
-            .unwrap();
-
-        // tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
-
-        let response = client.send_transaction(raw_tx).await?.into_inner();
-
-        if response.error_code != 0 {
-            Err(Error::SendFailed {
-                code: response.error_code,
-                reason: response.error_message,
-            })
-        } else {
-            tracing::info!("Transaction {} send successfully :)", txid);
-            Ok(())
-        }
+        tracing::info!("Sending transactions");
+        self.send_authorized_transactions(&txids).await
     }
 }
 
