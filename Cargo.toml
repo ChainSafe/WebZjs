@@ -41,7 +41,6 @@ native = ["tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots", "tokio/macros
 sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 no-bundler = ["wasm-bindgen-rayon?/no-bundler", "wasm_thread/no-bundler"]
-sync2 = []
 
 [dependencies]
 ## Web dependencies

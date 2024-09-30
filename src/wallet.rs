@@ -1,7 +1,6 @@
 use std::num::NonZeroU32;
 
 use bip0039::{English, Mnemonic};
-use futures_util::{StreamExt, TryStreamExt};
 use nonempty::NonEmpty;
 use secrecy::{ExposeSecret, SecretVec, Zeroize};
 use tonic::{
@@ -22,23 +21,21 @@ use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
     create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
 };
-use zcash_client_backend::data_api::{scanning::ScanRange, WalletCommitmentTrees};
+use zcash_client_backend::data_api::WalletCommitmentTrees;
 use zcash_client_backend::data_api::{
-    AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead, WalletSummary,
-    WalletWrite,
+    AccountBirthday, AccountPurpose, InputSource, WalletRead, WalletSummary, WalletWrite,
 };
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::proposal::Proposal;
 use zcash_client_backend::proto::service::{
     self, compact_tx_streamer_client::CompactTxStreamerClient,
 };
-use zcash_client_backend::scanning::{scan_block, Nullifiers, ScanningKeys};
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
-use zcash_primitives::consensus::{self, BlockHeight, Network};
+use zcash_primitives::consensus::{self, Network};
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
@@ -228,7 +225,7 @@ where
         })?)
     }
 
-    pub async fn sync2(&self) -> Result<(), Error> {
+    pub async fn sync(&self) -> Result<(), Error> {
         let mut client = self.client.clone();
         // TODO: This should be held in the Wallet struct so we can download in parallel
         let db_cache = MemBlockCache::new();
@@ -245,138 +242,12 @@ where
         .map_err(Into::into)
     }
 
-    /// Synchronize the wallet with the blockchain up to the tip
-    /// The passed callback will be called for every batch of blocks processed with the current progress
-    pub async fn sync(&self, callback: impl Fn(BlockHeight, BlockHeight)) -> Result<(), Error> {
-        let tip = self.update_chain_tip().await?;
-
-        tracing::info!("Retrieving suggested scan ranges from wallet");
-        let scan_ranges = self.db.read().await.suggest_scan_ranges()?;
-        tracing::info!("Suggested scan ranges: {:?}", scan_ranges);
-
-        // TODO: Ensure wallet's view of the chain tip as of the previous wallet session is valid.
-        // See https://github.com/Electric-Coin-Company/zec-sqlite-cli/blob/8c2e49f6d3067ec6cc85248488915278c3cb1c5a/src/commands/sync.rs#L157
-
-        // Download and process all blocks in the requested ranges
-        // Split each range into BATCH_SIZE chunks to avoid requesting too many blocks at once
-        for scan_range in scan_ranges.into_iter().flat_map(|r| {
-            // Limit the number of blocks we download and scan at any one time.
-            (0..).scan(r, |acc, _| {
-                if acc.is_empty() {
-                    None
-                } else if let Some((cur, next)) = acc.split_at(acc.block_range().start + BATCH_SIZE)
-                {
-                    *acc = next;
-                    Some(cur)
-                } else {
-                    let cur = acc.clone();
-                    let end = acc.block_range().end;
-                    *acc = ScanRange::from_parts(end..end, acc.priority());
-                    Some(cur)
-                }
-            })
-        }) {
-            self.fetch_and_scan_range(
-                scan_range.block_range().start.into(),
-                scan_range.block_range().end.into(),
-            )
-            .await?;
-            callback(scan_range.block_range().end, tip);
-        }
-
-        Ok(())
-    }
-
-    /// Download and process all blocks in the given range
-    async fn fetch_and_scan_range(&self, start: u32, end: u32) -> Result<(), Error> {
-        let mut client = self.client.clone();
-        // get the chainstate prior to the range
-        let tree_state = client
-            .get_tree_state(service::BlockId {
-                height: (start - 1).into(),
-                ..Default::default()
-            })
-            .await?;
-        let chainstate = tree_state.into_inner().to_chain_state()?;
-
-        // Get the scanning keys from the DB
-        let account_ufvks = self.db.read().await.get_unified_full_viewing_keys()?;
-        let scanning_keys = ScanningKeys::from_account_ufvks(account_ufvks);
-
-        // Get the nullifiers for the unspent notes we are tracking
-        let nullifiers = Nullifiers::new(
-            self.db
-                .read()
-                .await
-                .get_sapling_nullifiers(NullifierQuery::Unspent)?,
-            self.db
-                .read()
-                .await
-                .get_orchard_nullifiers(NullifierQuery::Unspent)?,
-        );
-
-        let range = service::BlockRange {
-            start: Some(service::BlockId {
-                height: start.into(),
-                ..Default::default()
-            }),
-            end: Some(service::BlockId {
-                height: (end - 1).into(),
-                ..Default::default()
-            }),
-        };
-
-        tracing::info!("Scanning block range: {:?} to {:?}", start, end);
-
-        let scanned_blocks = client
-            .get_block_range(range)
-            .await?
-            .into_inner()
-            .map(|compact_block| {
-                scan_block(
-                    &self.network,
-                    compact_block.unwrap(),
-                    &scanning_keys,
-                    &nullifiers,
-                    None,
-                )
-            })
-            .try_collect()
-            .await?;
-
-        self.db
-            .write()
-            .await
-            .put_blocks(&chainstate, scanned_blocks)?;
-
-        Ok(())
-    }
-
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary<AccountId>>, Error> {
         Ok(self
             .db
             .read()
             .await
             .get_wallet_summary(self.min_confirmations.into())?)
-    }
-
-    pub(crate) async fn update_chain_tip(&self) -> Result<BlockHeight, Error> {
-        tracing::info!("Retrieving chain tip from lightwalletd");
-
-        let tip_height = self
-            .client
-            .clone()
-            .get_latest_block(service::ChainSpec::default())
-            .await?
-            .get_ref()
-            .height
-            .try_into()
-            .unwrap();
-
-        tracing::info!("Latest block height is {}", tip_height);
-        self.db.write().await.update_chain_tip(tip_height)?;
-
-        Ok(tip_height)
     }
 
     ///
