@@ -5,7 +5,7 @@ import Form from "react-bootstrap/Form";
 import { ToastContainer, toast } from "react-toastify";
 
 import { WalletContext } from "../App";
-import { syncStateWithWallet } from "../Actions";
+import { addNewAccount } from "../Actions";
 
 export function ImportAccount() {
   let {state, dispatch} = useContext(WalletContext);
@@ -13,13 +13,12 @@ export function ImportAccount() {
   let [birthdayHeight, setBirthdayHeight] = useState(2657762);
   let [seedPhrase, setSeedPhrase] = useState("mix sample clay sweet planet lava giraffe hand fashion switch away pool rookie earth purity truly square trumpet goose move actor save jaguar volume");
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    await state.webWallet?.create_account(seedPhrase, 0, birthdayHeight);
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    await addNewAccount(state, dispatch, seedPhrase, birthdayHeight);
     toast.success("Account imported successfully", {
       position: "top-center",
     });
-    await syncStateWithWallet(state.webWallet, dispatch);
     setBirthdayHeight(0);
     setSeedPhrase("");
   };
