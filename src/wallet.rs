@@ -381,7 +381,7 @@ where
     ///
     /// Create a transaction proposal to send funds from the wallet to a given address
     ///
-    async fn propose_transfer(
+    pub async fn propose_transfer(
         &self,
         account_id: AccountId,
         to_address: ZcashAddress,
@@ -426,7 +426,7 @@ where
     /// Note: At the moment this requires a USK but ideally we want to be able to hand the signing off to a separate service
     ///     e.g. browser plugin, hardware wallet, etc. Will need to look into refactoring librustzcash create_proposed_transactions to allow for this
     ///
-    pub(crate) async fn create_proposed_transactions(
+    pub async fn create_proposed_transactions(
         &self,
         proposal: Proposal<FeeRule, NoteRef>,
         usk: &UnifiedSpendingKey,
@@ -454,9 +454,10 @@ where
     }
 
     pub async fn send_authorized_transactions(
-        &mut self,
+        &self,
         txids: &NonEmpty<TxId>,
     ) -> Result<(), Error> {
+        let mut client = self.client.clone();
         for txid in txids.iter() {
             let (txid, raw_tx) = self
                 .db
@@ -470,7 +471,7 @@ where
                 })
                 .unwrap();
 
-            let response = self.client.send_transaction(raw_tx).await?.into_inner();
+            let response = client.send_transaction(raw_tx).await?.into_inner();
 
             if response.error_code != 0 {
                 return Err(Error::SendFailed {
@@ -488,7 +489,7 @@ where
     /// A helper function that creates a proposal, creates a transation from the proposal and then submits it
     ///
     pub async fn transfer(
-        &mut self,
+        &self,
         seed_phrase: &str,
         from_account_id: AccountId,
         to_address: ZcashAddress,

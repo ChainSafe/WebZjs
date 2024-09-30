@@ -9,17 +9,22 @@ use crate::error::Error;
 use crate::{BlockRange, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use zcash_address::ZcashAddress;
-use zcash_client_backend::data_api::WalletRead;
+use zcash_client_backend::data_api::{WalletRead, InputSource};
+use zcash_client_backend::proposal::Proposal;
 use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
+use zcash_primitives::transaction::fees::zip317::FeeRule;
+use zcash_primitives::transaction::TxId;
+
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;
 pub type AccountId =
     <MemoryWalletDb<zcash_primitives::consensus::Network> as WalletRead>::AccountId;
+pub type NoteRef = <MemoryWalletDb<zcash_primitives::consensus::Network> as InputSource>::NoteRef;
 
 /// # A Zcash wallet
 ///
@@ -192,6 +197,46 @@ impl WebWallet {
             )
             .await
     }
+
+    ///
+    /// Create a transaction proposal to send funds from the wallet to a given address.
+    ///
+    pub async fn propose_transfer(
+        &self,
+        account_id: u32,
+        to_address: String,
+        value: u64,
+    ) -> Result<JsValue, Error> {
+        let to_address = ZcashAddress::try_from_encoded(&to_address)?;
+        let proposal = self.inner.propose_transfer(AccountId::from(account_id), to_address, value).await?;
+        Ok(serde_wasm_bindgen::to_value(&proposal).unwrap())
+    }
+    
+    ///
+    /// Perform the proving and signing required to create one or more transaction from the proposal. Created transactions are stored in the wallet database.
+    ///
+    /// Note: At the moment this requires a USK but ideally we want to be able to hand the signing off to a separate service
+    ///     e.g. browser plugin, hardware wallet, etc. Will need to look into refactoring librustzcash create_proposed_transactions to allow for this
+    ///
+    // pub async fn create_proposed_transactions(
+    //     &self,
+    //     proposal: Proposal<FeeRule, NoteRef>,
+    //     usk: &UnifiedSpendingKey,
+    // ) -> Result<Vec<TxId>, Error> {
+    //     self.inner
+    //         .create_proposed_transactions(proposal, usk)
+    //         .await
+    // }
+
+    /// 
+    /// Send a list of transactions to the network via the lightwalletd instance this wallet is connected to
+    /// 
+    // pub async fn send_authorized_transactions(
+    //     &self,
+    //     txids: &[TxId],
+    // ) -> Result<(), Error> {
+    //     self.inner.send_authorized_transactions(txids).await
+    // }
 
     /// Forwards a call to lightwalletd to retrieve the height of the latest block in the chain
     pub async fn get_latest_block(&self) -> Result<u64, Error> {
