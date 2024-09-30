@@ -8,10 +8,8 @@ pub mod bindgen;
 #[cfg(feature = "wasm")]
 pub use bindgen::wallet::WebWallet;
 
-
 pub mod error;
 pub mod init;
-
 
 pub mod wallet;
 pub use wallet::Wallet;

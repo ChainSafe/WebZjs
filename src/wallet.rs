@@ -80,8 +80,8 @@ impl<W, T: Clone> Clone for Wallet<W, T> {
         Self {
             db: self.db.clone(),
             client: self.client.clone(),
-            network: self.network.clone(),
-            min_confirmations: self.min_confirmations.clone(),
+            network: self.network,
+            min_confirmations: self.min_confirmations,
         }
     }
 }
