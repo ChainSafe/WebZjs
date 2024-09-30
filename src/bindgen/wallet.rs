@@ -6,15 +6,20 @@ use wasm_bindgen::prelude::*;
 use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
-use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
+use crate::{BlockRange, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use zcash_address::ZcashAddress;
+use zcash_client_backend::data_api::WalletRead;
 use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
+
+pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;
+pub type AccountId =
+    <MemoryWalletDb<zcash_primitives::consensus::Network> as WalletRead>::AccountId;
 
 /// # A Zcash wallet
 ///
@@ -87,30 +92,30 @@ impl WebWallet {
     ///
     /// # Arguments
     /// seed_phrase - mnemonic phrase to initialise the wallet
-    /// account_index - The HD derivation index to use. Can be any integer
+    /// account_hd_index - The HD derivation index to use. Can be any integer
     /// birthday_height - The block height at which the account was created, optionally None and the current height is used
     ///
     pub async fn create_account(
         &self,
         seed_phrase: &str,
-        account_index: u32,
+        account_hd_index: u32,
         birthday_height: Option<u32>,
-    ) -> Result<String, Error> {
+    ) -> Result<u32, Error> {
         tracing::info!("Create account called");
         self.inner
-            .create_account(seed_phrase, account_index, birthday_height)
+            .create_account(seed_phrase, account_hd_index, birthday_height)
             .await
+            .map(|id| *id)
     }
 
-    pub async fn import_ufvk(
-        &self,
-        key: &str,
-        birthday_height: Option<u32>,
-    ) -> Result<String, Error> {
+    pub async fn import_ufvk(&self, key: &str, birthday_height: Option<u32>) -> Result<u32, Error> {
         let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, key)
             .map_err(Error::KeyParseError)?;
 
-        self.inner.import_ufvk(&ufvk, birthday_height).await
+        self.inner
+            .import_ufvk(&ufvk, birthday_height)
+            .await
+            .map(|id| *id)
     }
 
     pub async fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
@@ -173,13 +178,18 @@ impl WebWallet {
     pub async fn transfer(
         &self,
         seed_phrase: &str,
-        from_account_index: usize,
+        from_account_id: u32,
         to_address: String,
         value: u64,
     ) -> Result<(), Error> {
         let to_address = ZcashAddress::try_from_encoded(&to_address)?;
         self.inner
-            .transfer(seed_phrase, from_account_index, to_address, value)
+            .transfer(
+                seed_phrase,
+                AccountId::from(from_account_id),
+                to_address,
+                value,
+            )
             .await
     }
 
