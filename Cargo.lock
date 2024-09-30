@@ -2532,6 +2532,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-wasm-bindgen"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8302e169f0eddcc139c70f139d19d6467353af16f9fce27e8c30158036a1e16b"
+dependencies = [
+ "js-sys",
+ "serde",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "serde_derive"
 version = "1.0.210"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3404,7 +3415,7 @@ dependencies = [
 [[package]]
 name = "wasm_thread"
 version = "0.3.0"
-source = "git+https://github.com/WilsonGramer/wasm_thread.git?rev=eb41bcc0d98ce0620a313687c0344341391b9d78#eb41bcc0d98ce0620a313687c0344341391b9d78"
+source = "git+https://github.com/ec2/wasm_thread?rev=9e432077948d927d49373d1d039c23447d3648df#9e432077948d927d49373d1d039c23447d3648df"
 dependencies = [
  "async-std",
  "futures",
@@ -3454,6 +3465,7 @@ dependencies = [
  "ripemd",
  "secrecy",
  "serde",
+ "serde-wasm-bindgen",
  "sha2",
  "subtle",
  "tempfile",

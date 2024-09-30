@@ -1,18 +1,20 @@
-use std::collections::HashMap;
 use std::num::NonZeroU32;
 
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use tonic_web_wasm_client::Client;
 
+use crate::error::Error;
+use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
+use wasm_thread as thread;
 use zcash_address::ZcashAddress;
-use zcash_client_backend::proto::service::compact_tx_streamer_client::CompactTxStreamerClient;
+use zcash_client_backend::proto::service::{
+    compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
+};
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::consensus::{self, BlockHeight};
-
-use crate::error::Error;
-use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 
 /// # A Zcash wallet
 ///
@@ -34,6 +36,7 @@ use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
 /// TODO
 ///
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct WebWallet {
     inner: MemoryWallet<tonic_web_wasm_client::Client>,
 }
@@ -88,18 +91,19 @@ impl WebWallet {
     /// birthday_height - The block height at which the account was created, optionally None and the current height is used
     ///
     pub async fn create_account(
-        &mut self,
+        &self,
         seed_phrase: &str,
         account_index: u32,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
+        tracing::info!("Create account called");
         self.inner
             .create_account(seed_phrase, account_index, birthday_height)
             .await
     }
 
     pub async fn import_ufvk(
-        &mut self,
+        &self,
         key: &str,
         birthday_height: Option<u32>,
     ) -> Result<String, Error> {
@@ -115,7 +119,7 @@ impl WebWallet {
 
     /// Synchronize the wallet with the blockchain up to the tip
     /// The passed callback will be called for every batch of blocks processed with the current progress
-    pub async fn sync(&mut self, callback: &js_sys::Function) -> Result<(), Error> {
+    pub async fn sync(&self, callback: &js_sys::Function) -> Result<(), Error> {
         let callback = move |scanned_to: BlockHeight, tip: BlockHeight| {
             let this = JsValue::null();
             let _ = callback.call2(
@@ -131,8 +135,27 @@ impl WebWallet {
     }
 
     /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
-    pub async fn sync2(&mut self) -> Result<(), Error> {
-        self.inner.sync2().await
+    pub async fn sync2(&self) -> Result<(), Error> {
+        assert!(!thread::is_web_worker_thread());
+
+        let db = self.inner.clone();
+
+        let sync_handler = thread::Builder::new()
+            .name("sync2".to_string())
+            .spawn_async(|| async {
+                assert!(thread::is_web_worker_thread());
+                tracing::debug!(
+                    "Current num threads (wasm_thread) {}",
+                    rayon::current_num_threads()
+                );
+
+                let db = db;
+                db.sync2().await.unwrap_throw();
+            })
+            .unwrap_throw()
+            .join_async();
+        sync_handler.await.unwrap();
+        Ok(())
     }
 
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
@@ -148,7 +171,7 @@ impl WebWallet {
     /// # Arguments
     ///
     pub async fn transfer(
-        &mut self,
+        &self,
         seed_phrase: &str,
         from_account_index: usize,
         to_address: String,
@@ -159,27 +182,41 @@ impl WebWallet {
             .transfer(seed_phrase, from_account_index, to_address, value)
             .await
     }
+
+    /// Forwards a call to lightwalletd to retrieve the height of the latest block in the chain
+    pub async fn get_latest_block(&self) -> Result<u64, Error> {
+        self.client()
+            .get_latest_block(ChainSpec {})
+            .await
+            .map(|response| response.into_inner().height)
+            .map_err(Error::from)
+    }
 }
 
-#[wasm_bindgen]
-#[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
+#[wasm_bindgen(inspectable)]
 pub struct WalletSummary {
-    account_balances: HashMap<u32, AccountBalance>,
-    chain_tip_height: u32,
-    fully_scanned_height: u32,
+    account_balances: Vec<(u32, AccountBalance)>,
+    pub chain_tip_height: u32,
+    pub fully_scanned_height: u32,
     // scan_progress: Option<Ratio<u64>>,
-    next_sapling_subtree_index: u64,
-    next_orchard_subtree_index: u64,
+    pub next_sapling_subtree_index: u64,
+    pub next_orchard_subtree_index: u64,
 }
 
 #[wasm_bindgen]
-#[allow(dead_code)]
-#[derive(Debug)]
+impl WalletSummary {
+    #[wasm_bindgen(getter)]
+    pub fn account_balances(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.account_balances).unwrap()
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AccountBalance {
-    sapling_balance: u64,
-    orchard_balance: u64,
-    unshielded_balance: u64,
+    pub sapling_balance: u64,
+    pub orchard_balance: u64,
+    pub unshielded_balance: u64,
 }
 
 impl From<zcash_client_backend::data_api::AccountBalance> for AccountBalance {

@@ -75,6 +75,17 @@ pub struct Wallet<W, T> {
     pub(crate) min_confirmations: NonZeroU32,
 }
 
+impl<W, T: Clone> Clone for Wallet<W, T> {
+    fn clone(&self) -> Self {
+        Self {
+            db: self.db.clone(),
+            client: self.client.clone(),
+            network: self.network,
+            min_confirmations: self.min_confirmations,
+        }
+    }
+}
+
 impl<W, T, AccountId, NoteRef> Wallet<W, T>
 where
     W: WalletRead<AccountId = AccountId>
@@ -145,6 +156,8 @@ where
         let usk = usk_from_seed_str(seed_phrase, account_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
 
+        tracing::info!("Key successfully decoded. Importing into wallet");
+
         self.import_account_ufvk(&ufvk, birthday_height, AccountPurpose::Spending)
             .await
     }
@@ -165,6 +178,7 @@ where
         birthday_height: Option<u32>,
         purpose: AccountPurpose,
     ) -> Result<String, Error> {
+        tracing::info!("Importing account with Ufvk: {:?}", ufvk);
         let mut client = self.client.clone();
         let birthday = match birthday_height {
             Some(height) => height,
@@ -501,7 +515,7 @@ fn usk_from_seed_str(
     account_index: u32,
     network: &consensus::Network,
 ) -> Result<UnifiedSpendingKey, Error> {
-    let mnemonic = <Mnemonic<English>>::from_phrase(seed).unwrap();
+    let mnemonic = <Mnemonic<English>>::from_phrase(seed).map_err(|_| Error::InvalidSeedPhrase)?;
     let seed = {
         let mut seed = mnemonic.to_seed("");
         let secret = seed.to_vec();

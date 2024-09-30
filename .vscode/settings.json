@@ -1,0 +1,4 @@
+{
+    "rust-analyzer.workspace.discoverConfig": null,
+    "rust-analyzer.cargo.features": "all"
+}
