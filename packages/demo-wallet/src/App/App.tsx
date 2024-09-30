@@ -23,19 +23,19 @@ export type State = {
   activeAccount?: number;
   summary?: WalletSummary;
   chainHeight?: bigint;
-  accountSeeds: string[];
+  accountSeeds: Map<number, string>;
 };
 
 const initialState: State = {
   activeAccount: undefined,
   summary: undefined,
   chainHeight: undefined,
-  accountSeeds: [],
+  accountSeeds: new Map<number, string>(),
 };
 
 export type Action =
   | { type: "set-active-account"; payload: number }
-  | { type: "append-account-seed"; payload: string }
+  | { type: "add-account-seed"; payload: [number, string] }
   | { type: "set-web-wallet"; payload: WebWallet }
   | { type: "set-summary"; payload: WalletSummary }
   | { type: "set-chain-height"; payload: bigint };
@@ -45,8 +45,8 @@ const reducer = (state: State, action: Action): State => {
     case "set-active-account": {
       return { ...state, activeAccount: action.payload };
     }
-    case "append-account-seed": {
-      return { ...state, accountSeeds: [...state.accountSeeds, action.payload] };
+    case "add-account-seed": {
+      return { ...state, accountSeeds: state.accountSeeds.set(action.payload[0], action.payload[1]) };
     }
     case "set-web-wallet": {
       return { ...state, webWallet: action.payload };

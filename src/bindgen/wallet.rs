@@ -1,5 +1,4 @@
 use std::num::NonZeroU32;
-use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
