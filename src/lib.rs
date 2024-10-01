@@ -19,10 +19,6 @@ use wasm_bindgen::prelude::*;
 /// The maximum number of checkpoints to store in each shard-tree
 pub const PRUNING_DEPTH: usize = 100;
 
-
-use zcash_client_memory::MemoryWalletDb;
-use zcash_primitives::consensus;
-
 #[cfg(feature = "wasm-parallel")]
 pub use wasm_bindgen_rayon::init_thread_pool;
 
@@ -34,5 +30,4 @@ pub fn init_thread_pool(_threads: usize) {}
 #[wasm_bindgen]
 pub struct BlockRange(pub u32, pub u32);
 
-
-pub mod sync3;
+pub mod sync;

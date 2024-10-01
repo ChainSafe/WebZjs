@@ -92,9 +92,12 @@ where
     // any shielded scanning, to ensure that we discover any UTXOs between the old
     // fully-scanned height and the current chain tip.
     // #[cfg(feature = "transparent-inputs")]
-    let account_ids = db_data.read().await.get_account_ids().map_err(Error::Wallet)?;
-    for account_id in account_ids
-    {
+    let account_ids = db_data
+        .read()
+        .await
+        .get_account_ids()
+        .map_err(Error::Wallet)?;
+    for account_id in account_ids {
         let start_height = db_data
             .read()
             .await

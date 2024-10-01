@@ -9,7 +9,7 @@ use tonic::{
 };
 
 use crate::error::Error;
-use crate::{sync3, BlockRange};
+use crate::BlockRange;
 
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
@@ -41,7 +41,6 @@ use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
-use zcash_client_backend::sync::run;
 const BATCH_SIZE: u32 = 10000;
 
 /// # A Zcash wallet
@@ -224,33 +223,16 @@ where
         })?)
     }
 
-    pub async fn sync3(&self) -> Result<(), Error> {
-        let mut client = self.client.clone();
-        // TODO: This should be held in the Wallet struct so we can download in parallel
-        let db_cache = MemBlockCache::new();
-
-        sync3::run(
-            &mut client,
-            &self.network.clone(),
-            &db_cache,
-           self.db.clone(),
-            BATCH_SIZE,
-        )
-        .await
-        .map_err(Into::into)
-    }
-
     pub async fn sync(&self) -> Result<(), Error> {
         let mut client = self.client.clone();
         // TODO: This should be held in the Wallet struct so we can download in parallel
         let db_cache = MemBlockCache::new();
 
-        let mut db = self.db.write().await;
-        run(
+        crate::sync::run(
             &mut client,
             &self.network.clone(),
             &db_cache,
-            &mut *db,
+            self.db.clone(),
             BATCH_SIZE,
         )
         .await

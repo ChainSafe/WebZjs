@@ -126,32 +126,8 @@ impl WebWallet {
         self.inner.suggest_scan_ranges().await
     }
 
-    /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
-    pub async fn sync(&self) -> Result<(), Error> {
-        assert!(!thread::is_web_worker_thread());
-
-        let db = self.inner.clone();
-
-        let sync_handler = thread::Builder::new()
-            .name("sync".to_string())
-            .spawn_async(|| async {
-                assert!(thread::is_web_worker_thread());
-                tracing::debug!(
-                    "Current num threads (wasm_thread) {}",
-                    rayon::current_num_threads()
-                );
-
-                let db = db;
-                db.sync().await.unwrap_throw();
-            })
-            .unwrap_throw()
-            .join_async();
-        sync_handler.await.unwrap();
-        Ok(())
-    }
-
     /// Synchronize the wallet with the blockchain up to the tip using our newest and bestest
-    pub async fn sync3(&self) -> Result<(), Error> {
+    pub async fn sync(&self) -> Result<(), Error> {
         assert!(!thread::is_web_worker_thread());
         tracing::debug!("SYNC 3 Main!!!!");
         let db = self.inner.clone();
@@ -166,7 +142,7 @@ impl WebWallet {
                 );
 
                 let db = db;
-                db.sync3().await.unwrap_throw();
+                db.sync().await.unwrap_throw();
             })
             .unwrap_throw()
             .join_async();
