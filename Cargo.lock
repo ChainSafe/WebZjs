@@ -806,6 +806,16 @@ checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
 [[package]]
 name = "equihash"
 version = "0.2.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
+dependencies = [
+ "blake2b_simd",
+ "byteorder",
+]
+
+[[package]]
+name = "equihash"
+version = "0.2.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "blake2b_simd",
  "byteorder",
@@ -857,6 +867,15 @@ dependencies = [
 [[package]]
 name = "f4jumble"
 version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
+dependencies = [
+ "blake2b_simd",
+]
+
+[[package]]
+name = "f4jumble"
+version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "blake2b_simd",
 ]
@@ -3416,6 +3435,7 @@ dependencies = [
 [[package]]
 name = "wasm_thread"
 version = "0.3.0"
+source = "git+https://github.com/ec2/wasm_thread?rev=9e432077948d927d49373d1d039c23447d3648df#9e432077948d927d49373d1d039c23447d3648df"
 dependencies = [
  "async-std",
  "futures",
@@ -3484,12 +3504,12 @@ dependencies = [
  "wasm_sync",
  "wasm_thread",
  "web-sys",
- "zcash_address",
- "zcash_client_backend",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_client_backend 0.13.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zcash_client_memory",
  "zcash_client_sqlite",
- "zcash_keys",
- "zcash_primitives",
+ "zcash_keys 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zcash_proofs",
 ]
 
@@ -3648,19 +3668,79 @@ dependencies = [
 [[package]]
 name = "zcash_address"
 version = "0.5.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
 dependencies = [
  "bech32",
  "bs58",
- "f4jumble",
+ "f4jumble 0.1.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
  "serde",
  "serde_with",
- "zcash_encoding",
- "zcash_protocol",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+]
+
+[[package]]
+name = "zcash_address"
+version = "0.5.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
+dependencies = [
+ "bech32",
+ "bs58",
+ "f4jumble 0.1.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "serde",
+ "serde_with",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
 ]
 
 [[package]]
 name = "zcash_client_backend"
 version = "0.13.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
+dependencies = [
+ "base64",
+ "bech32",
+ "bls12_381",
+ "bs58",
+ "byteorder",
+ "crossbeam-channel",
+ "document-features",
+ "group",
+ "hex",
+ "incrementalmerkletree",
+ "memuse",
+ "nom",
+ "nonempty",
+ "orchard",
+ "pasta_curves",
+ "percent-encoding",
+ "prost 0.13.2",
+ "rand_core",
+ "rayon",
+ "sapling-crypto",
+ "secrecy",
+ "serde",
+ "serde_with",
+ "shardtree",
+ "subtle",
+ "time",
+ "tonic-build",
+ "tracing",
+ "which",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_keys 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_note_encryption",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zip32",
+ "zip321 0.1.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+]
+
+[[package]]
+name = "zcash_client_backend"
+version = "0.13.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "async-trait",
  "base64",
@@ -3696,19 +3776,20 @@ dependencies = [
  "tonic-build",
  "tracing",
  "which",
- "zcash_address",
- "zcash_encoding",
- "zcash_keys",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_keys 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zcash_note_encryption",
- "zcash_primitives",
- "zcash_protocol",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zip32",
- "zip321",
+ "zip321 0.1.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
 ]
 
 [[package]]
 name = "zcash_client_memory"
 version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "async-trait",
  "bip32",
@@ -3732,18 +3813,19 @@ dependencies = [
  "tokio",
  "tracing",
  "wasm_sync",
- "zcash_address",
- "zcash_client_backend",
- "zcash_encoding",
- "zcash_keys",
- "zcash_primitives",
- "zcash_protocol",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_client_backend 0.13.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_keys 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zip32",
 ]
 
 [[package]]
 name = "zcash_client_sqlite"
 version = "0.11.2"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
 dependencies = [
  "bs58",
  "byteorder",
@@ -3767,18 +3849,28 @@ dependencies = [
  "time",
  "tracing",
  "uuid",
- "zcash_address",
- "zcash_client_backend",
- "zcash_encoding",
- "zcash_keys",
- "zcash_primitives",
- "zcash_protocol",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_client_backend 0.13.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_keys 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
  "zip32",
 ]
 
 [[package]]
 name = "zcash_encoding"
 version = "0.2.1"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
+dependencies = [
+ "byteorder",
+ "nonempty",
+]
+
+[[package]]
+name = "zcash_encoding"
+version = "0.2.1"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "byteorder",
  "nonempty",
@@ -3787,6 +3879,34 @@ dependencies = [
 [[package]]
 name = "zcash_keys"
 version = "0.3.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
+dependencies = [
+ "bech32",
+ "blake2b_simd",
+ "bls12_381",
+ "bs58",
+ "byteorder",
+ "document-features",
+ "group",
+ "memuse",
+ "nonempty",
+ "orchard",
+ "rand_core",
+ "sapling-crypto",
+ "secrecy",
+ "subtle",
+ "tracing",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zip32",
+]
+
+[[package]]
+name = "zcash_keys"
+version = "0.3.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "bech32",
  "bip32",
@@ -3804,10 +3924,10 @@ dependencies = [
  "secrecy",
  "subtle",
  "tracing",
- "zcash_address",
- "zcash_encoding",
- "zcash_primitives",
- "zcash_protocol",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zip32",
 ]
 
@@ -3827,6 +3947,43 @@ dependencies = [
 [[package]]
 name = "zcash_primitives"
 version = "0.17.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
+dependencies = [
+ "aes",
+ "blake2b_simd",
+ "bs58",
+ "byteorder",
+ "document-features",
+ "equihash 0.2.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "ff",
+ "fpe",
+ "group",
+ "hex",
+ "incrementalmerkletree",
+ "jubjub",
+ "memuse",
+ "nonempty",
+ "orchard",
+ "rand",
+ "rand_core",
+ "redjubjub",
+ "sapling-crypto",
+ "serde",
+ "sha2",
+ "subtle",
+ "tracing",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_note_encryption",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_spec",
+ "zip32",
+]
+
+[[package]]
+name = "zcash_primitives"
+version = "0.17.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "aes",
  "bip32",
@@ -3834,7 +3991,7 @@ dependencies = [
  "bs58",
  "byteorder",
  "document-features",
- "equihash",
+ "equihash 0.2.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "ff",
  "fpe",
  "group",
@@ -3854,10 +4011,10 @@ dependencies = [
  "sha2",
  "subtle",
  "tracing",
- "zcash_address",
- "zcash_encoding",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_encoding 0.2.1 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zcash_note_encryption",
- "zcash_protocol",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
  "zcash_spec",
  "zip32",
 ]
@@ -3865,6 +4022,7 @@ dependencies = [
 [[package]]
 name = "zcash_proofs"
 version = "0.17.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "bellman",
  "blake2b_simd",
@@ -3878,12 +4036,24 @@ dependencies = [
  "sapling-crypto",
  "tracing",
  "wagyu-zcash-parameters",
- "zcash_primitives",
+ "zcash_primitives 0.17.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
 ]
 
 [[package]]
 name = "zcash_protocol"
 version = "0.3.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
+dependencies = [
+ "document-features",
+ "memuse",
+ "serde",
+ "serde_with",
+]
+
+[[package]]
+name = "zcash_protocol"
+version = "0.3.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
 dependencies = [
  "document-features",
  "memuse",
@@ -3954,12 +4124,27 @@ dependencies = [
 [[package]]
 name = "zip321"
 version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f#9673cc2859e8a2528d1efd3c74795363f87ddf8f"
 dependencies = [
  "base64",
  "nom",
  "percent-encoding",
  "serde",
  "serde_with",
- "zcash_address",
- "zcash_protocol",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=9673cc2859e8a2528d1efd3c74795363f87ddf8f)",
+]
+
+[[package]]
+name = "zip321"
+version = "0.1.0"
+source = "git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8#e9f82490ac370f221a2650ae1b2563c8ccadf4c8"
+dependencies = [
+ "base64",
+ "nom",
+ "percent-encoding",
+ "serde",
+ "serde_with",
+ "zcash_address 0.5.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
+ "zcash_protocol 0.3.0 (git+https://github.com/ChainSafe/librustzcash?rev=e9f82490ac370f221a2650ae1b2563c8ccadf4c8)",
 ]
