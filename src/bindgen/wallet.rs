@@ -1,20 +1,29 @@
 use std::num::NonZeroU32;
 
+use nonempty::NonEmpty;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
-use crate::{BlockRange, MemoryWallet, Wallet, PRUNING_DEPTH};
+use crate::wallet::usk_from_seed_str;
+use crate::{bindgen::proposal::Proposal, BlockRange, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use zcash_address::ZcashAddress;
+use zcash_client_backend::data_api::{InputSource, WalletRead};
 use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
-use zcash_primitives::consensus::{self, BlockHeight};
+use zcash_primitives::consensus;
+use zcash_primitives::transaction::TxId;
+
+pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;
+pub type AccountId =
+    <MemoryWalletDb<zcash_primitives::consensus::Network> as WalletRead>::AccountId;
+pub type NoteRef = <MemoryWalletDb<zcash_primitives::consensus::Network> as InputSource>::NoteRef;
 
 /// # A Zcash wallet
 ///
@@ -87,61 +96,44 @@ impl WebWallet {
     ///
     /// # Arguments
     /// seed_phrase - mnemonic phrase to initialise the wallet
-    /// account_index - The HD derivation index to use. Can be any integer
+    /// account_hd_index - The HD derivation index to use. Can be any integer
     /// birthday_height - The block height at which the account was created, optionally None and the current height is used
     ///
     pub async fn create_account(
         &self,
         seed_phrase: &str,
-        account_index: u32,
+        account_hd_index: u32,
         birthday_height: Option<u32>,
-    ) -> Result<String, Error> {
+    ) -> Result<u32, Error> {
         tracing::info!("Create account called");
         self.inner
-            .create_account(seed_phrase, account_index, birthday_height)
+            .create_account(seed_phrase, account_hd_index, birthday_height)
             .await
+            .map(|id| *id)
     }
 
-    pub async fn import_ufvk(
-        &self,
-        key: &str,
-        birthday_height: Option<u32>,
-    ) -> Result<String, Error> {
+    pub async fn import_ufvk(&self, key: &str, birthday_height: Option<u32>) -> Result<u32, Error> {
         let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, key)
             .map_err(Error::KeyParseError)?;
 
-        self.inner.import_ufvk(&ufvk, birthday_height).await
+        self.inner
+            .import_ufvk(&ufvk, birthday_height)
+            .await
+            .map(|id| *id)
     }
 
     pub async fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
         self.inner.suggest_scan_ranges().await
     }
 
-    /// Synchronize the wallet with the blockchain up to the tip
-    /// The passed callback will be called for every batch of blocks processed with the current progress
-    pub async fn sync(&self, callback: &js_sys::Function) -> Result<(), Error> {
-        let callback = move |scanned_to: BlockHeight, tip: BlockHeight| {
-            let this = JsValue::null();
-            let _ = callback.call2(
-                &this,
-                &JsValue::from(Into::<u32>::into(scanned_to)),
-                &JsValue::from(Into::<u32>::into(tip)),
-            );
-        };
-
-        self.inner.sync(callback).await?;
-
-        Ok(())
-    }
-
     /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
-    pub async fn sync2(&self) -> Result<(), Error> {
+    pub async fn sync(&self) -> Result<(), Error> {
         assert!(!thread::is_web_worker_thread());
 
         let db = self.inner.clone();
 
         let sync_handler = thread::Builder::new()
-            .name("sync2".to_string())
+            .name("sync".to_string())
             .spawn_async(|| async {
                 assert!(thread::is_web_worker_thread());
                 tracing::debug!(
@@ -150,7 +142,7 @@ impl WebWallet {
                 );
 
                 let db = db;
-                db.sync2().await.unwrap_throw();
+                db.sync().await.unwrap_throw();
             })
             .unwrap_throw()
             .join_async();
@@ -187,25 +179,50 @@ impl WebWallet {
     }
 
     ///
-    /// Create a transaction proposal to send funds from the wallet to a given address and if approved will sign it and send the proposed transaction(s) to the network
+    /// Create a transaction proposal to send funds from the wallet to a given address.
     ///
-    /// First a proposal is created by selecting inputs and outputs to cover the requested amount. This proposal is then sent to the approval callback.
-    /// This allows wallet developers to display a confirmation dialog to the user before continuing.
-    ///
-    /// # Arguments
-    ///
-    pub async fn transfer(
+    pub async fn propose_transfer(
         &self,
-        seed_phrase: &str,
-        from_account_index: usize,
+        account_id: u32,
         to_address: String,
         value: u64,
-    ) -> Result<(), Error> {
+    ) -> Result<Proposal, Error> {
         let to_address = ZcashAddress::try_from_encoded(&to_address)?;
-        self.inner
-            .transfer(seed_phrase, from_account_index, to_address, value)
-            .await
+        let proposal = self
+            .inner
+            .propose_transfer(AccountId::from(account_id), to_address, value)
+            .await?;
+        Ok(proposal.into())
     }
+
+    ///
+    /// Perform the proving and signing required to create one or more transaction from the proposal.
+    /// Created transactions are stored in the wallet database and a list of the IDs is returned
+    ///
+    pub async fn create_proposed_transactions(
+        &self,
+        proposal: Proposal,
+        seed_phrase: &str,
+    ) -> Result<JsValue, Error> {
+        let usk = usk_from_seed_str(seed_phrase, 0, &self.inner.network)?;
+        let txids = self
+            .inner
+            .create_proposed_transactions(proposal.into(), &usk)
+            .await?;
+        Ok(serde_wasm_bindgen::to_value(&txids).unwrap())
+    }
+
+    ///
+    /// Send a list of transactions to the network via the lightwalletd instance this wallet is connected to
+    ///
+    pub async fn send_authorized_transactions(&self, txids: JsValue) -> Result<(), Error> {
+        let txids: NonEmpty<TxId> = serde_wasm_bindgen::from_value(txids).unwrap();
+        self.inner.send_authorized_transactions(&txids).await
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // lightwalletd gRPC methods
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     /// Forwards a call to lightwalletd to retrieve the height of the latest block in the chain
     pub async fn get_latest_block(&self) -> Result<u64, Error> {

@@ -59,6 +59,8 @@ pub enum Error {
     SqliteError(#[from] zcash_client_sqlite::error::SqliteClientError),
     #[error("Invalid seed phrase")]
     InvalidSeedPhrase,
+    #[error("Failed when creating transaction")]
+    FailedToCreateTransaction,
 }
 
 impl From<Error> for JsValue {

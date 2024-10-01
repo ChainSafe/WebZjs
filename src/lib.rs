@@ -15,14 +15,17 @@ pub mod wallet;
 pub use wallet::Wallet;
 
 use wasm_bindgen::prelude::*;
-use zcash_client_memory::MemoryWalletDb;
-use zcash_primitives::consensus;
 
 /// The maximum number of checkpoints to store in each shard-tree
 pub const PRUNING_DEPTH: usize = 100;
 
+
+use zcash_client_memory::MemoryWalletDb;
+use zcash_primitives::consensus;
+
 #[cfg(feature = "wasm-parallel")]
 pub use wasm_bindgen_rayon::init_thread_pool;
+
 // dummy NO-OP init_thread pool to maintain the same API between features
 #[cfg(not(feature = "wasm-parallel"))]
 #[wasm_bindgen(js_name = initThreadPool)]
@@ -31,6 +34,5 @@ pub fn init_thread_pool(_threads: usize) {}
 #[wasm_bindgen]
 pub struct BlockRange(pub u32, pub u32);
 
-pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;
 
 pub mod sync3;
