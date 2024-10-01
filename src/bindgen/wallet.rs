@@ -17,7 +17,7 @@ use zcash_client_backend::proto::service::{
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
-use zcash_primitives::consensus::{self, BlockHeight};
+use zcash_primitives::consensus;
 use zcash_primitives::transaction::TxId;
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;
@@ -126,31 +126,14 @@ impl WebWallet {
         self.inner.suggest_scan_ranges().await
     }
 
-    /// Synchronize the wallet with the blockchain up to the tip
-    /// The passed callback will be called for every batch of blocks processed with the current progress
-    pub async fn sync(&self, callback: &js_sys::Function) -> Result<(), Error> {
-        let callback = move |scanned_to: BlockHeight, tip: BlockHeight| {
-            let this = JsValue::null();
-            let _ = callback.call2(
-                &this,
-                &JsValue::from(Into::<u32>::into(scanned_to)),
-                &JsValue::from(Into::<u32>::into(tip)),
-            );
-        };
-
-        self.inner.sync(callback).await?;
-
-        Ok(())
-    }
-
     /// Synchronize the wallet with the blockchain up to the tip using zcash_client_backend's algo
-    pub async fn sync2(&self) -> Result<(), Error> {
+    pub async fn sync(&self) -> Result<(), Error> {
         assert!(!thread::is_web_worker_thread());
 
         let db = self.inner.clone();
 
         let sync_handler = thread::Builder::new()
-            .name("sync2".to_string())
+            .name("sync".to_string())
             .spawn_async(|| async {
                 assert!(thread::is_web_worker_thread());
                 tracing::debug!(
@@ -159,7 +142,7 @@ impl WebWallet {
                 );
 
                 let db = db;
-                db.sync2().await.unwrap_throw();
+                db.sync().await.unwrap_throw();
             })
             .unwrap_throw()
             .join_async();
