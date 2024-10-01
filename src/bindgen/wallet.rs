@@ -17,7 +17,7 @@ use zcash_client_backend::proto::service::{
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
-use zcash_primitives::consensus::{self, BlockHeight};
+use zcash_primitives::consensus;
 use zcash_primitives::transaction::TxId;
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;

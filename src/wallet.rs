@@ -23,8 +23,7 @@ use zcash_client_backend::data_api::wallet::{
 };
 use zcash_client_backend::data_api::WalletCommitmentTrees;
 use zcash_client_backend::data_api::{
-    Account, AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead,
-    WalletSummary, WalletWrite,
+    Account, AccountBirthday, AccountPurpose, InputSource, WalletRead, WalletSummary, WalletWrite,
 };
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::proposal::Proposal;
