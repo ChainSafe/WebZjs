@@ -453,10 +453,7 @@ where
         Ok(transactions)
     }
 
-    pub async fn send_authorized_transactions(
-        &self,
-        txids: &NonEmpty<TxId>,
-    ) -> Result<(), Error> {
+    pub async fn send_authorized_transactions(&self, txids: &NonEmpty<TxId>) -> Result<(), Error> {
         let mut client = self.client.clone();
         for txid in txids.iter() {
             let (txid, raw_tx) = self
@@ -508,7 +505,7 @@ where
     }
 }
 
-fn usk_from_seed_str(
+pub(crate) fn usk_from_seed_str(
     seed: &str,
     account_id: u32,
     network: &consensus::Network,

@@ -18,6 +18,7 @@ export function ImportAccount() {
     await addNewAccount(state, dispatch, seedPhrase, birthdayHeight);
     toast.success("Account imported successfully", {
       position: "top-center",
+      autoClose: 2000,
     });
     setBirthdayHeight(0);
     setSeedPhrase("");
