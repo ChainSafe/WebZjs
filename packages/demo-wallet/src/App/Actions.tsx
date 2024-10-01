@@ -1,7 +1,7 @@
 import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-core";
 
 import { State, Action } from "./App";
-import { MAINNET_LIGHTWALLETD_PROXY } from "./constants";
+import { MAINNET_LIGHTWALLETD_PROXY } from "./Constants";
 
 export async function init(dispatch: React.Dispatch<Action>) {
   await initWasm();
@@ -13,8 +13,8 @@ export async function init(dispatch: React.Dispatch<Action>) {
 }
 
 export async function addNewAccount(state: State, dispatch: React.Dispatch<Action>, seedPhrase: string, birthdayHeight: number) {
-    await state.webWallet?.create_account(seedPhrase, 0, birthdayHeight);
-    dispatch({ type: "append-account-seed", payload: seedPhrase });
+    let account_id = await state.webWallet?.create_account(seedPhrase, 0, birthdayHeight) || 0;
+    dispatch({ type: "add-account-seed", payload: [account_id, seedPhrase] });
     await syncStateWithWallet(state, dispatch);
 }
 
@@ -60,6 +60,13 @@ export async function triggerTransfer(
         throw new Error("No active account");
     }
 
-    await state.webWallet?.transfer(state.accountSeeds[state.activeAccount], state.activeAccount, toAddress, amount);
-    await syncStateWithWallet(state, dispatch);
+    let activeAccountSeedPhrase = state.accountSeeds.get(state.activeAccount) || "";
+    
+    let proposal = await state.webWallet?.propose_transfer(state.activeAccount, toAddress, amount);
+    console.log(JSON.stringify(proposal.describe(), null, 2));
+    
+    let txids = await state.webWallet.create_proposed_transactions(proposal, activeAccountSeedPhrase);
+    console.log(JSON.stringify(txids, null, 2));
+    
+    await state.webWallet.send_authorized_transactions(txids);
 }

@@ -23,7 +23,8 @@ use zcash_client_backend::data_api::wallet::{
 };
 use zcash_client_backend::data_api::WalletCommitmentTrees;
 use zcash_client_backend::data_api::{
-    AccountBirthday, AccountPurpose, InputSource, WalletRead, WalletSummary, WalletWrite,
+    Account, AccountBirthday, AccountPurpose, InputSource, NullifierQuery, WalletRead,
+    WalletSummary, WalletWrite,
 };
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::proposal::Proposal;
@@ -140,17 +141,17 @@ where
     ///
     /// # Arguments
     /// seed_phrase - mnemonic phrase to initialise the wallet
-    /// account_index - The HD derivation index to use. Can be any integer
+    /// account_id - The HD derivation index to use. Can be any integer
     /// birthday_height - The block height at which the account was created, optionally None and the current height is used
     ///
     pub async fn create_account(
         &self,
         seed_phrase: &str,
-        account_index: u32,
+        account_hd_index: u32,
         birthday_height: Option<u32>,
-    ) -> Result<String, Error> {
+    ) -> Result<AccountId, Error> {
         // decode the mnemonic and derive the first account
-        let usk = usk_from_seed_str(seed_phrase, account_index, &self.network)?;
+        let usk = usk_from_seed_str(seed_phrase, account_hd_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
 
         tracing::info!("Key successfully decoded. Importing into wallet");
@@ -163,7 +164,7 @@ where
         &self,
         ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
-    ) -> Result<String, Error> {
+    ) -> Result<AccountId, Error> {
         self.import_account_ufvk(ufvk, birthday_height, AccountPurpose::ViewOnly)
             .await
     }
@@ -174,7 +175,7 @@ where
         ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
         purpose: AccountPurpose,
-    ) -> Result<String, Error> {
+    ) -> Result<AccountId, Error> {
         tracing::info!("Importing account with Ufvk: {:?}", ufvk);
         let mut client = self.client.clone();
         let birthday = match birthday_height {
@@ -202,13 +203,12 @@ where
             AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
         };
 
-        let _account = self
+        Ok(self
             .db
             .write()
             .await
-            .import_account_ufvk(ufvk, &birthday, purpose)?;
-
-        Ok("0".to_string())
+            .import_account_ufvk(ufvk, &birthday, purpose)?
+            .id())
     }
 
     pub async fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
@@ -253,14 +253,12 @@ where
     ///
     /// Create a transaction proposal to send funds from the wallet to a given address
     ///
-    async fn propose_transfer(
+    pub async fn propose_transfer(
         &self,
-        account_index: usize,
+        account_id: AccountId,
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<Proposal<FeeRule, NoteRef>, Error> {
-        let account_id = self.db.read().await.get_account_ids()?[account_index];
-
         let input_selector = GreedyInputSelector::new(
             SingleOutputChangeStrategy::new(FeeRule::standard(), None, ShieldedProtocol::Orchard),
             Default::default(),
@@ -300,7 +298,7 @@ where
     /// Note: At the moment this requires a USK but ideally we want to be able to hand the signing off to a separate service
     ///     e.g. browser plugin, hardware wallet, etc. Will need to look into refactoring librustzcash create_proposed_transactions to allow for this
     ///
-    pub(crate) async fn create_proposed_transactions(
+    pub async fn create_proposed_transactions(
         &self,
         proposal: Proposal<FeeRule, NoteRef>,
         usk: &UnifiedSpendingKey,
@@ -322,68 +320,66 @@ where
             OvkPolicy::Sender,
             &proposal,
         )
-        .unwrap();
+        .map_err(|_| Error::FailedToCreateTransaction)?;
 
         Ok(transactions)
     }
 
+    pub async fn send_authorized_transactions(&self, txids: &NonEmpty<TxId>) -> Result<(), Error> {
+        let mut client = self.client.clone();
+        for txid in txids.iter() {
+            let (txid, raw_tx) = self
+                .db
+                .read()
+                .await
+                .get_transaction(*txid)?
+                .map(|tx| {
+                    let mut raw_tx = service::RawTransaction::default();
+                    tx.write(&mut raw_tx.data).unwrap();
+                    (tx.txid(), raw_tx)
+                })
+                .unwrap();
+
+            let response = client.send_transaction(raw_tx).await?.into_inner();
+
+            if response.error_code != 0 {
+                return Err(Error::SendFailed {
+                    code: response.error_code,
+                    reason: response.error_message,
+                });
+            } else {
+                tracing::info!("Transaction {} send successfully :)", txid);
+            }
+        }
+        Ok(())
+    }
+
     ///
-    /// Create a transaction proposal to send funds from the wallet to a given address and if approved will sign it and send the proposed transaction(s) to the network
-    ///
-    /// First a proposal is created by selecting inputs and outputs to cover the requested amount. This proposal is then sent to the approval callback.
-    /// This allows wallet developers to display a confirmation dialog to the user before continuing.
-    ///
-    /// # Arguments
+    /// A helper function that creates a proposal, creates a transation from the proposal and then submits it
     ///
     pub async fn transfer(
         &self,
         seed_phrase: &str,
-        from_account_index: usize,
+        from_account_id: AccountId,
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<(), Error> {
-        let mut client = self.client.clone();
         let usk = usk_from_seed_str(seed_phrase, 0, &self.network)?;
         let proposal = self
-            .propose_transfer(from_account_index, to_address, value)
+            .propose_transfer(from_account_id, to_address, value)
             .await?;
         // TODO: Add callback for approving the transaction here
         let txids = self.create_proposed_transactions(proposal, &usk).await?;
 
         // send the transactions to the network!!
-        tracing::info!("Sending transaction...");
-        let txid = *txids.first();
-        let (txid, raw_tx) = self
-            .db
-            .read()
-            .await
-            .get_transaction(txid)?
-            .map(|tx| {
-                let mut raw_tx = service::RawTransaction::default();
-                tx.write(&mut raw_tx.data).unwrap();
-                (tx.txid(), raw_tx)
-            })
-            .unwrap();
-
-        // tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
-
-        let response = client.send_transaction(raw_tx).await?.into_inner();
-
-        if response.error_code != 0 {
-            Err(Error::SendFailed {
-                code: response.error_code,
-                reason: response.error_message,
-            })
-        } else {
-            tracing::info!("Transaction {} send successfully :)", txid);
-            Ok(())
-        }
+        tracing::info!("Sending transactions");
+        self.send_authorized_transactions(&txids).await
     }
 }
 
-fn usk_from_seed_str(
+pub(crate) fn usk_from_seed_str(
     seed: &str,
-    account_index: u32,
+    account_id: u32,
     network: &consensus::Network,
 ) -> Result<UnifiedSpendingKey, Error> {
     let mnemonic = <Mnemonic<English>>::from_phrase(seed).map_err(|_| Error::InvalidSeedPhrase)?;
@@ -393,7 +389,6 @@ fn usk_from_seed_str(
         seed.zeroize();
         SecretVec::new(secret)
     };
-    let usk =
-        UnifiedSpendingKey::from_seed(network, seed.expose_secret(), account_index.try_into()?)?;
+    let usk = UnifiedSpendingKey::from_seed(network, seed.expose_secret(), account_id.try_into()?)?;
     Ok(usk)
 }
