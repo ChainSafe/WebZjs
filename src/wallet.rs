@@ -381,7 +381,7 @@ where
     ///
     /// Create a transaction proposal to send funds from the wallet to a given address
     ///
-    async fn propose_transfer(
+    pub async fn propose_transfer(
         &self,
         account_id: AccountId,
         to_address: ZcashAddress,
@@ -426,7 +426,7 @@ where
     /// Note: At the moment this requires a USK but ideally we want to be able to hand the signing off to a separate service
     ///     e.g. browser plugin, hardware wallet, etc. Will need to look into refactoring librustzcash create_proposed_transactions to allow for this
     ///
-    pub(crate) async fn create_proposed_transactions(
+    pub async fn create_proposed_transactions(
         &self,
         proposal: Proposal<FeeRule, NoteRef>,
         usk: &UnifiedSpendingKey,
@@ -448,18 +448,42 @@ where
             OvkPolicy::Sender,
             &proposal,
         )
-        .unwrap();
+        .map_err(|_| Error::FailedToCreateTransaction)?;
 
         Ok(transactions)
     }
 
+    pub async fn send_authorized_transactions(&self, txids: &NonEmpty<TxId>) -> Result<(), Error> {
+        let mut client = self.client.clone();
+        for txid in txids.iter() {
+            let (txid, raw_tx) = self
+                .db
+                .read()
+                .await
+                .get_transaction(*txid)?
+                .map(|tx| {
+                    let mut raw_tx = service::RawTransaction::default();
+                    tx.write(&mut raw_tx.data).unwrap();
+                    (tx.txid(), raw_tx)
+                })
+                .unwrap();
+
+            let response = client.send_transaction(raw_tx).await?.into_inner();
+
+            if response.error_code != 0 {
+                return Err(Error::SendFailed {
+                    code: response.error_code,
+                    reason: response.error_message,
+                });
+            } else {
+                tracing::info!("Transaction {} send successfully :)", txid);
+            }
+        }
+        Ok(())
+    }
+
     ///
-    /// Create a transaction proposal to send funds from the wallet to a given address and if approved will sign it and send the proposed transaction(s) to the network
-    ///
-    /// First a proposal is created by selecting inputs and outputs to cover the requested amount. This proposal is then sent to the approval callback.
-    /// This allows wallet developers to display a confirmation dialog to the user before continuing.
-    ///
-    /// # Arguments
+    /// A helper function that creates a proposal, creates a transation from the proposal and then submits it
     ///
     pub async fn transfer(
         &self,
@@ -468,7 +492,6 @@ where
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<(), Error> {
-        let mut client = self.client.clone();
         let usk = usk_from_seed_str(seed_phrase, 0, &self.network)?;
         let proposal = self
             .propose_transfer(from_account_id, to_address, value)
@@ -477,37 +500,12 @@ where
         let txids = self.create_proposed_transactions(proposal, &usk).await?;
 
         // send the transactions to the network!!
-        tracing::info!("Sending transaction...");
-        let txid = *txids.first();
-        let (txid, raw_tx) = self
-            .db
-            .read()
-            .await
-            .get_transaction(txid)?
-            .map(|tx| {
-                let mut raw_tx = service::RawTransaction::default();
-                tx.write(&mut raw_tx.data).unwrap();
-                (tx.txid(), raw_tx)
-            })
-            .unwrap();
-
-        // tracing::info!("Transaction hex: 0x{}", hex::encode(&raw_tx.data));
-
-        let response = client.send_transaction(raw_tx).await?.into_inner();
-
-        if response.error_code != 0 {
-            Err(Error::SendFailed {
-                code: response.error_code,
-                reason: response.error_message,
-            })
-        } else {
-            tracing::info!("Transaction {} send successfully :)", txid);
-            Ok(())
-        }
+        tracing::info!("Sending transactions");
+        self.send_authorized_transactions(&txids).await
     }
 }
 
-fn usk_from_seed_str(
+pub(crate) fn usk_from_seed_str(
     seed: &str,
     account_id: u32,
     network: &consensus::Network,

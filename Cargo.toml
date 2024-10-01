@@ -61,12 +61,12 @@ tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "syn
 
 ## Zcash dependencies
 
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "d1fa3e846c5e61de3f1df23dd9f4d5416915631a", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "d1fa3e846c5e61de3f1df23dd9f4d5416915631a", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "d1fa3e846c5e61de3f1df23dd9f4d5416915631a", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "d1fa3e846c5e61de3f1df23dd9f4d5416915631a" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "d1fa3e846c5e61de3f1df23dd9f4d5416915631a" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "d1fa3e846c5e61de3f1df23dd9f4d5416915631a", default-features = false, features = ["bundled-prover"] }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["bundled-prover"] }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }
@@ -77,7 +77,7 @@ tonic = { version = "0.12", default-features = false, features = [
 
 # Used in Native tests
 tokio = { version = "1.0" }
-zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "d1fa3e846c5e61de3f1df23dd9f4d5416915631a", default-features = false, features = ["unstable", "orchard"], optional = true }
+zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"

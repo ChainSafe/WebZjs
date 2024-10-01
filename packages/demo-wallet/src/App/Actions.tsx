@@ -61,6 +61,12 @@ export async function triggerTransfer(
     }
 
     let activeAccountSeedPhrase = state.accountSeeds.get(state.activeAccount) || "";
-    await state.webWallet?.transfer(activeAccountSeedPhrase, state.activeAccount, toAddress, amount);
-    await syncStateWithWallet(state, dispatch);
+    
+    let proposal = await state.webWallet?.propose_transfer(state.activeAccount, toAddress, amount);
+    console.log(JSON.stringify(proposal.describe(), null, 2));
+    
+    let txids = await state.webWallet.create_proposed_transactions(proposal, activeAccountSeedPhrase);
+    console.log(JSON.stringify(txids, null, 2));
+    
+    await state.webWallet.send_authorized_transactions(txids);
 }
