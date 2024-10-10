@@ -40,6 +40,7 @@ fn setup_tracing() {
         // For WASM, we must set the directives here at compile time.
         let filter_layer = EnvFilter::default()
             .add_directive(LevelFilter::INFO.into())
+            .add_directive("webz_core=debug".parse().unwrap())
             .add_directive("zcash_client_memory=info".parse().unwrap())
             .add_directive("zcash_client_backend::scanning=debug".parse().unwrap())
             .add_directive("zcash_client_backend::sync=debug".parse().unwrap());
