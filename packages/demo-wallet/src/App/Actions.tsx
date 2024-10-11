@@ -65,7 +65,7 @@ export async function triggerTransfer(
     let proposal = await state.webWallet?.propose_transfer(state.activeAccount, toAddress, amount);
     console.log(JSON.stringify(proposal.describe(), null, 2));
     
-    let txids = await state.webWallet.create_proposed_transactions(proposal, activeAccountSeedPhrase);
+    let txids = await state.webWallet.create_proposed_transactions(proposal, activeAccountSeedPhrase, 0);
     console.log(JSON.stringify(txids, null, 2));
     
     await state.webWallet.send_authorized_transactions(txids);
