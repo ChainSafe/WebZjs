@@ -10,33 +10,26 @@ WebZjs aims to make it simple to securely interact with Zcash from within the br
 
 Being a private blockchain Zcash places a lot more demands on the wallet than a public blockchain like Ethereum. WebZjs uses everything at its disposal to give efficient sync times and a good user experience.
 
-## Usage
-
-```typescript
-// TODO
-```
-
 ## Building
 
 ### Prerequisites
 
+- [Rust and Cargo](https://www.rust-lang.org/tools/install)
 - This repo uses [just](https://github.com/casey/just) as a command runner. Please install this first.
-- Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
+- [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
 - Requires clang 17 or later
     - On Mac this can be installed by updating LLVM using your preferred package manager (e.g. macports, brew)
 - Tested with Rust nightly-2024-08-07
 
-### Building for Browser
+### Building WebZjs
 
-This just script uses wasm-pack to build a web-ready javascript library.
+This just script uses wasm-pack to build a web-ready copy of `webz-core` into the `packages` directory 
 
 ```shell
-just build-web
+just build
 ```
 
-After building the resulting lib can be found in `packages/webz-core`.
-
-### Building the example web-wallet
+### Building and running the demo-wallet
 
 #### Prerequisites
 
@@ -44,37 +37,39 @@ After building the resulting lib can be found in `packages/webz-core`.
 
 ### Building
 
-Install dependencies with
-
-```shell
-pnpm i
-```
-
-Build WebZjs with
+First build WebZjs with
 
 ```shell
 just build
 ```
 
-Start a dev server with the page
+Install js dependencies with
 
 ```shell
-pnpm start:dev
+pnpm i
+```
+
+Build the demo wallet with
+
+```shell
+pnpm build
+```
+
+Serve it with
+
+```shell
+
 ```
 
 ## Development
 
-The [`.cargo/config.toml`](./.cargo/config.toml) file sets the build target to `wasm32-unknown-unknown` so the regular cargo commands (e.g. `check`, `build`) will run against this target.
-
 ### Testing
 
-Tests are run in a headless browser environment and can be run with
+Browser tests are run in a headless browser environment and can be run with
 
 ```shell
 just test-web
 ```
-
-
 
 ## Security Warnings
 
