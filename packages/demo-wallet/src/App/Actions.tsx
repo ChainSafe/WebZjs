@@ -43,7 +43,7 @@ export async function triggerRescan(
     if (!state.webWallet) {
         throw new Error("Wallet not initialized");
     }
-    await state.webWallet?.sync2();
+    await state.webWallet?.sync();
     await syncStateWithWallet(state, dispatch);
 }
 
