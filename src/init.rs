@@ -61,7 +61,7 @@ fn setup_tracing() {
 }
 
 #[wasm_bindgen(start)]
-pub fn start() {
+fn start() {
     set_panic_hook();
     setup_tracing();
 }
