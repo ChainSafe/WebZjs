@@ -58,8 +58,11 @@ pnpm build
 Serve it with
 
 ```shell
-
+pnpm serve
 ```
+
+> [!IMPORTANT]  
+> For unknown reasons it is currently not possible to use the parcel dev server to serve the demo-wallet hence the build and then serve steps
 
 ## Development
 
