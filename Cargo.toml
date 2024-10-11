@@ -60,12 +60,12 @@ tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "syn
 
 ## Zcash dependencies
 
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "62c424e35ac02dbbd068206bbfde178cdd06f3e4", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "62c424e35ac02dbbd068206bbfde178cdd06f3e4", default-features = false, features = ["transparent-inputs", "sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "62c424e35ac02dbbd068206bbfde178cdd06f3e4", features = ["orchard", "transparent-inputs"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "62c424e35ac02dbbd068206bbfde178cdd06f3e4" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "62c424e35ac02dbbd068206bbfde178cdd06f3e4" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "62c424e35ac02dbbd068206bbfde178cdd06f3e4", default-features = false, features = ["bundled-prover"] }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", default-features = false, features = ["transparent-inputs", "sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", features = ["orchard", "transparent-inputs"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", default-features = false, features = ["bundled-prover"] }
 
 
 ## gRPC Web dependencies
@@ -113,9 +113,6 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord" }
 # TODO: See: https://github.com/RReverser/wasm-bindgen-rayon/pull/12
 wasm-bindgen-rayon = { git = "https://github.com/9SMTM6/wasm-bindgen-rayon", rev = "d1816e5bc2bf928ff5442355c04500a381d66a41" }
-# TODO: Remove these once the PRs are merged
-shardtree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
-incrementalmerkletree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 
 #[patch.'https://github.com/chainsafe/librustzcash']
 #zcash_address = { path = "../librustzcash/components/zcash_address" }
