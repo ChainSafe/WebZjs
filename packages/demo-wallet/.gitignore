@@ -1,11 +1,13 @@
 .pnp.*
 .yarn/*
+dist/*
+
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+!dist/serve.json
 
-dist
 .parcel-cache
 wasm-pkg
