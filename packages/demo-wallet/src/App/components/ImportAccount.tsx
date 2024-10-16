@@ -5,7 +5,7 @@ import Form from "react-bootstrap/Form";
 import { ToastContainer, toast } from "react-toastify";
 
 import { WalletContext } from "../App";
-import { addNewAccount } from "../Actions";
+import { addNewAccount, flushDbToStore } from "../Actions";
 
 export function ImportAccount() {
   let {state, dispatch} = useContext(WalletContext);
@@ -22,6 +22,7 @@ export function ImportAccount() {
     });
     setBirthdayHeight(0);
     setSeedPhrase("");
+    flushDbToStore(state, dispatch)
   };
 
   return (

@@ -9,6 +9,7 @@
     "@types/react-dom": "^18.3.0",
     "@webzjs/webz-core": "workspace:^",
     "bootstrap": "^5.3.3",
+    "idb-keyval": "^6.2.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.4",
     "react-dom": "^18.2.0",

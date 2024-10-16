@@ -5,7 +5,7 @@ import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 
 import { WalletContext } from "../App";
-import { syncStateWithWallet, triggerRescan } from "../Actions";
+import { syncStateWithWallet, triggerRescan, flushDbToStore } from "../Actions";
 import { Button } from "react-bootstrap";
 
 import { zatsToZec } from "../../utils";

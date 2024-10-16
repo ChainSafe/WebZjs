@@ -1,0 +1,39 @@
+name: Playwright Tests
+on:
+    pull_request:
+    push:
+      branches: main
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Just
+      uses: extractions/setup-just@v2
+
+    - name: install wasm-pack
+      uses: jetli/wasm-pack-action@v0.4.0
+      with:
+        version: latest
+
+    - name: build pkg
+      run: just build
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+
+    - uses: pnpm/action-setup@v4
+
+    - name: Install dependencies
+      run: pnpm i
+
+    - name: Install Playwright Browsers
+      working-directory: ./packages/e2e-tests/
+      run: npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      run: pnpm run test:e2e

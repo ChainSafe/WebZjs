@@ -35,7 +35,6 @@ where
     <DbT as WalletRead>::Error: std::error::Error + Send + Sync + 'static,
     <DbT as WalletCommitmentTrees>::Error: std::error::Error + Send + Sync + 'static,
 {
-    // #[cfg(feature = "transparent-inputs")]
     let wallet_birthday = db_data
         .read()
         .await
@@ -54,7 +53,7 @@ where
         db_cache,
         db_data.clone(),
         batch_size,
-        // #[cfg(feature = "transparent-inputs")]
+
         wallet_birthday,
     )
     .await?
@@ -69,7 +68,6 @@ pub async fn running<P, ChT, CaT, DbT, TrErr>(
     db_cache: &CaT,
     db_data: Arc<RwLock<DbT>>,
     batch_size: u32,
-    // #[cfg(feature = "transparent-inputs")]
     wallet_birthday: BlockHeight,
 ) -> Result<bool, Error<CaT::Error, <DbT as WalletRead>::Error, TrErr>>
 where
@@ -91,7 +89,6 @@ where
     // Refresh UTXOs for the accounts in the wallet. We do this before we perform
     // any shielded scanning, to ensure that we discover any UTXOs between the old
     // fully-scanned height and the current chain tip.
-    // #[cfg(feature = "transparent-inputs")]
     let account_ids = db_data
         .read()
         .await

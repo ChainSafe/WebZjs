@@ -25,6 +25,8 @@ pub enum Error {
     AddressGenerationError(#[from] zcash_keys::keys::AddressGenerationError),
     #[error("Error attempting to decode address: {0}")]
     AddressDecodingError(#[from] zcash_address::ParseError),
+    #[error("Error attempting to decode key: {0}")]
+    KeyDecodingError(String),
     #[error("Invalid network string given: {0}")]
     InvalidNetwork(String),
     #[error("Error returned from GRPC server: {0}")]
@@ -61,6 +63,8 @@ pub enum Error {
     InvalidSeedPhrase,
     #[error("Failed when creating transaction")]
     FailedToCreateTransaction,
+    #[error("Failed to serialize db using postcard: {0}")]
+    FailedSerialization(#[from] postcard::Error),
 }
 
 impl From<Error> for JsValue {

@@ -10,6 +10,8 @@ pub use bindgen::wallet::WebWallet;
 
 pub mod error;
 pub mod init;
+pub mod network;
+pub use network::Network;
 
 pub mod wallet;
 pub use wallet::Wallet;

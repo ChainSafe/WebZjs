@@ -1,4 +1,5 @@
 use std::num::NonZeroU32;
+use std::str::FromStr;
 
 use nonempty::NonEmpty;
 use serde::{Deserialize, Serialize};
@@ -8,6 +9,7 @@ use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
 use crate::wallet::usk_from_seed_str;
+use crate::Network;
 use crate::{bindgen::proposal::Proposal, BlockRange, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use zcash_address::ZcashAddress;
@@ -17,13 +19,12 @@ use zcash_client_backend::proto::service::{
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
-use zcash_primitives::consensus;
+use zcash_primitives::consensus::{self, Parameters, TestNetwork};
 use zcash_primitives::transaction::TxId;
 
-pub type MemoryWallet<T> = Wallet<MemoryWalletDb<consensus::Network>, T>;
-pub type AccountId =
-    <MemoryWalletDb<zcash_primitives::consensus::Network> as WalletRead>::AccountId;
-pub type NoteRef = <MemoryWalletDb<zcash_primitives::consensus::Network> as InputSource>::NoteRef;
+pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
+pub type AccountId = <MemoryWalletDb<Network> as WalletRead>::AccountId;
+pub type NoteRef = <MemoryWalletDb<Network> as InputSource>::NoteRef;
 
 /// # A Zcash wallet
 ///
@@ -93,14 +94,6 @@ pub struct WebWallet {
 }
 
 impl WebWallet {
-    fn network_from_str(network: &str) -> Result<consensus::Network, Error> {
-        match network {
-            "main" => Ok(consensus::Network::MainNetwork),
-            "test" => Ok(consensus::Network::TestNetwork),
-            _ => Err(Error::InvalidNetwork(network.to_string())),
-        }
-    }
-
     pub fn client(&self) -> CompactTxStreamerClient<tonic_web_wasm_client::Client> {
         self.inner.client.clone()
     }
@@ -119,6 +112,7 @@ impl WebWallet {
     /// * `network` - Must be one of "main" or "test"
     /// * `lightwalletd_url` - Url of the lightwalletd instance to connect to (e.g. https://zcash-mainnet.chainsafe.dev)
     /// * `min_confirmations` - Number of confirmations required before a transaction is considered final
+    /// * `db_bytes` - (Optional) UInt8Array of a serialized wallet database. This can be used to restore a wallet from a previous session that was serialized by `db_to_bytes`
     ///
     /// # Examples
     ///
@@ -130,19 +124,25 @@ impl WebWallet {
         network: &str,
         lightwalletd_url: &str,
         min_confirmations: u32,
+        db_bytes: Option<Box<[u8]>>,
     ) -> Result<WebWallet, Error> {
-        let network = Self::network_from_str(network)?;
+        let network = Network::from_str(network)?;
         let min_confirmations = NonZeroU32::try_from(min_confirmations)
             .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
         let client = Client::new(lightwalletd_url.to_string());
 
+        let db = match db_bytes {
+            Some(bytes) => {
+                tracing::info!(
+                    "Serialized db was provided to constructor. Attempting to deserialize"
+                );
+                postcard::from_bytes(&bytes)?
+            }
+            None => MemoryWalletDb::new(network, PRUNING_DEPTH),
+        };
+
         Ok(Self {
-            inner: Wallet::new(
-                MemoryWalletDb::new(network, PRUNING_DEPTH),
-                client,
-                network,
-                min_confirmations,
-            )?,
+            inner: Wallet::new(db, client, network, min_confirmations)?,
         })
     }
 
@@ -208,7 +208,6 @@ impl WebWallet {
     ///
     pub async fn sync(&self) -> Result<(), Error> {
         assert!(!thread::is_web_worker_thread());
-        tracing::debug!("SYNC 3 Main!!!!");
         let db = self.inner.clone();
 
         let sync_handler = thread::Builder::new()
@@ -297,6 +296,20 @@ impl WebWallet {
             .create_proposed_transactions(proposal.into(), &usk)
             .await?;
         Ok(serde_wasm_bindgen::to_value(&txids).unwrap())
+    }
+
+    /// Serialize the internal wallet database to bytes
+    ///
+    /// This should be used for persisting the wallet between sessions. The resulting byte array can be used to construct a new wallet instance.
+    /// Note this method is async and will block until a read-lock can be acquired on the wallet database
+    ///
+    /// # Returns
+    ///
+    /// A postcard encoded byte array of the wallet database
+    ///
+    pub async fn db_to_bytes(&self) -> Result<Box<[u8]>, Error> {
+        let bytes = self.inner.db_to_bytes().await?;
+        Ok(bytes.into_boxed_slice())
     }
 
     /// Send a list of authorized transactions to the network to be included in the blockchain
