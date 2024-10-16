@@ -61,6 +61,8 @@ pub enum Error {
     InvalidSeedPhrase,
     #[error("Failed when creating transaction")]
     FailedToCreateTransaction,
+    #[error("Failed to serialize db using postcard: {0}")]
+    FailedSerialization(#[from] postcard::Error),
 }
 
 impl From<Error> for JsValue {
