@@ -27,7 +27,8 @@ test('Account was added', async ({ page }) => {
 test('Wallet can be serialized', async ({ page }) => {
   let result = await page.evaluate(async () => {
     let bytes = await window.webWallet.db_to_bytes();
-    return bytes.length;
+    return bytes;
   });
-  expect(result).toBe(1);
+  expect(result).toBeInstanceOf(Uint8Array);
+  expect(result.length).toBeGreaterThan(0);
 });
