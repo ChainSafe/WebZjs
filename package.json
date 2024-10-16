@@ -4,7 +4,7 @@
     "build": "parcel build --no-cache --no-autoinstall packages/demo-wallet",
     "serve": "pnpm --filter ./packages/demo-wallet run serve",
     "start:dev": "parcel --no-autoinstall packages/demo-wallet",
-    "test": "pnpm -r test"
+    "test:e2e": "pnpm --filter ./packages/e2e-tests test"
   },
   "dependencies": {
     "@webzjs/webz-core": "workspace:^",
