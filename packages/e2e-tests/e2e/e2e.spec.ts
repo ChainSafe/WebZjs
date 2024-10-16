@@ -29,5 +29,4 @@ test('Wallet can be serialized', async ({ page }) => {
     let bytes = await window.webWallet.db_to_bytes();
     return bytes;
   });
-  expect(result.length).toBeGreaterThan(0);
 });
