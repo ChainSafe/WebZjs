@@ -35,7 +35,6 @@ use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
-use zcash_primitives::consensus;
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
@@ -389,10 +388,6 @@ pub(crate) fn usk_from_seed_str(
         seed.zeroize();
         SecretVec::new(secret)
     };
-    let usk = UnifiedSpendingKey::from_seed(
-        network.into(),
-        seed.expose_secret(),
-        account_id.try_into()?,
-    )?;
+    let usk = UnifiedSpendingKey::from_seed(network, seed.expose_secret(), account_id.try_into()?)?;
     Ok(usk)
 }

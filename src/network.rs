@@ -9,16 +9,11 @@ use zcash_primitives::consensus::{self, Parameters};
 /// Enum representing the network type
 /// This is used instead of the `consensus::Network` enum so we can derive
 /// custom serialization and deserialization and from string impls
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 pub enum Network {
+    #[default]
     MainNetwork,
     TestNetwork,
-}
-
-impl Default for Network {
-    fn default() -> Self {
-        Network::MainNetwork
-    }
 }
 
 impl FromStr for Network {
