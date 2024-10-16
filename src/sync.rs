@@ -53,7 +53,6 @@ where
         db_cache,
         db_data.clone(),
         batch_size,
-
         wallet_birthday,
     )
     .await?
