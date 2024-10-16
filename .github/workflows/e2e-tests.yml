@@ -19,8 +19,8 @@ jobs:
       with:
         version: latest
 
-    # - name: build pkg
-    #   run: just build
+    - name: build pkg
+      run: just build
 
     - uses: actions/setup-node@v4
       with:
