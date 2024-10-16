@@ -23,3 +23,11 @@ test('Account was added', async ({ page }) => {
   });
   expect(result).toBe(1);
 });
+
+test('Wallet can be serialized', async ({ page }) => {
+  let result = await page.evaluate(async () => {
+    let bytes = await window.webWallet.db_to_bytes();
+    return bytes.length;
+  });
+  expect(result).toBe(1);
+});

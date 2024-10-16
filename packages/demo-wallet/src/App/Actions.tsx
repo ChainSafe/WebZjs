@@ -1,15 +1,35 @@
 import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-core";
+import { get, set } from 'idb-keyval';
 
 import { State, Action } from "./App";
 import { MAINNET_LIGHTWALLETD_PROXY } from "./Constants";
 
-export async function init(dispatch: React.Dispatch<Action>) {
+export async function init(state: State, dispatch: React.Dispatch<Action>) {
   await initWasm();
   await initThreadPool(10);
+
+  let bytes = await get("wallet");
+  let wallet;
+  if (bytes) {
+    console.info("Saved wallet detected. Restoring wallet from storage");
+    wallet = new WebWallet("main", MAINNET_LIGHTWALLETD_PROXY, 1, bytes);
+  } else {
+    wallet = new WebWallet("main", MAINNET_LIGHTWALLETD_PROXY, 1);
+  }
+
   dispatch({
     type: "set-web-wallet",
-    payload: new WebWallet("main", MAINNET_LIGHTWALLETD_PROXY, 1),
+    payload: wallet,
   });
+  let summary = await wallet.get_wallet_summary();
+  if (summary) {
+    dispatch({ type: "set-summary", payload: summary });
+  }
+  let chainHeight = await wallet.get_latest_block();
+  if (chainHeight) {
+    dispatch({ type: "set-chain-height", payload: chainHeight });
+  }
+  dispatch({ type: "set-active-account", payload: summary?.account_balances[0][0] });
 }
 
 export async function addNewAccount(state: State, dispatch: React.Dispatch<Action>, seedPhrase: string, birthdayHeight: number) {
@@ -45,6 +65,7 @@ export async function triggerRescan(
     }
     await state.webWallet?.sync();
     await syncStateWithWallet(state, dispatch);
+    await flushDbToStore(state, dispatch);
 }
 
 export async function triggerTransfer(
@@ -69,4 +90,17 @@ export async function triggerTransfer(
     console.log(JSON.stringify(txids, null, 2));
     
     await state.webWallet.send_authorized_transactions(txids);
+}
+
+export async function flushDbToStore(
+  state: State,
+  dispatch: React.Dispatch<Action>
+) {
+    if (!state.webWallet) {
+        throw new Error("Wallet not initialized");
+    }
+    console.info("Serializing wallet and dumpling to IndexDb store");
+    let bytes = await state.webWallet.db_to_bytes();
+    await set("wallet", bytes);
+    console.info("Wallet saved to storage");
 }

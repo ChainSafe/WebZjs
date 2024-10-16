@@ -71,7 +71,7 @@ export function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    init(dispatch);
+    init(state, dispatch);
   }, [dispatch]);
 
   return (

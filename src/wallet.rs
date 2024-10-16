@@ -9,7 +9,7 @@ use tonic::{
 };
 
 use crate::error::Error;
-use crate::BlockRange;
+use crate::{BlockRange, Network};
 
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
@@ -35,7 +35,7 @@ use zcash_client_backend::zip321::{Payment, TransactionRequest};
 use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
-use zcash_primitives::consensus::{self, Network};
+use zcash_primitives::consensus;
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
@@ -63,12 +63,13 @@ const BATCH_SIZE: u32 = 10000;
 ///
 /// TODO
 ///
+
 pub struct Wallet<W, T> {
     /// Internal database used to maintain wallet data (e.g. accounts, transactions, cached blocks)
     pub(crate) db: Arc<RwLock<W>>,
     // gRPC client used to connect to a lightwalletd instance for network data
     pub(crate) client: CompactTxStreamerClient<T>,
-    pub(crate) network: consensus::Network,
+    pub(crate) network: crate::Network,
     pub(crate) min_confirmations: NonZeroU32,
 }
 
@@ -121,7 +122,7 @@ where
         })
     }
 
-    pub async fn serialize_wallet<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    pub async fn serialize_db<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         W: Serialize,
         S: Serializer,
@@ -129,11 +130,11 @@ where
         self.db.read().await.serialize(serializer)
     }
 
-    pub async fn to_vec_postcard(&self) -> Vec<u8>
+    pub async fn db_to_bytes(&self) -> Result<Vec<u8>, Error>
     where
         W: Serialize,
     {
-        postcard::to_allocvec(&*self.db.read().await).unwrap()
+        Ok(postcard::to_allocvec(&*self.db.read().await)?)
     }
 
     /// Add a new account to the wallet
@@ -307,7 +308,7 @@ where
         let transactions = create_proposed_transactions::<
             _,
             _,
-            <MemoryWalletDb<consensus::Network> as InputSource>::Error,
+            <MemoryWalletDb<crate::Network> as InputSource>::Error,
             _,
             _,
         >(
@@ -379,7 +380,7 @@ where
 pub(crate) fn usk_from_seed_str(
     seed: &str,
     account_id: u32,
-    network: &consensus::Network,
+    network: &crate::Network,
 ) -> Result<UnifiedSpendingKey, Error> {
     let mnemonic = <Mnemonic<English>>::from_phrase(seed).map_err(|_| Error::InvalidSeedPhrase)?;
     let seed = {
@@ -388,6 +389,10 @@ pub(crate) fn usk_from_seed_str(
         seed.zeroize();
         SecretVec::new(secret)
     };
-    let usk = UnifiedSpendingKey::from_seed(network, seed.expose_secret(), account_id.try_into()?)?;
+    let usk = UnifiedSpendingKey::from_seed(
+        network.into(),
+        seed.expose_secret(),
+        account_id.try_into()?,
+    )?;
     Ok(usk)
 }
