@@ -40,7 +40,6 @@ use zcash_primitives::transaction::fees::zip317::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
-use zcash_client_backend::sync::run;
 const BATCH_SIZE: u32 = 10000;
 
 /// # A Zcash wallet
@@ -229,12 +228,11 @@ where
         // TODO: This should be held in the Wallet struct so we can download in parallel
         let db_cache = MemBlockCache::new();
 
-        let mut db = self.db.write().await;
-        run(
+        crate::sync::run(
             &mut client,
             &self.network.clone(),
             &db_cache,
-            &mut *db,
+            self.db.clone(),
             BATCH_SIZE,
         )
         .await

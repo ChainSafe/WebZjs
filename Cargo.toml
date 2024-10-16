@@ -44,13 +44,13 @@ no-bundler = ["wasm-bindgen-rayon?/no-bundler", "wasm_thread/no-bundler"]
 
 [dependencies]
 ## Web dependencies
-wasm-bindgen = "0.2.93"
+wasm-bindgen = "=0.2.93" ## There is something weird happening in 0.2.95 where the workerHelpers.worker.js file isnt being included
 js-sys = "0.3.70"
 wasm-bindgen-futures = "0.4.43"
 web-sys = { version = "0.3.70", features = [
     "console",
 ] }
-wasm-bindgen-rayon = { version = "1.2.1", optional = true }
+wasm-bindgen-rayon = { version = "1.2", optional = true }
 
 # WASM specific dependencies
 tracing-web = { version = "0.1.3", optional = true }
@@ -60,12 +60,13 @@ tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "syn
 
 ## Zcash dependencies
 
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["bundled-prover"] }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", default-features = false, features = ["transparent-inputs", "sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", features = ["orchard", "transparent-inputs"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "5e5b30301891e2d4614951f3a99d23b980c8a9be", default-features = false, features = ["bundled-prover"] }
+
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }
@@ -110,14 +111,6 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 
 [patch.crates-io]
 zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord" }
-# TODO: See: https://github.com/RReverser/wasm-bindgen-rayon/pull/12
-wasm-bindgen-rayon = { git = "https://github.com/9SMTM6/wasm-bindgen-rayon", rev = "d1816e5bc2bf928ff5442355c04500a381d66a41" }
-# TODO: Remove these once the PRs are merged
-shardtree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
-incrementalmerkletree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
-
-# [patch.'https://github.com/WilsonGramer/wasm_thread']
-# wasm_thread = { git = "https://github.com/ec2/wasm_thread", rev = "9e432077948d927d49373d1d039c23447d3648df" }
 
 #[patch.'https://github.com/chainsafe/librustzcash']
 #zcash_address = { path = "../librustzcash/components/zcash_address" }

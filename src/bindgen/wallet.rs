@@ -10,7 +10,7 @@ use tonic_web_wasm_client::Client;
 use crate::error::Error;
 use crate::wallet::usk_from_seed_str;
 use crate::Network;
-use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
+use crate::{bindgen::proposal::Proposal, BlockRange, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::{InputSource, WalletRead};
@@ -196,6 +196,10 @@ impl WebWallet {
             .map(|id| *id)
     }
 
+    pub async fn suggest_scan_ranges(&self) -> Result<Vec<BlockRange>, Error> {
+        self.inner.suggest_scan_ranges().await
+    }
+
     ///
     /// Start a background sync task which will fetch and scan blocks from the connected lighwalletd server
     ///
@@ -204,11 +208,10 @@ impl WebWallet {
     ///
     pub async fn sync(&self) -> Result<(), Error> {
         assert!(!thread::is_web_worker_thread());
-
         let db = self.inner.clone();
 
         let sync_handler = thread::Builder::new()
-            .name("sync".to_string())
+            .name("sync3".to_string())
             .spawn_async(|| async {
                 assert!(thread::is_web_worker_thread());
                 tracing::debug!(
