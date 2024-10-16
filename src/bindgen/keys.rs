@@ -79,7 +79,7 @@ impl UnifiedFullViewingKey {
     pub fn new(network: &str, encoding: &str) -> Result<UnifiedFullViewingKey, Error> {
         let network = Network::from_str(network)?;
         Ok(Self {
-            inner: zcash_keys::keys::UnifiedFullViewingKey::decode(&network, s)
+            inner: zcash_keys::keys::UnifiedFullViewingKey::decode(&network, encoding)
                 .map_err(|e| Error::KeyDecodingError(e))?,
         })
     }
