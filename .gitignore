@@ -17,6 +17,7 @@ node_modules
 
 packages/demo-wallet/dist/*
 packages/e2e-tests/dist/*
+./dist/*
 
 !packages/demo-wallet/dist/serve.json
 !packages/e2e-tests/dist/serve.json

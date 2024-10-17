@@ -60,12 +60,14 @@ tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "syn
 
 ## Zcash dependencies
 
-zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", features = ["orchard"] }
-zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f" }
-zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["bundled-prover"] }
+zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5", features = ["orchard"] }
+zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5" }
+zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5" }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5", default-features = false, features = ["bundled-prover"] }
+zip321 = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5" }
+
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }

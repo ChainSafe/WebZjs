@@ -266,8 +266,7 @@ where
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
             NonNegativeAmount::from_u64(value)?,
-        )])
-        .unwrap();
+        )])?;
 
         tracing::info!("Chain height: {:?}", self.db.read().await.chain_height()?);
         tracing::info!(
@@ -286,7 +285,7 @@ where
             request,
             self.min_confirmations,
         )
-        .unwrap();
+        .map_err(|_e| Error::Generic("something bad happened when calling propose transfer. Possibly insufficient balance..".to_string()))?;
         tracing::info!("Proposal: {:#?}", proposal);
         Ok(proposal)
     }
@@ -334,10 +333,10 @@ where
                 .get_transaction(*txid)?
                 .map(|tx| {
                     let mut raw_tx = service::RawTransaction::default();
-                    tx.write(&mut raw_tx.data).unwrap();
+                    tx.write(&mut raw_tx.data).unwrap(); // safe to unwrap here as we know the tx is valid
                     (tx.txid(), raw_tx)
                 })
-                .unwrap();
+                .ok_or(Error::TransactionNotFound(*txid))?;
 
             let response = client.send_transaction(raw_tx).await?.into_inner();
 

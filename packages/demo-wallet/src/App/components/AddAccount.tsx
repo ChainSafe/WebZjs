@@ -3,15 +3,18 @@ import React, { FormEvent, useContext, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { ToastContainer, toast } from "react-toastify";
+import { generate_seed_phrase } from "@webzjs/webz-core";
 
 import { WalletContext } from "../App";
 import { addNewAccount, flushDbToStore } from "../Actions";
 
-export function ImportAccount() {
-  let {state, dispatch} = useContext(WalletContext);
+const NU5_ACTIVATION = 1687104;
 
-  let [birthdayHeight, setBirthdayHeight] = useState(2657762);
-  let [seedPhrase, setSeedPhrase] = useState("mix sample clay sweet planet lava giraffe hand fashion switch away pool rookie earth purity truly square trumpet goose move actor save jaguar volume");
+export function AddAccount() {
+  let { state, dispatch } = useContext(WalletContext);
+
+  let [birthdayHeight, setBirthdayHeight] = useState(NU5_ACTIVATION);
+  let [seedPhrase, setSeedPhrase] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -20,14 +23,27 @@ export function ImportAccount() {
       position: "top-center",
       autoClose: 2000,
     });
-    setBirthdayHeight(0);
+    setBirthdayHeight(NU5_ACTIVATION);
     setSeedPhrase("");
-    flushDbToStore(state, dispatch)
+    flushDbToStore(state, dispatch);
+  };
+
+  const generateNewSeedPhrase = async () => {
+    const newSeedPhrase = generate_seed_phrase();
+    let birthday = await state.webWallet?.get_latest_block();
+    setSeedPhrase(newSeedPhrase);
+    setBirthdayHeight(Number(birthday) || NU5_ACTIVATION);
   };
 
   return (
     <div>
       <Form onSubmit={handleSubmit}>
+        <Button
+          variant="secondary"
+          onClick={async () => await generateNewSeedPhrase()}
+        >
+          Generate New
+        </Button>
         <Form.Group className="mb-3" controlId="seedPhrase">
           <Form.Label>Seed Phrase</Form.Label>
           <Form.Control

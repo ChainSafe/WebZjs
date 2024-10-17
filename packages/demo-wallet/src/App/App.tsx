@@ -1,22 +1,26 @@
 import "./App.css";
 
-import React, { useState, useEffect, createContext, useReducer } from "react";
+import React, { useEffect, createContext, useReducer } from "react";
+import { useInterval } from 'usehooks-ts'
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import Stack from "react-bootstrap/Stack";
+import Container from "react-bootstrap/Container";
 
 import {
   WebWallet,
   WalletSummary,
 } from "@webzjs/webz-core";
 
-import { init } from "./Actions";
+import { init, triggerRescan } from "./Actions";
 import { Header } from "./components/Header";
-import { ImportAccount } from "./components/ImportAccount";
+import { AddAccount } from "./components/AddAccount";
 import { SendFunds } from "./components/SendFunds";
 import { ReceiveFunds } from "./components/ReceiveFunds";
 import { Summary } from "./components/Summary";
+import { Settings } from "./components/Settings";
+import { RESCAN_INTERVAL } from "./Constants";
 
 export type State = {
   webWallet?: WebWallet;
@@ -24,6 +28,7 @@ export type State = {
   summary?: WalletSummary;
   chainHeight?: bigint;
   accountSeeds: Map<number, string>;
+  syncInProgress: boolean;
 };
 
 const initialState: State = {
@@ -31,6 +36,7 @@ const initialState: State = {
   summary: undefined,
   chainHeight: undefined,
   accountSeeds: new Map<number, string>(),
+  syncInProgress: false,
 };
 
 export type Action =
@@ -38,7 +44,9 @@ export type Action =
   | { type: "add-account-seed"; payload: [number, string] }
   | { type: "set-web-wallet"; payload: WebWallet }
   | { type: "set-summary"; payload: WalletSummary }
-  | { type: "set-chain-height"; payload: bigint };
+  | { type: "set-chain-height"; payload: bigint }
+  | { type: "set-account-seeds"; payload: Map<number, string> }
+  | { type: "set-sync-in-progress"; payload: boolean };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -57,6 +65,12 @@ const reducer = (state: State, action: Action): State => {
     case "set-chain-height": {
       return { ...state, chainHeight: action.payload };
     }
+    case "set-account-seeds": {
+      return { ...state, accountSeeds: action.payload };
+    }
+    case "set-sync-in-progress": {
+      return { ...state, syncInProgress: action.payload };
+    }
     default:
       return state;
   }
@@ -74,9 +88,15 @@ export function App() {
     init(state, dispatch);
   }, [dispatch]);
 
+  // rescan the wallet periodically
+  useInterval(() => {
+    triggerRescan(state, dispatch);
+  }, RESCAN_INTERVAL);
+
   return (
     <div>
       <WalletContext.Provider value={{ state, dispatch }}>
+        <Container>
         <Stack>
           <h1>WebZjs Wallet Demo</h1>
           <Header />
@@ -86,7 +106,7 @@ export function App() {
             className="mb-3"
           >
             <Tab eventKey="import" title="Import Account">
-              <ImportAccount />
+              <AddAccount />
             </Tab>
             <Tab eventKey="summary" title="Summary">
               <Summary summary={state.summary}/>
@@ -97,8 +117,12 @@ export function App() {
             <Tab eventKey="receive" title="Receive">
               <ReceiveFunds />
             </Tab>
+            <Tab eventKey="settings" title="Settings">
+              <Settings />
+            </Tab>
           </Tabs>
         </Stack>
+        </Container>
       </WalletContext.Provider>
     </div>
   );
