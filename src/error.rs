@@ -3,7 +3,6 @@
 
 use std::fmt::Display;
 use wasm_bindgen::JsValue;
-use zcash_primitives::transaction::txid;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
