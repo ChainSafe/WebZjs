@@ -84,3 +84,19 @@ impl UnifiedFullViewingKey {
         })
     }
 }
+
+use bip0039::{Count, English, Mnemonic};
+
+/// Generate a new BIP39 24-word seed phrase
+///
+/// IMPORTANT: This probably does not use secure randomness when used in the browser
+/// and should not be used for anything other than testing
+///
+/// # Returns
+///
+/// A string containing a 24-word seed phrase
+#[wasm_bindgen]
+pub fn generate_seed_phrase() -> String {
+    let mnemonic = <Mnemonic<English>>::generate(Count::Words24);
+    mnemonic.phrase().to_string()
+}

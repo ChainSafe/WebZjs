@@ -3,6 +3,7 @@
 
 use std::fmt::Display;
 use wasm_bindgen::JsValue;
+use zcash_primitives::transaction::txid;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -65,6 +66,17 @@ pub enum Error {
     FailedToCreateTransaction,
     #[error("Failed to serialize db using postcard: {0}")]
     FailedSerialization(#[from] postcard::Error),
+    #[error("Account with given id not found: {0}")]
+    AccountNotFound(u32),
+    #[error("Transaction with given txid not found: {0}")]
+    TransactionNotFound(zcash_primitives::transaction::TxId),
+    #[error("Error constructing ZIP321 transaction request: {0}")]
+    Zip321Error(#[from] zip321::Zip321Error),
+    #[error("serde wasm-bindgen error")]
+    SerdeWasmBindgenError(#[from] serde_wasm_bindgen::Error),
+    // TODO: Remove this. It is just to help with the inability to handle the generic tests from LRZ at the moment
+    #[error("An generic error occurred: {0}")]
+    Generic(String),
 }
 
 impl From<Error> for JsValue {
