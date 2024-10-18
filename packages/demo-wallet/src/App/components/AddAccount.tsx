@@ -7,8 +7,7 @@ import { generate_seed_phrase } from "@webzjs/webz-core";
 
 import { WalletContext } from "../App";
 import { addNewAccount, flushDbToStore } from "../Actions";
-
-const NU5_ACTIVATION = 1687104;
+import { NU5_ACTIVATION } from "../Constants";
 
 export function AddAccount() {
   let { state, dispatch } = useContext(WalletContext);
@@ -68,6 +67,7 @@ export function AddAccount() {
             onChange={({ target: { value } }) =>
               setBirthdayHeight(parseInt(value))
             }
+            min={NU5_ACTIVATION}
           />
         </Form.Group>
         <Button variant="primary" type="submit">

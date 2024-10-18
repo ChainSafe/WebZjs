@@ -39,6 +39,10 @@ export async function init(state: State, dispatch: React.Dispatch<Action>) {
     type: "set-active-account",
     payload: summary?.account_balances[0][0],
   });
+  dispatch({
+    type: "set-loading",
+    payload: false,
+  });
 }
 
 export async function addNewAccount(
@@ -50,6 +54,7 @@ export async function addNewAccount(
   let account_id =
     (await state.webWallet?.create_account(seedPhrase, 0, birthdayHeight)) || 0;
   dispatch({ type: "add-account-seed", payload: [account_id, seedPhrase] });
+  dispatch({ type: "set-active-account", payload: account_id });
   await syncStateWithWallet(state, dispatch);
 }
 
@@ -58,7 +63,8 @@ export async function syncStateWithWallet(
   dispatch: React.Dispatch<Action>
 ) {
   if (!state.webWallet) {
-    throw new Error("Wallet not initialized");
+    console.error("Wallet not initialized");
+    return;
   }
   let summary = await state.webWallet?.get_wallet_summary();
   if (summary) {
@@ -74,8 +80,21 @@ export async function triggerRescan(
   state: State,
   dispatch: React.Dispatch<Action>
 ) {
+  if (state.loading) { 
+    console.error("App not yet loaded");
+    return;
+  }
   if (!state.webWallet) {
-    throw new Error("Wallet not initialized");
+    console.error("Wallet not initialized");
+    return;
+  }
+  if (state.activeAccount == undefined) {
+    console.error("No active account");
+    return;
+  }
+  if (state.syncInProgress) { 
+    console.error("Sync already in progress");
+    return;
   }
   dispatch({
     type: "set-sync-in-progress",
@@ -99,10 +118,12 @@ export async function triggerTransfer(
   amount: bigint
 ) {
   if (!state.webWallet) {
-    throw new Error("Wallet not initialized");
+    console.error("Wallet not initialized");
+    return;
   }
   if (state.activeAccount == null) {
-    throw new Error("No active account");
+    console.error("No active account");
+    return;
   }
 
   let activeAccountSeedPhrase =
@@ -132,7 +153,8 @@ export async function flushDbToStore(
   dispatch: React.Dispatch<Action>
 ) {
   if (!state.webWallet) {
-    throw new Error("Wallet not initialized");
+    console.error("Wallet not initialized");
+    return;
   }
   console.info("Serializing wallet and dumpling to IndexDb store");
   let bytes = await state.webWallet.db_to_bytes();
@@ -150,22 +172,5 @@ export async function clearStore(
   await set("wallet", undefined);
   console.info("Wallet cleared from storage");
 
-  let wallet = new WebWallet("main", MAINNET_LIGHTWALLETD_PROXY, 1);
-  dispatch({
-    type: "set-web-wallet",
-    payload: wallet,
-  });
-
-  let summary = await wallet.get_wallet_summary();
-  if (summary) {
-    dispatch({ type: "set-summary", payload: summary });
-  }
-  let chainHeight = await wallet.get_latest_block();
-  if (chainHeight) {
-    dispatch({ type: "set-chain-height", payload: chainHeight });
-  }
-  dispatch({
-    type: "set-active-account",
-    payload: summary?.account_balances[0][0],
-  });
+  location.reload();
 }

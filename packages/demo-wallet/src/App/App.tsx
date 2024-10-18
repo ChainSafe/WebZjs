@@ -1,17 +1,15 @@
 import "./App.css";
 
 import React, { useEffect, createContext, useReducer } from "react";
-import { useInterval } from 'usehooks-ts'
+import { useInterval } from "usehooks-ts";
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import Stack from "react-bootstrap/Stack";
 import Container from "react-bootstrap/Container";
+import LoadingOverlay from "react-loading-overlay";
 
-import {
-  WebWallet,
-  WalletSummary,
-} from "@webzjs/webz-core";
+import { WebWallet, WalletSummary } from "@webzjs/webz-core";
 
 import { init, triggerRescan } from "./Actions";
 import { Header } from "./components/Header";
@@ -29,6 +27,7 @@ export type State = {
   chainHeight?: bigint;
   accountSeeds: Map<number, string>;
   syncInProgress: boolean;
+  loading: boolean;
 };
 
 const initialState: State = {
@@ -37,6 +36,7 @@ const initialState: State = {
   chainHeight: undefined,
   accountSeeds: new Map<number, string>(),
   syncInProgress: false,
+  loading: true,
 };
 
 export type Action =
@@ -46,7 +46,8 @@ export type Action =
   | { type: "set-summary"; payload: WalletSummary }
   | { type: "set-chain-height"; payload: bigint }
   | { type: "set-account-seeds"; payload: Map<number, string> }
-  | { type: "set-sync-in-progress"; payload: boolean };
+  | { type: "set-sync-in-progress"; payload: boolean }
+  | { type: "set-loading"; payload: boolean };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -54,7 +55,13 @@ const reducer = (state: State, action: Action): State => {
       return { ...state, activeAccount: action.payload };
     }
     case "add-account-seed": {
-      return { ...state, accountSeeds: state.accountSeeds.set(action.payload[0], action.payload[1]) };
+      return {
+        ...state,
+        accountSeeds: state.accountSeeds.set(
+          action.payload[0],
+          action.payload[1]
+        ),
+      };
     }
     case "set-web-wallet": {
       return { ...state, webWallet: action.payload };
@@ -70,6 +77,9 @@ const reducer = (state: State, action: Action): State => {
     }
     case "set-sync-in-progress": {
       return { ...state, syncInProgress: action.payload };
+    }
+    case "set-loading": {
+      return { ...state, loading: action.payload };
     }
     default:
       return state;
@@ -96,33 +106,35 @@ export function App() {
   return (
     <div>
       <WalletContext.Provider value={{ state, dispatch }}>
-        <Container>
-        <Stack>
-          <h1>WebZjs Wallet Demo</h1>
-          <Header />
-          <Tabs
-            defaultActiveKey="import"
-            id="base-wallet-tabs"
-            className="mb-3"
-          >
-            <Tab eventKey="import" title="Import Account">
-              <AddAccount />
-            </Tab>
-            <Tab eventKey="summary" title="Summary">
-              <Summary summary={state.summary}/>
-            </Tab>
-            <Tab eventKey="send" title="Send">
-              <SendFunds />
-            </Tab>
-            <Tab eventKey="receive" title="Receive">
-              <ReceiveFunds />
-            </Tab>
-            <Tab eventKey="settings" title="Settings">
-              <Settings />
-            </Tab>
-          </Tabs>
-        </Stack>
-        </Container>
+        <LoadingOverlay active={state.loading} spinner text="Loading. This may take up to 1 minute...">
+          <Container>
+            <Stack>
+              <h1>WebZjs Wallet Demo</h1>
+              <Header />
+              <Tabs
+                defaultActiveKey="import"
+                id="base-wallet-tabs"
+                className="mb-3"
+              >
+                <Tab eventKey="import" title="Import Account">
+                  <AddAccount />
+                </Tab>
+                <Tab eventKey="summary" title="Summary">
+                  <Summary summary={state.summary} />
+                </Tab>
+                <Tab eventKey="send" title="Send">
+                  <SendFunds />
+                </Tab>
+                <Tab eventKey="receive" title="Receive">
+                  <ReceiveFunds />
+                </Tab>
+                <Tab eventKey="settings" title="Settings">
+                  <Settings />
+                </Tab>
+              </Tabs>
+            </Stack>
+          </Container>
+        </LoadingOverlay>
       </WalletContext.Provider>
     </div>
   );
