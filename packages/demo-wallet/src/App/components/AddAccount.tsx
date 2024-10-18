@@ -1,4 +1,4 @@
-import React, { FormEvent, useContext, useState } from "react";
+import React, { FormEvent, useContext, useEffect, useState } from "react";
 
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -12,8 +12,16 @@ import { NU5_ACTIVATION } from "../Constants";
 export function AddAccount() {
   let { state, dispatch } = useContext(WalletContext);
 
-  let [birthdayHeight, setBirthdayHeight] = useState(NU5_ACTIVATION);
+  let [birthdayHeight, setBirthdayHeight] = useState(0);
   let [seedPhrase, setSeedPhrase] = useState("");
+
+  useEffect(() => {
+    const fetchBirthday = async () => {
+      let birthday = await state.webWallet?.get_latest_block();
+      setBirthdayHeight(Number(birthday) || 0);
+    }
+    fetchBirthday();
+  }, [state]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -22,7 +30,7 @@ export function AddAccount() {
       position: "top-center",
       autoClose: 2000,
     });
-    setBirthdayHeight(NU5_ACTIVATION);
+    setBirthdayHeight(0);
     setSeedPhrase("");
     flushDbToStore(state, dispatch);
   };
@@ -31,7 +39,7 @@ export function AddAccount() {
     const newSeedPhrase = generate_seed_phrase();
     let birthday = await state.webWallet?.get_latest_block();
     setSeedPhrase(newSeedPhrase);
-    setBirthdayHeight(Number(birthday) || NU5_ACTIVATION);
+    setBirthdayHeight(Number(birthday) || 0);
   };
 
   return (
