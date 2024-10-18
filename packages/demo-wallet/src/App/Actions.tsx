@@ -19,6 +19,7 @@ export async function init(state: State, dispatch: React.Dispatch<Action>) {
       dispatch({ type: "set-account-seeds", payload: seeds });
     }
   } else {
+    console.info("No saved wallet detected. Creating new wallet");
     wallet = new WebWallet("main", MAINNET_LIGHTWALLETD_PROXY, 1);
   }
 
