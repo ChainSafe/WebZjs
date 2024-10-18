@@ -1,0 +1,1 @@
+{"root":["./src/utils.ts","./src/app/actions.tsx","./src/app/app.tsx","./src/app/constants.tsx","./src/app/components/addaccount.tsx","./src/app/components/header.tsx","./src/app/components/receivefunds.tsx","./src/app/components/sendfunds.tsx","./src/app/components/settings.tsx","./src/app/components/summary.tsx"],"version":"5.6.2"}

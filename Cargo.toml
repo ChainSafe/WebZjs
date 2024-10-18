@@ -65,7 +65,7 @@ zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev 
 zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5", features = ["orchard"] }
 zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5" }
 zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5" }
-zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5", default-features = false, features = ["bundled-prover"] }
+zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5", default-features = false, features = ["bundled-prover", "multicore"] }
 zip321 = { git = "https://github.com/ChainSafe/librustzcash", rev = "37c765025386912c6152ba5e9816099a067497e5" }
 
 

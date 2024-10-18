@@ -19,5 +19,5 @@ packages/demo-wallet/dist/*
 packages/e2e-tests/dist/*
 ./dist/*
 
-!packages/demo-wallet/dist/serve.json
+!packages/demo-wallet/dist/_headers
 !packages/e2e-tests/dist/serve.json

@@ -117,6 +117,10 @@ Browser tests are run in a headless browser environment and can be run with
 just test-web
 ```
 
+## Known Issues
+
+You might notice the demo-wallet builds using parcel despite being configured to use Vite for development. This is due to a [known issue](https://github.com/vitejs/vite/issues/7015) with vite where it cannot correctly handle what it deems to be a cyclic dependency introduced by `wasm_bindgen_rayon` webworkers. Other bundlers tested to not seem to be affected.
+
 ## Security Warnings
 
 These libraries are currently under development, have received no reviews or audit, and come with no guarantees whatsoever.
