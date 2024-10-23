@@ -56,6 +56,11 @@ pub enum Error {
     #[error("Syncing Error: {0}")]
     SyncError(String),
 
+    #[error("Attempted to create a transaction with a memo to an unsupported recipient. Only shielded addresses are supported.")]
+    UnsupportedMemoRecipient,
+    #[error("Error decoding memo: {0}")]
+    MemoDecodingError(#[from] zcash_primitives::memo::Error),
+
     #[cfg(feature = "sqlite-db")]
     #[error("Sqlite error: {0}")]
     SqliteError(#[from] zcash_client_sqlite::error::SqliteClientError),
