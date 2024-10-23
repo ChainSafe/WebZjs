@@ -4,7 +4,7 @@
   "description": "",
   "source": "src/index.html",
   "scripts": {
-    "pretest": "parcel build",
+    "pretest": "parcel build --no-cache src/index.html",
     "test": "playwright test"
   },
   "keywords": [],

@@ -9,7 +9,7 @@ const SEED = "mix sample clay sweet planet lava giraffe hand fashion switch away
 const BIRTHDAY = 2657762;
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://127.0.0.1:8081");
+  await page.goto("/");
   await page.waitForFunction(() => window.webWallet !== undefined);
   await page.evaluate(async ({seed, birthday}) => {
     await window.webWallet.create_account(seed, 0, birthday);
