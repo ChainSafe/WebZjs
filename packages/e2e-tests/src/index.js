@@ -1,6 +1,6 @@
-import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-core";
+import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-wallet";
 
-import * as WebZ from "@webzjs/webz-core";
+import * as WebZ from "@webzjs/webz-wallet";
 window.WebZ = WebZ;
 
 const N_THREADS = 10;

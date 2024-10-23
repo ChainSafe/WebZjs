@@ -1,8 +1,18 @@
 default:
     just --list
 
-build *features:
-    wasm-pack build -t web --scope webzjs --release --out-dir ./packages/webz-core --no-default-features --features="wasm wasm-parallel {{features}}" -Z build-std="panic_abort,std"
+build:
+    just build-wallet
+    just build-keys
+
+build-wallet *features:
+    wasm-pack build -t web --release --out-name webz-wallet --out-dir ./packages/webz-wallet --no-default-features --features="wasm wasm-parallel webwallet {{features}}" -Z build-std="panic_abort,std"
+    jq '.name = "@webzjs/webz-wallet"' ./packages/webz-wallet/package.json > tmp.json && mv tmp.json ./packages/webz-wallet/package.json
+
+build-keys *features:
+    wasm-pack build -t web --release --out-name webz-keys --out-dir ./packages/webz-keys --no-default-features --features="wasm keys {{features}}" -Z build-std="panic_abort,std"
+    jq '.name = "@webzjs/webz-keys"' ./packages/webz-keys/package.json > tmp.json && mv tmp.json ./packages/webz-keys/package.json
+
 
 # All Wasm Tests
 test-web *features:

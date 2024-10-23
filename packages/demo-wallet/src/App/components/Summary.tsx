@@ -1,5 +1,5 @@
 import React from "react";
-import { WalletSummary } from "@webzjs/webz-core";
+import { WalletSummary } from "@webzjs/webz-wallet";
 
 export function Summary({
   summary,

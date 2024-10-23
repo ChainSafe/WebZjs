@@ -42,6 +42,11 @@ sqlite-db = ["dep:zcash_client_sqlite"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 no-bundler = ["wasm-bindgen-rayon?/no-bundler", "wasm_thread/no-bundler"]
 
+# library features
+webwallet = []
+keys = []
+zip321 = []
+
 [dependencies]
 ## Web dependencies
 wasm-bindgen = "0.2.93"

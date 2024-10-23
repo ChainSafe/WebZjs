@@ -1,11 +1,15 @@
-import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-core";
+import initWebzWallet, { initThreadPool, WebWallet } from "@webzjs/webz-wallet";
+import initWebzKeys from "@webzjs/webz-keys";
+
 import { get, set } from "idb-keyval";
 
 import { State, Action } from "./App";
 import { MAINNET_LIGHTWALLETD_PROXY } from "./Constants";
 
 export async function init(state: State, dispatch: React.Dispatch<Action>) {
-  await initWasm();
+  await initWebzWallet();
+  await initWebzKeys();
+
   await initThreadPool(10);
 
   let bytes = await get("wallet");

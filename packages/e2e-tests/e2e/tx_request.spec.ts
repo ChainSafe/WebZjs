@@ -1,14 +1,12 @@
 import { test, expect } from "@playwright/test";
 import {
-  WebWallet,
   TransactionRequest,
   PaymentRequest,
-} from "@webzjs/webz-core";
-import type * as WebZ from "@webzjs/webz-core";
+} from "@webzjs/webz-keys";
+import type * as WebZ from "@webzjs/webz-keys";
 
 declare global {
   interface Window {
-    webWallet: WebWallet;
     initialized: boolean;
     WebZ: typeof WebZ;
   }
