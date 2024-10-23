@@ -4,8 +4,11 @@
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
-use crate::{error::Error, Network};
-use zcash_primitives::{consensus, zip32::AccountId};
+use bip0039::{Count, English, Mnemonic};
+use zcash_primitives::zip32::AccountId;
+
+use crate::error::Error;
+use webz_common::Network;
 
 /// A Zcash spending key
 ///
@@ -80,12 +83,10 @@ impl UnifiedFullViewingKey {
         let network = Network::from_str(network)?;
         Ok(Self {
             inner: zcash_keys::keys::UnifiedFullViewingKey::decode(&network, encoding)
-                .map_err(|e| Error::KeyDecodingError(e))?,
+                .map_err(Error::KeyDecoding)?,
         })
     }
 }
-
-use bip0039::{Count, English, Mnemonic};
 
 /// Generate a new BIP39 24-word seed phrase
 ///

@@ -1,0 +1,17 @@
+[package]
+name = "webz-common"
+version = "0.1.0"
+authors = ["ChainSafe Systems"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ChainSafe/WebZjs"
+description = "A browser client-side library for generating and manipulating zcash keys"
+edition = "2021"
+resolver = "2"
+
+[dependencies]
+serde.workspace = true
+zcash_primitives.workspace = true
+zcash_address.workspace = true
+thiserror.workspace = true
+wasm-bindgen.workspace = true
+js-sys.workspace = true

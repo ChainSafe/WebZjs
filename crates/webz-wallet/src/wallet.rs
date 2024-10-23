@@ -9,7 +9,8 @@ use tonic::{
 };
 
 use crate::error::Error;
-use crate::{BlockRange, Network};
+use crate::BlockRange;
+use webz_common::Network;
 
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
@@ -68,7 +69,7 @@ pub struct Wallet<W, T> {
     pub(crate) db: Arc<RwLock<W>>,
     // gRPC client used to connect to a lightwalletd instance for network data
     pub(crate) client: CompactTxStreamerClient<T>,
-    pub(crate) network: crate::Network,
+    pub(crate) network: Network,
     pub(crate) min_confirmations: NonZeroU32,
 }
 
@@ -199,7 +200,7 @@ where
                 ..Default::default()
             };
             let treestate = client.get_tree_state(request).await?.into_inner();
-            AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::BirthdayError)?
+            AccountBirthday::from_treestate(treestate, None).map_err(|_| Error::Birthday)?
         };
 
         Ok(self
@@ -306,7 +307,7 @@ where
         let transactions = create_proposed_transactions::<
             _,
             _,
-            <MemoryWalletDb<crate::Network> as InputSource>::Error,
+            <MemoryWalletDb<Network> as InputSource>::Error,
             _,
             _,
         >(
@@ -378,7 +379,7 @@ where
 pub(crate) fn usk_from_seed_str(
     seed: &str,
     account_id: u32,
-    network: &crate::Network,
+    network: &Network,
 ) -> Result<UnifiedSpendingKey, Error> {
     let mnemonic = <Mnemonic<English>>::from_phrase(seed).map_err(|_| Error::InvalidSeedPhrase)?;
     let seed = {

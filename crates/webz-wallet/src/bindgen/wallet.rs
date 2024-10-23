@@ -9,9 +9,9 @@ use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
 use crate::wallet::usk_from_seed_str;
-use crate::Network;
 use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
+use webz_common::Network;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::{InputSource, WalletRead};
 use zcash_client_backend::proto::service::{

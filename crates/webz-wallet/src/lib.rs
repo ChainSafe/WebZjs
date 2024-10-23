@@ -4,12 +4,10 @@
 //! This is the top level documentation!
 
 #[cfg(feature = "wasm")]
-pub mod bindgen;
+mod bindgen;
 
-pub mod error;
-pub mod init;
-pub mod network;
-pub use network::Network;
+mod error;
+mod init;
 
 pub mod wallet;
 pub use wallet::Wallet;

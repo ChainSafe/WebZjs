@@ -6,15 +6,17 @@ use wasm_bindgen::JsValue;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("webz-common crate gives error: {0}")]
+    WebzCommon(#[from] webz_common::Error),
     #[error("Invalid account id")]
     AccountIdConversion(#[from] zcash_primitives::zip32::TryFromIntError),
     #[error("Failed to derive key from seed")]
     // doesn't implement std::error. Should probably fix this upstream
-    DerivationError(#[from] zcash_keys::keys::DerivationError),
+    Derivation(#[from] zcash_keys::keys::DerivationError),
     // #[error("Failed to derive key from seed")] // doesn't implement std::error. Should probably fix this upstream
-    // DecodingError(#[from] zcash_keys::keys::DecodingError),
+    // Decoding(#[from] zcash_keys::keys::DecodingError),
     #[error("Javascript error")]
-    JsError(JsValue),
+    Js(JsValue),
     #[error("DomException {name} ({code}): {message}")]
     DomException {
         name: String,
@@ -22,23 +24,23 @@ pub enum Error {
         code: u16,
     },
     #[error("Address generation error")]
-    AddressGenerationError(#[from] zcash_keys::keys::AddressGenerationError),
+    AddressGeneration(#[from] zcash_keys::keys::AddressGenerationError),
     #[error("Error attempting to decode address: {0}")]
-    AddressDecodingError(#[from] zcash_address::ParseError),
+    AddressDecoding(#[from] zcash_address::ParseError),
     #[error("Error attempting to decode key: {0}")]
-    KeyDecodingError(String),
+    KeyDecoding(String),
     #[error("Invalid network string given: {0}")]
     InvalidNetwork(String),
     #[error("Error returned from GRPC server: {0}")]
-    GrpcError(#[from] tonic::Status),
+    Grpc(#[from] tonic::Status),
     #[error("Error handling wallet birthday")]
-    BirthdayError,
+    Birthday,
     #[error("Memory client error: {0}")]
-    MemoryClientError(#[from] zcash_client_memory::Error),
+    MemoryClient(#[from] zcash_client_memory::Error),
     #[error("Error scanning: {0}")]
-    ScanError(zcash_client_backend::scanning::ScanError),
+    Scan(zcash_client_backend::scanning::ScanError),
     #[error("IO Error: {0}")]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
     #[error(
         "Error parsing min_confirmations argument {0}. Must be an integer > 0 (e.g. at least 1)"
     )]
@@ -48,22 +50,22 @@ pub enum Error {
     #[error("Failed to send transaction")]
     SendFailed { code: i32, reason: String },
     #[error("Failed to parse key: {0}")]
-    KeyParseError(String),
+    KeyParse(String),
 
     // TODO: The error type from librustzcash backend is generic. Handle that later.
     // Perhaps we make our error struct generic as well
     // See: zcash_client_backend::sync::Error
     #[error("Syncing Error: {0}")]
-    SyncError(String),
+    Sync(String),
 
     #[error("Attempted to create a transaction with a memo to an unsupported recipient. Only shielded addresses are supported.")]
     UnsupportedMemoRecipient,
     #[error("Error decoding memo: {0}")]
-    MemoDecodingError(#[from] zcash_primitives::memo::Error),
+    MemoDecoding(#[from] zcash_primitives::memo::Error),
 
     #[cfg(feature = "sqlite-db")]
     #[error("Sqlite error: {0}")]
-    SqliteError(#[from] zcash_client_sqlite::error::SqliteClientError),
+    Sqlite(#[from] zcash_client_sqlite::error::SqliteClientError),
     #[error("Invalid seed phrase")]
     InvalidSeedPhrase,
     #[error("Failed when creating transaction")]
@@ -75,9 +77,9 @@ pub enum Error {
     #[error("Transaction with given txid not found: {0}")]
     TransactionNotFound(zcash_primitives::transaction::TxId),
     #[error("Error constructing ZIP321 transaction request: {0}")]
-    Zip321Error(#[from] zip321::Zip321Error),
+    Zip321(#[from] zip321::Zip321Error),
     #[error("serde wasm-bindgen error")]
-    SerdeWasmBindgenError(#[from] serde_wasm_bindgen::Error),
+    SerdeWasmBindgen(#[from] serde_wasm_bindgen::Error),
     // TODO: Remove this. It is just to help with the inability to handle the generic tests from LRZ at the moment
     #[error("An generic error occurred: {0}")]
     Generic(String),
@@ -91,7 +93,7 @@ impl From<Error> for JsValue {
 
 impl From<JsValue> for Error {
     fn from(e: JsValue) -> Self {
-        Error::JsError(e)
+        Error::Js(e)
     }
 }
 
@@ -107,7 +109,7 @@ impl From<indexed_db_futures::web_sys::DomException> for Error {
 
 impl From<zcash_client_backend::scanning::ScanError> for Error {
     fn from(e: zcash_client_backend::scanning::ScanError) -> Self {
-        Self::ScanError(e)
+        Self::Scan(e)
     }
 }
 
@@ -118,6 +120,6 @@ where
     C: Display,
 {
     fn from(e: zcash_client_backend::sync::Error<A, B, C>) -> Self {
-        Self::SyncError(e.to_string())
+        Self::Sync(e.to_string())
     }
 }
