@@ -1,0 +1,37 @@
+{
+  "version": "0.1.0",
+  "description": "An example Snap written in TypeScript.",
+  "proposedName": "TypeScript Example",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+  },
+  "source": {
+    "shasum": "KCYlh8BbZTrbCH3uZo6eTFMjF5xzpjKxWlTnj2LplCI=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "packageName": "@chainsafe/zcash-snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "endowment:transaction-insight": {
+      "maxRequestTime": 180000
+    },
+    "snap_dialog": {},
+    "endowment:network-access": {},
+    "endowment:webassembly": {},
+    "endowment:rpc": {
+      "dapps": true,
+      "snaps": false
+    },
+    "snap_getBip44Entropy": [
+      {
+        "coinType": 133
+      }
+    ]
+  },
+  "manifestVersion": "0.1"
+}

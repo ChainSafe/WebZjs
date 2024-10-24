@@ -26,14 +26,14 @@ jobs:
       with:
         node-version: lts/*
 
-    - uses: pnpm/action-setup@v4
+    - run: corepack enable
 
     - name: Install dependencies
-      run: pnpm i
+      run: yarn install --immutable
 
     - name: Install Playwright Browsers
       working-directory: ./packages/e2e-tests/
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
-      run: pnpm run test:e2e
+      run: yarn run test:e2e

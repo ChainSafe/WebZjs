@@ -12,6 +12,9 @@ build-wallet *features:
 build-keys *features:
     cd crates/webz-keys && wasm-pack build -t web --release --scope webzjs --out-dir ../../packages/webz-keys --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
 
+build-keys-wasm-snap *features:
+    cd crates/webz-keys && wasm-pack build -t web --release --scope webzjs --out-dir ../../packages/wasm/src/webz-keys --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
+
 build-requests *features:
     cd crates/webz-requests && wasm-pack build -t web --release --scope webzjs --out-dir ../../packages/webz-requests --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
 

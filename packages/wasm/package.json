@@ -1,0 +1,37 @@
+{
+  "name": "@chainsafe/webzjs-wasm",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "browser": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "type": "module",
+  "files": [
+    "lib",
+    "src",
+    "src/webz_core_bg.wasm"
+  ],
+  "engines": {
+    "node": "^18.18.0"
+  },
+  "scripts": {
+    "start": "node --inspect-brk lib/index.js",
+    "prebuild": "rimraf lib",
+    "build": "yarn prebuild && yarn build:bundle",
+    "build:bundle": "tsc --emitDeclarationOnly && yarn esbuild:bundle",
+    "esbuild:bundle": "node ./esbuild.config.js",
+    "allow-scripts": "echo ''"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "Bundles the wasm file and methods to be used with Metamask Snaps",
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-d.ts": "^1.3.1",
+    "esbuild-plugin-wasm": "^1.1.0",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  },
+  "sideEffects": false
+}

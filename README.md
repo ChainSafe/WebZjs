@@ -76,7 +76,7 @@ just build
 
 #### Prerequisites
 
-[Install pnpm](https://pnpm.io/installation)
+[Install yarn](https://yarnpkg.com/getting-started/install)
 
 ### Building
 
@@ -89,19 +89,19 @@ just build
 Install js dependencies with
 
 ```shell
-pnpm i
+yarn i
 ```
 
 Build the demo wallet with
 
 ```shell
-pnpm build
+yarn build
 ```
 
 Serve it with
 
 ```shell
-pnpm serve
+yarn serve
 ```
 
 > [!IMPORTANT]  
