@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { WebWallet } from "@webzjs/webz-core";
+import { WebWallet } from "@webzjs/webz-wallet";
 
 declare global {
   interface Window { webWallet: WebWallet; }

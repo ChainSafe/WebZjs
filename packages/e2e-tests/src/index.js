@@ -1,7 +1,12 @@
-import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-core";
+import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-wallet";
 
-import * as WebZ from "@webzjs/webz-core";
-window.WebZ = WebZ;
+import initWasm, * as WebZWallet from "@webzjs/webz-wallet";
+import initKeys, * as WebZKeys from "@webzjs/webz-keys";
+import initRequests, * as WebZRequests from "@webzjs/webz-requests";
+
+window.WebZWallet = WebZWallet;
+window.WebZKeys = WebZKeys;
+window.WebZRequests = WebZRequests;
 
 const N_THREADS = 10;
 const MAINNET_LIGHTWALLETD_PROXY = "https://zcash-mainnet.chainsafe.dev";
@@ -13,6 +18,8 @@ async function loadPage() {
 
   // Code to executed once the page has loaded
   await initWasm();
+  await initKeys();
+  await initRequests();
   await initThreadPool(N_THREADS);
 
   window.webWallet = new WebWallet(

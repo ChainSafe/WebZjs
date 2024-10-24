@@ -13,7 +13,7 @@ Being a private blockchain Zcash places a lot more demands on the wallet than a 
 
 ## Quickstart
 
-Add the `@webzjs/webz-core` package to your javascript project.
+Add the `@webzjs/webz-wallet` package to your javascript project.
 
 Before using the library it is important to initialize the Wasm module and the thread pool.
 
@@ -22,7 +22,7 @@ Before using the library it is important to initialize the Wasm module and the t
 > Failing to call them or calling them more than once per page load will result in an error
 
 ```javascript
-import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-core";
+import initWasm, { initThreadPool, WebWallet } from "@webzjs/webz-wallet";
 
 initWasm();
 initThreadPool(8); // can set any number of threads here, ideally match it to window.navigator.hardwareConcurrency
@@ -66,7 +66,7 @@ For more details check out the hosted docs at https://chainsafe.github.io/WebZjs
 
 ### Building WebZjs
 
-This just script uses wasm-pack to build a web-ready copy of `webz-core` into the `packages` directory 
+This just script uses wasm-pack to build a web-ready copy of `webz-wallet` and `webz-keys` into the `packages` directory 
 
 ```shell
 just build
