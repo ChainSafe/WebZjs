@@ -12,7 +12,7 @@ esbuild
     sourcemap: false,
     target: 'es2020',
     platform: 'neutral',
-    define: { globals: 'window'},
+    define: { globals: 'window' },
     plugins: [dts({ outDir: 'lib' })],
     loader: {
       '.ts': 'ts',
@@ -24,12 +24,12 @@ esbuild
   .then(() => {
     // Ensure the .wasm file is in the lib directory
     fs.copyFileSync(
-      path.resolve('src', 'webz-keys/webz-keys_bg.wasm'),
+      path.resolve('../', 'webz-keys/webz-keys_bg.wasm'),
       path.resolve('lib', 'webz-keys_bg.wasm'),
     );
-    // Copy declarations
+    // Copy wasm declarations
     fs.copyFileSync(
-      path.resolve('src', 'webz-keys/webz-keys.d.ts'),
+      path.resolve('../', 'webz-keys/webz_keys_bg.wasm.d.ts'),
       path.resolve('lib', 'webz-keys.d.ts'),
     );
   })

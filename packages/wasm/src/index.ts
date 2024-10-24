@@ -1,7 +1,7 @@
-import init, { UnifiedSpendingKey } from '@webzjs/webz-keys';
-import wasmBinary from '@webzjs/webz-keys_bg.wasm';
-import {InitOutput} from "@webzjs/webz-keys";
-import {UnifiedFullViewingKey} from "@webzjs/webz-keys/webz-keys";
+import init, { UnifiedSpendingKey } from '@webzjs/webz-keys/webz-keys';
+import wasmBinary from '@webzjs/webz-keys/webz-keys_bg.wasm';
+import { InitOutput } from '@webzjs/webz-keys';
+import { UnifiedFullViewingKey } from '@webzjs/webz-keys/webz-keys';
 
 /**
  *

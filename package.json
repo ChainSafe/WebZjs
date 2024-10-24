@@ -5,11 +5,18 @@
   "workspaces": [
     "packages/*"
   ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prettier-plugin-packagejson": "^2.5.3"
+  },
   "packageManager": "yarn@4.5.1",
   "scripts": {
-    "serve": "yarn  workspace @webzjs/demo-wallet run serve",
-    "dev": "yarn  workspace @webzjs/demo-wallet run dev",
-    "build": "yarn  workspace @webzjs/demo-wallet run build",
-    "test:e2e": "yarn  workspace @webzjs/demo-wallet test"
+    "serve": "yarn workspace @webzjs/demo-wallet run serve",
+    "dev": "yarn workspace @webzjs/demo-wallet run dev",
+    "build": "yarn workspace @webzjs/demo-wallet run build",
+    "test:e2e": "yarn workspace @webzjs/demo-wallet run test"
   }
 }

@@ -24,6 +24,9 @@
   "author": "",
   "license": "ISC",
   "description": "Bundles the wasm file and methods to be used with Metamask Snaps",
+  "dependencies": {
+    "@webzjs/webz-keys": "workspace:^"
+  },
   "devDependencies": {
     "esbuild": "^0.24.0",
     "esbuild-plugin-d.ts": "^1.3.1",
