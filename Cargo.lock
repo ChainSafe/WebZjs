@@ -3274,6 +3274,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "webz-requests"
+version = "0.1.0"
+dependencies = [
+ "getrandom",
+ "js-sys",
+ "serde-wasm-bindgen",
+ "thiserror",
+ "wasm-bindgen",
+ "zcash_address 0.6.0",
+ "zcash_primitives 0.19.0",
+ "zip321 0.2.0",
+]
+
+[[package]]
 name = "webz-wallet"
 version = "0.1.0"
 dependencies = [

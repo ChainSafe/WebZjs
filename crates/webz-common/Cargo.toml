@@ -6,7 +6,6 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/ChainSafe/WebZjs"
 description = "A browser client-side library for generating and manipulating zcash keys"
 edition = "2021"
-resolver = "2"
 
 [dependencies]
 serde.workspace = true

@@ -46,10 +46,13 @@ const config = {
 				// Monorepo
 				packages: [    {
           path: 'packages/webz-wallet',
-          entry: 'webz_core.d.ts',
+          entry: 'webz_wallet.d.ts',
         },{
           path: 'packages/webz-keys',
-          entry: 'webz_core.d.ts',
+          entry: 'webz_keys.d.ts',
+        }, {
+          path: 'packages/webz-requests',
+          entry: 'webz_requests.d.ts',
         }],
 				minimal: false,
 				debug: true,

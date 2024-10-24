@@ -19,7 +19,6 @@ use zcash_client_backend::proto::service::{
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::keys::UnifiedFullViewingKey;
-use zcash_primitives::consensus::{self, Parameters, TestNetwork};
 use zcash_primitives::transaction::TxId;
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
@@ -192,7 +191,7 @@ impl WebWallet {
         birthday_height: Option<u32>,
     ) -> Result<u32, Error> {
         let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, encoded_ufvk)
-            .map_err(Error::KeyParseError)?;
+            .map_err(Error::KeyParse)?;
 
         self.inner
             .import_ufvk(&ufvk, birthday_height)

@@ -1,9 +1,16 @@
 [workspace]
+resolver = "2"
 
 members = [ "crates/webz-common",
-    "crates/webz-keys",
+    "crates/webz-keys", "crates/webz-requests",
     "crates/webz-wallet",
 ]
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = 3
+lto = true
+codegen-units = 1
 
 [workspace.dependencies]
 ## Web dependencies
