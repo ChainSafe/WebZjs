@@ -1,37 +1,42 @@
-import React, { FormEvent, useContext, useEffect, useState } from "react";
+import React, { FormEvent, useContext, useEffect, useState } from 'react';
 
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import { ToastContainer, toast } from "react-toastify";
-import { generate_seed_phrase } from "@webzjs/webz-keys";
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import { toast, ToastContainer } from 'react-toastify';
+import { generate_seed_phrase } from '@webzjs/webz-keys';
 
-import { WalletContext } from "../App";
-import { addNewAccount, flushDbToStore } from "../Actions";
-import { NU5_ACTIVATION } from "../Constants";
+import { WalletContext } from '../App';
+import { addNewAccountFromUfvk, flushDbToStore } from '../Actions';
+import { NU5_ACTIVATION } from '../Constants';
+import { useInvokeSnap } from '../../hooks';
 
 export function AddAccount() {
   let { state, dispatch } = useContext(WalletContext);
+  const invokeSnap = useInvokeSnap();
 
   let [birthdayHeight, setBirthdayHeight] = useState(0);
-  let [seedPhrase, setSeedPhrase] = useState("");
+  let [seedPhrase, setSeedPhrase] = useState('');
 
   useEffect(() => {
     const fetchBirthday = async () => {
       let birthday = await state.webWallet?.get_latest_block();
       setBirthdayHeight(Number(birthday) || 0);
-    }
+    };
     fetchBirthday();
   }, [state]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await addNewAccount(state, dispatch, seedPhrase, birthdayHeight);
-    toast.success("Account imported successfully", {
-      position: "top-center",
+    const viewKey = (await invokeSnap({ method: 'hello' })) as string;
+    console.log(viewKey);
+    await addNewAccountFromUfvk(state, dispatch, viewKey, birthdayHeight);
+    toast.success('Account imported successfully', {
+      position: 'top-center',
       autoClose: 2000,
     });
+
     setBirthdayHeight(0);
-    setSeedPhrase("");
+    setSeedPhrase('');
     flushDbToStore(state, dispatch);
   };
 

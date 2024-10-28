@@ -2594,6 +2594,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@metamask/eslint-config-browser@npm:^12.1.0":
+  version: 12.1.0
+  resolution: "@metamask/eslint-config-browser@npm:12.1.0"
+  peerDependencies:
+    "@metamask/eslint-config": ^12.0.0
+    eslint: ^8.27.0
+  checksum: 10c0/1cd6d72aea498f18413010219fda3f991d07147c749e3f75c88894ce50aaf0cb4495d8ea0e57142b684bcb4b210fba4126558d36695d4d512985f20812de9d1a
+  languageName: node
+  linkType: hard
+
+"@metamask/eslint-config-jest@npm:^12.1.0":
+  version: 12.1.0
+  resolution: "@metamask/eslint-config-jest@npm:12.1.0"
+  peerDependencies:
+    "@metamask/eslint-config": ^12.0.0
+    eslint: ^8.27.0
+    eslint-plugin-jest: ^27.1.5
+  checksum: 10c0/fcab251acf2329a14b39ecec99676c4d4b3f5b4f4daa5809d5ed78125a56b8533acbdb985f60e7a3ac7e3dd55ba00cbcc8982b5fe9218a40e7d1fbe9ec8864af
+  languageName: node
+  linkType: hard
+
 "@metamask/eslint-config-jest@npm:^14.0.0":
   version: 14.0.0
   resolution: "@metamask/eslint-config-jest@npm:14.0.0"
@@ -2605,6 +2626,17 @@ __metadata:
     eslint: ^9.11.0
     eslint-plugin-jest: ^28.8.3
   checksum: 10c0/28cbf24eb5cb480e1aa87416d783957a1544634bc8a89a3373d980f10a51f8649aeaa2a3447dc2ef414319b1789fd5d0a2911f4681f9c5fa43b77e3b086ee11a
+  languageName: node
+  linkType: hard
+
+"@metamask/eslint-config-nodejs@npm:^12.1.0":
+  version: 12.1.0
+  resolution: "@metamask/eslint-config-nodejs@npm:12.1.0"
+  peerDependencies:
+    "@metamask/eslint-config": ^12.0.0
+    eslint: ^8.27.0
+    eslint-plugin-n: ^15.7.0
+  checksum: 10c0/b20dafbd236d1a68d9d5d281017a67b509be0d61b2b22becd81e62bd5217b7ce8c80308aba97654e9ee36d2cda541d4aa1f5077fbdd22bca02f716ba3d1cb475
   languageName: node
   linkType: hard
 
@@ -2622,6 +2654,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@metamask/eslint-config-typescript@npm:^12.1.0":
+  version: 12.1.0
+  resolution: "@metamask/eslint-config-typescript@npm:12.1.0"
+  peerDependencies:
+    "@metamask/eslint-config": ^12.0.0
+    "@typescript-eslint/eslint-plugin": ^5.42.1
+    "@typescript-eslint/parser": ^5.42.1
+    eslint: ^8.27.0
+    typescript: ~4.8.4 || ~5.0 || ~5.1
+  checksum: 10c0/500a1c27da628b2ed859b3484a2d16fb832d1dcdb0ff8c13880fe336566c4ed49f3cf0327b37a735a5303237961807c3d92b9d2249b4300624ce5b8b91f2c1bc
+  languageName: node
+  linkType: hard
+
 "@metamask/eslint-config-typescript@npm:^14.0.0":
   version: 14.0.0
   resolution: "@metamask/eslint-config-typescript@npm:14.0.0"
@@ -2636,6 +2681,21 @@ __metadata:
     typescript: ">=4.8.4 <5.6"
     typescript-eslint: ^8.6.0
   checksum: 10c0/17016bdf2b900a47442558b2b835e3e1b211e86dc721578e5a9091e6ed661e78ce2a1be0df4cb42fab836026e94048168c26803112630419cdec81cfb21d78ac
+  languageName: node
+  linkType: hard
+
+"@metamask/eslint-config@npm:^12.2.0":
+  version: 12.2.0
+  resolution: "@metamask/eslint-config@npm:12.2.0"
+  peerDependencies:
+    eslint: ^8.27.0
+    eslint-config-prettier: ^8.5.0
+    eslint-plugin-import: ~2.26.0
+    eslint-plugin-jsdoc: ^39.6.2 || ^41 || ^43.0.7
+    eslint-plugin-prettier: ^4.2.1
+    eslint-plugin-promise: ^6.1.1
+    prettier: ^2.7.1
+  checksum: 10c0/0e4d6fa63f91f8b522ff9e9aa960590c45edeb5331a7646eb4f38408ce999444a64eb62e78e5e647abe8da37cf33a1e028ebb6030e3e0ae06a87ee5738eedeb8
   languageName: node
   linkType: hard
 
@@ -2760,7 +2820,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/json-rpc-middleware-stream@npm:^8.0.1, @metamask/json-rpc-middleware-stream@npm:^8.0.2":
+"@metamask/json-rpc-middleware-stream@npm:^8.0.1, @metamask/json-rpc-middleware-stream@npm:^8.0.2, @metamask/json-rpc-middleware-stream@npm:^8.0.4":
   version: 8.0.4
   resolution: "@metamask/json-rpc-middleware-stream@npm:8.0.4"
   dependencies:
@@ -2868,6 +2928,27 @@ __metadata:
   peerDependencies:
     webextension-polyfill: ^0.10.0 || ^0.11.0 || ^0.12.0
   checksum: 10c0/989fe49ab9f0cfb2d2187f03d5c333ffa5bf97a1af43732b7ede786b7c8daf8ec2bfff7d5f936edec83a21c83edc03aef4bbfaaf466582a4cce52a723eddfc51
+  languageName: node
+  linkType: hard
+
+"@metamask/providers@npm:^18.1.0":
+  version: 18.1.0
+  resolution: "@metamask/providers@npm:18.1.0"
+  dependencies:
+    "@metamask/json-rpc-engine": "npm:^10.0.0"
+    "@metamask/json-rpc-middleware-stream": "npm:^8.0.4"
+    "@metamask/object-multiplex": "npm:^2.0.0"
+    "@metamask/rpc-errors": "npm:^7.0.0"
+    "@metamask/safe-event-emitter": "npm:^3.1.1"
+    "@metamask/utils": "npm:^9.0.0"
+    detect-browser: "npm:^5.2.0"
+    extension-port-stream: "npm:^4.1.0"
+    fast-deep-equal: "npm:^3.1.3"
+    is-stream: "npm:^2.0.0"
+    readable-stream: "npm:^3.6.2"
+  peerDependencies:
+    webextension-polyfill: ^0.10.0 || ^0.11.0 || ^0.12.0
+  checksum: 10c0/f92ee1ca71b323b03c97ca72bfcf674bc78f927fc7357e14d629bba7fb85fe101cfe661d99461f41f75b2efdd57247ee464415c1c27b49d8572530cc2e205157
   languageName: node
   linkType: hard
 
@@ -5377,6 +5458,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@webzjs/demo-wallet@workspace:packages/demo-wallet"
   dependencies:
+    "@metamask/eslint-config": "npm:^12.2.0"
+    "@metamask/eslint-config-browser": "npm:^12.1.0"
+    "@metamask/eslint-config-jest": "npm:^12.1.0"
+    "@metamask/eslint-config-nodejs": "npm:^12.1.0"
+    "@metamask/eslint-config-typescript": "npm:^12.1.0"
+    "@metamask/providers": "npm:^18.1.0"
     "@parcel/core": "npm:^2.12.0"
     "@types/react": "npm:^18.3.9"
     "@types/react-dom": "npm:^18.3.0"
