@@ -27,7 +27,7 @@ export function AddAccount() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const viewKey = (await invokeSnap({ method: 'hello' })) as string;
+    const viewKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
     console.log(viewKey);
     await addNewAccountFromUfvk(state, dispatch, viewKey, birthdayHeight);
     toast.success('Account imported successfully', {

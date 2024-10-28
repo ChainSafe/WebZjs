@@ -23,7 +23,7 @@ export const onRpcRequest: ({
   }
 
   switch (request.method) {
-    case 'hello':
+    case 'getViewingKey':
       return await getViewingKey();
     default:
       throw new Error('Method not found.');
