@@ -1,5 +1,5 @@
 {
-  "name": "@chainsafe/zcash-snap",
+  "name": "@webzjs/zcash-snap",
   "version": "0.1.0",
   "description": "The 'Hello, world!' of MetaMask Snaps, now written in TypeScript.",
   "repository": {
@@ -27,8 +27,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@chainsafe/webzjs-wasm": "workspace:^",
     "@metamask/snaps-sdk": "^6.9.0",
+    "@webzjs/wasm": "workspace:^",
     "buffer": "^6.0.3",
     "fork-ts-checker-webpack-plugin": "^9.0.2"
   },

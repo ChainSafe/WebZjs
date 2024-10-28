@@ -9,6 +9,7 @@ esbuild
     bundle: true,
     outdir: 'lib',
     format: 'esm',
+    minify: true,
     sourcemap: false,
     target: 'es2020',
     platform: 'neutral',
@@ -27,6 +28,7 @@ esbuild
       path.resolve('../', 'webz-keys/webz-keys_bg.wasm'),
       path.resolve('lib', 'webz-keys_bg.wasm'),
     );
+
     // Copy wasm declarations
     fs.copyFileSync(
       path.resolve('../', 'webz-keys/webz_keys_bg.wasm.d.ts'),

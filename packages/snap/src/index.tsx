@@ -1,5 +1,5 @@
 import { getViewingKey } from './rpc/getViewingKey';
-import { InitOutput, wasmExportsPromise } from '@chainsafe/webzjs-wasm';
+import { InitOutput, wasmExportsPromise } from '@webzjs/wasm';
 
 let wasmModule: InitOutput;
 

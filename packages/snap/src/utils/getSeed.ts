@@ -1,8 +1,10 @@
+import { hexStringToUint8Array } from './hexStringToUint8Array';
+
 export async function getSeed(): Promise<Uint8Array> {
   const entropyNode = await snap.request({
     method: 'snap_getBip44Entropy',
     params: { coinType: 133 }, // 133 is the coin type for Zcash
-  })
+  });
 
   if (
     typeof entropyNode !== 'object' ||
@@ -17,13 +19,15 @@ export async function getSeed(): Promise<Uint8Array> {
   const seed = hexStringToUint8Array(validatedKey);
 
   if (seed.length !== 32) {
-    throw new Error(`Invalid seed length: expected 32 bytes, got ${seed.length} bytes`);
+    throw new Error(
+      `Invalid seed length: expected 32 bytes, got ${seed.length} bytes`,
+    );
   }
 
   return seed;
 }
 
-function validatePrivateKey (privateKey: string | undefined): string {
+function validatePrivateKey(privateKey: string | undefined): string {
   if (typeof privateKey !== 'string') {
     throw new Error('privateKey must be a string');
   }
@@ -36,7 +40,7 @@ function validatePrivateKey (privateKey: string | undefined): string {
   // Validate the length of privateKey after removing '0x' prefix
   if (privateKey.length !== 64) {
     throw new Error(
-        `Invalid privateKey length: expected 66 characters with '0x' prefix or 64 characters without prefix, got ${privateKey.length + 2}`
+      `Invalid privateKey length: expected 66 characters with '0x' prefix or 64 characters without prefix, got ${privateKey.length + 2}`,
     );
   }
 
@@ -47,4 +51,3 @@ function validatePrivateKey (privateKey: string | undefined): string {
 
   return privateKey;
 }
-

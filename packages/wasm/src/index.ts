@@ -31,7 +31,7 @@ export const wasmExportsPromise: Promise<InitOutput> = initializeWasm();
 export async function generateViewingKey(
   seed: Uint8Array,
   account: number,
-  network = 'main',
+  network = 'test',
 ): Promise<UnifiedFullViewingKey> {
   if (!(await wasmExportsPromise)) {
     throw new Error('WASM module not initialized');

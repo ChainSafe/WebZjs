@@ -1,5 +1,5 @@
 import { getSeed } from '../utils/getSeed';
-import { generateViewingKey } from '@chainsafe/webzjs-wasm';
+import { generateViewingKey } from '@webzjs/wasm';
 
 type Network = 'main' | 'test';
 
@@ -10,7 +10,7 @@ export async function getViewingKey() {
 
     // Define the account index and network
     const accountIndex = 0;
-    const network = 'test' as Network;
+    const network = 'main' as Network;
 
     // Generate the UnifiedSpendingKey and obtain the Viewing Key
     const viewingKey = await generateViewingKey(seed, accountIndex, network);

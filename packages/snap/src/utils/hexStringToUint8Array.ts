@@ -4,12 +4,13 @@
  * @returns A Uint8Array representing the binary data of the hex string.
  * @throws Will throw an error if the input string contains non-hex characters or has an odd length.
  */
-function hexStringToUint8Array(hexString: string): Uint8Array {
+export function hexStringToUint8Array(hexString: string): Uint8Array {
   // Remove any leading "0x" or "0X" if present
   if (hexString.startsWith('0x') || hexString.startsWith('0X')) {
     hexString = hexString.slice(2);
   }
 
+  // Validate that the string contains only hexadecimal characters
   if (!/^[0-9a-fA-F]*$/.test(hexString)) {
     throw new Error('Hex string contains invalid characters');
   }

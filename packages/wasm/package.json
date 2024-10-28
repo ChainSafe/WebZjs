@@ -1,5 +1,5 @@
 {
-  "name": "@chainsafe/webzjs-wasm",
+  "name": "@webzjs/wasm",
   "version": "1.0.0",
   "main": "lib/index.js",
   "browser": "lib/index.js",
@@ -7,19 +7,16 @@
   "type": "module",
   "files": [
     "lib",
-    "src",
-    "src/webz_core_bg.wasm"
+    "src"
   ],
   "engines": {
     "node": "^18.18.0"
   },
   "scripts": {
-    "start": "node --inspect-brk lib/index.js",
     "prebuild": "rimraf lib",
     "build": "yarn prebuild && yarn build:bundle",
     "build:bundle": "tsc --emitDeclarationOnly && yarn esbuild:bundle",
-    "esbuild:bundle": "node ./esbuild.config.js",
-    "allow-scripts": "echo ''"
+    "esbuild:bundle": "node ./esbuild.config.js"
   },
   "author": "",
   "license": "ISC",
