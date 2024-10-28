@@ -10,13 +10,12 @@ export async function getViewingKey() {
 
     // Define the account index and network
     const accountIndex = 0;
-    const network = 'main' as Network;
+    const network = 'test' as Network;
 
     // Generate the UnifiedSpendingKey and obtain the Viewing Key
     const viewingKey = await generateViewingKey(seed, accountIndex, network);
 
     console.log('viewingKey', viewingKey);
-    // Return the Viewing Key to the dApp
     return viewingKey.encode(network);
   } catch (error) {
     console.error('Error generating Viewing Key:', error);

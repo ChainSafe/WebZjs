@@ -9,7 +9,7 @@ let wasmModule: InitOutput;
  *
  * invoked the snap.
  * @param args.request - A validated JSON-RPC request object.
- * @returns The result of `snap_dialog`.
+ * @returns The ViewingKey
  * @throws If the request method is not valid for this snap.
  */
 export const onRpcRequest: ({
