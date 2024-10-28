@@ -36,9 +36,6 @@ export async function generateViewingKey(
   if (!(await wasmExportsPromise)) {
     throw new Error('WASM module not initialized');
   }
-
-  // Convert Uint8Array to a format compatible with Rust (handled by wasm-bindgen)
-  // Assuming wasm-bindgen handles the conversion automatically
   const spendingKey = new UnifiedSpendingKey(network, seed, account);
   return spendingKey.to_unified_full_viewing_key();
 }
