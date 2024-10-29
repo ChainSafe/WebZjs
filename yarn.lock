@@ -5451,6 +5451,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@webzjs/e2e-tests@workspace:packages/e2e-tests":
+  version: 0.0.0-use.local
+  resolution: "@webzjs/e2e-tests@workspace:packages/e2e-tests"
+  dependencies:
+    "@parcel/core": "npm:^2.12.0"
+    "@playwright/test": "npm:^1.47.2"
+    "@types/node": "npm:^22.7.4"
+    "@webzjs/webz-keys": "workspace:^"
+    "@webzjs/webz-requests": "workspace:^"
+    "@webzjs/webz-wallet": "workspace:^"
+    parcel: "npm:^2.12.0"
+    serve: "npm:^14.2.3"
+  languageName: unknown
+  linkType: soft
+
 "@webzjs/wasm@workspace:^, @webzjs/wasm@workspace:packages/wasm":
   version: 0.0.0-use.local
   resolution: "@webzjs/wasm@workspace:packages/wasm"
@@ -7630,21 +7645,6 @@ __metadata:
   checksum: 10c0/0765a4cc6fe6d9615d43cc6dbccff6f8412811d89a6f6aa44828ca9422a0a469625ce023bf81cee68f52930dbedf9c5716056ff264ac886612702d134b5e39b4
   languageName: node
   linkType: hard
-
-"e2e-tests@workspace:packages/e2e-tests":
-  version: 0.0.0-use.local
-  resolution: "e2e-tests@workspace:packages/e2e-tests"
-  dependencies:
-    "@parcel/core": "npm:^2.12.0"
-    "@playwright/test": "npm:^1.47.2"
-    "@types/node": "npm:^22.7.4"
-    "@webzjs/webz-keys": "workspace:^"
-    "@webzjs/webz-requests": "workspace:^"
-    "@webzjs/webz-wallet": "workspace:^"
-    parcel: "npm:^2.12.0"
-    serve: "npm:^14.2.3"
-  languageName: unknown
-  linkType: soft
 
 "eastasianwidth@npm:^0.2.0":
   version: 0.2.0

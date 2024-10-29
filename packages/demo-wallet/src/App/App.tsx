@@ -117,7 +117,6 @@ export function App() {
             <Container>
               <Stack>
                 <h1>WebZjs Wallet Demo</h1>
-                <ConnectMetamaskButton />
                 <Header />
                 <Tabs
                   defaultActiveKey="import"

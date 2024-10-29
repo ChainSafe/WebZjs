@@ -6,12 +6,18 @@ import { toast, ToastContainer } from 'react-toastify';
 import { generate_seed_phrase } from '@webzjs/webz-keys';
 
 import { WalletContext } from '../App';
-import { addNewAccountFromUfvk, flushDbToStore } from '../Actions';
+import {
+  addNewAccount,
+  addNewAccountFromUfvk,
+  flushDbToStore,
+} from '../Actions';
 import { NU5_ACTIVATION } from '../Constants';
-import { useInvokeSnap } from '../../hooks';
+import { useInvokeSnap, useMetaMask } from '../../hooks';
+import { ConnectMetamaskButton } from './ConnectMetamaskButton';
 
 export function AddAccount() {
   let { state, dispatch } = useContext(WalletContext);
+  const { installedSnap } = useMetaMask();
   const invokeSnap = useInvokeSnap();
 
   let [birthdayHeight, setBirthdayHeight] = useState(0);
@@ -26,6 +32,18 @@ export function AddAccount() {
   }, [state]);
 
   const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    await addNewAccount(state, dispatch, seedPhrase, birthdayHeight);
+    toast.success('Account imported successfully', {
+      position: 'top-center',
+      autoClose: 2000,
+    });
+    setBirthdayHeight(0);
+    setSeedPhrase('');
+    flushDbToStore(state, dispatch);
+  };
+
+  const handleMetamaskImport = async (e: FormEvent) => {
     e.preventDefault();
     const viewKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
     console.log(viewKey);
@@ -85,6 +103,14 @@ export function AddAccount() {
         </Form.Group>
         <Button variant="primary" type="submit">
           Import
+        </Button>
+        <ConnectMetamaskButton />
+        <Button
+          variant="primary"
+          onClick={handleMetamaskImport}
+          disabled={!installedSnap}
+        >
+          Import Metamask Account
         </Button>
       </Form>
       <ToastContainer />

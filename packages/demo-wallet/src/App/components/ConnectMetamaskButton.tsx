@@ -30,22 +30,22 @@ export function ConnectMetamaskButton() {
 
 export const InstallFlaskButton = () => (
   <a href="https://metamask.io/flask/" target="_blank">
-    <button>Install MetaMask Flask</button>
+    <Button variant="primary">Install MetaMask Flask</Button>
   </a>
 );
 
 const ConnectButton = (props: ComponentProps<typeof Button>) => {
   return (
-    <button {...props}>
-      <div>Connect</div>
-    </button>
+    <Button {...props}>
+      <div>Connect Metamask Snap</div>
+    </Button>
   );
 };
 
 const ReconnectButton = (props: ComponentProps<typeof Button>) => {
   return (
-    <Button variant={'primary'} {...props}>
-      <div>Reconnect</div>
+    <Button variant="primary" {...props}>
+      <div>Reconnect Snap</div>
     </Button>
   );
 };
