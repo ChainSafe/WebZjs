@@ -33,7 +33,7 @@ jobs:
 
     - name: Install Playwright Browsers
       working-directory: ./packages/e2e-tests/
-      run: npx playwright install --with-deps
+      run: yarn playwright install --with-deps
 
     - name: Run Playwright tests
       run: yarn run test:e2e
