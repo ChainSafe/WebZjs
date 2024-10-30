@@ -5,7 +5,7 @@
   "source": "src/index.html",
   "scripts": {
     "pretest": "parcel build --no-cache src/index.html",
-    "test": "playwright test"
+    "test": "yarn pretest && playwright test"
   },
   "keywords": [],
   "author": "",
