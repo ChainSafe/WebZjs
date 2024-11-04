@@ -7,7 +7,7 @@
     "url": "https://github.com/MetaMask/template-snap-monorepo.git"
   },
   "source": {
-    "shasum": "tXFgovVFCyp5iM5sZS1YkRj/XpZlw/9yu2Gbjk9EYq4=",
+    "shasum": "TlMTqyWhemCoj+B1qchLHNGm+nQgvjnS7ZL/MaoE7Kg=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -17,9 +17,6 @@
     }
   },
   "initialPermissions": {
-    "endowment:transaction-insight": {
-      "maxRequestTime": 180000
-    },
     "snap_dialog": {},
     "endowment:webassembly": {},
     "endowment:rpc": {

@@ -3,7 +3,7 @@ import { hexStringToUint8Array } from './hexStringToUint8Array';
 export async function getSeed(): Promise<Uint8Array> {
   const entropyNode = await snap.request({
     method: 'snap_getBip44Entropy',
-    params: { coinType: 133 }, // 133 is the coin type for Zcash
+    params: { coinType: 133 }, // 133 is the coin type for Zcash https://github.com/satoshilabs/slips/blob/master/slip-0044.md
   });
 
   if (

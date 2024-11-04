@@ -1,16 +1,15 @@
-import { getSeed } from '../utils/getSeed';
 import { UnifiedSpendingKey } from '@webzjs/webz-keys';
+import { getSeed } from '../utils/getSeed';
 
 type Network = 'main' | 'test';
 
-export async function getViewingKey() {
+export async function getViewingKey(
+  network: Network = 'main',
+  accountIndex: number = 0,
+) {
   try {
     // Retrieve the BIP-44 entropy from MetaMask
     const seed = await getSeed();
-
-    // Define the account index and network
-    const accountIndex = 0;
-    const network = 'main' as Network;
 
     // Generate the UnifiedSpendingKey and obtain the Viewing Key
     let spendingKey = new UnifiedSpendingKey(network, seed, accountIndex);
