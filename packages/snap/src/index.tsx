@@ -1,7 +1,8 @@
 import { getViewingKey } from './rpc/getViewingKey';
-import { InitOutput, wasmExportsPromise } from '@webzjs/wasm';
-
-let wasmModule: InitOutput;
+import { InitOutput, initSync } from '@webzjs/webz-keys';
+// This import will be the wasm as a base64 encoded string because we are using the
+// asset/inline bundler option in the snap.config.ts
+import wasmDataBase64 from '@webzjs/webz-keys/webz_keys_bg.wasm';
 
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
@@ -16,11 +17,8 @@ export const onRpcRequest: ({
   request,
 }: {
   request: any;
-}) => Promise<void> = async ({ request }) => {
-  if (!wasmModule) {
-    wasmModule = await wasmExportsPromise;
-    console.log('wasmModule', wasmModule);
-  }
+}) => Promise<string> = async ({ request }) => {
+  initializeWasm();
 
   switch (request.method) {
     case 'getViewingKey':
@@ -29,3 +27,10 @@ export const onRpcRequest: ({
       throw new Error('Method not found.');
   }
 };
+
+function initializeWasm() {
+  // remove the data url prefix
+  const base64 = (wasmDataBase64 as any as string).split(',')[1] || '';
+  const wasmData = Buffer.from(base64, 'base64');
+  initSync(wasmData);
+}

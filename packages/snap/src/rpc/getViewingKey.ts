@@ -1,5 +1,5 @@
 import { getSeed } from '../utils/getSeed';
-import { generateViewingKey } from '@webzjs/wasm';
+import { UnifiedSpendingKey } from '@webzjs/webz-keys';
 
 type Network = 'main' | 'test';
 
@@ -13,9 +13,9 @@ export async function getViewingKey() {
     const network = 'main' as Network;
 
     // Generate the UnifiedSpendingKey and obtain the Viewing Key
-    const viewingKey = await generateViewingKey(seed, accountIndex, network);
+    let spendingKey = new UnifiedSpendingKey(network, seed, accountIndex);
+    let viewingKey = spendingKey.to_unified_full_viewing_key();
 
-    console.log('viewingKey', viewingKey);
     return viewingKey.encode(network);
   } catch (error) {
     console.error('Error generating Viewing Key:', error);
