@@ -40,7 +40,7 @@ function validatePrivateKey(privateKey: string | undefined): string {
   // Validate the length of privateKey after removing '0x' prefix
   if (privateKey.length !== 64) {
     throw new Error(
-      `Invalid privateKey length: expected 66 characters with '0x' prefix or 64 characters without prefix, got ${privateKey.length + 2}`,
+      `Invalid privateKey length: expected 64 characters without prefix, got ${privateKey.length}`,
     );
   }
 
