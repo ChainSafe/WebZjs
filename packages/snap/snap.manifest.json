@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "description": "WebZjs Snap for demo wallet",
+  "proposedName": "WebZjs Snap",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+  },
+  "source": {
+    "shasum": "TlMTqyWhemCoj+B1qchLHNGm+nQgvjnS7ZL/MaoE7Kg=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "packageName": "@webzjs/zcash-snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "snap_dialog": {},
+    "endowment:webassembly": {},
+    "endowment:rpc": {
+      "dapps": true,
+      "snaps": false
+    },
+    "snap_getBip44Entropy": [
+      {
+        "coinType": 133
+      }
+    ]
+  },
+  "manifestVersion": "0.1"
+}

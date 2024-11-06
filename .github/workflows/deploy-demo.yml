@@ -27,14 +27,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-  
-      - uses: pnpm/action-setup@v4
-  
+      - run: corepack enable
+
       - name: Install dependencies
-        run: pnpm i
+        run: yarn install --immutable
 
       - name: Build
-        run: pnpm build
+        run: yarn build
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0

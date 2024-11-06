@@ -1,16 +1,26 @@
 {
+  "name": "root",
+  "private": true,
+  "license": "Apache-2.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prettier-plugin-packagejson": "^2.5.3"
+  },
+  "packageManager": "yarn@4.5.1",
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
-    "serve": "pnpm --filter ./packages/demo-wallet run serve",
-    "dev": "pnpm --filter ./packages/demo-wallet run dev",
-    "build": "pnpm --filter ./packages/demo-wallet run build",
-    "test:e2e": "pnpm --filter ./packages/e2e-tests test"
-  },
-  "dependencies": {
-    "@webzjs/demo-wallet": "workspace:^",
-    "@webzjs/webz-wallet": "workspace:^",
-    "@webzjs/webz-keys": "workspace:^",
-    "@webzjs/webz-requests": "workspace:^"
-  },
-  "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
+    "serve": "yarn workspace @webzjs/demo-wallet run serve",
+    "dev": "yarn run just:build-keys && yarn run snap:start & yarn run demo-wallet:dev",
+    "build": "yarn workspace @webzjs/demo-wallet run build",
+    "demo-wallet:dev": "yarn workspace @webzjs/demo-wallet run dev",
+    "test:e2e": "yarn workspace @webzjs/e2e-tests test",
+    "snap:start": "yarn workspace @webzjs/zcash-snap run start",
+    "snap:build": "yarn workspace @webzjs/zcash-snap run build",
+    "just:build-keys": "just build-keys"
+  }
 }

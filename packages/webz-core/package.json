@@ -1,0 +1,26 @@
+{
+  "name": "@webzjs/webz-core",
+  "type": "module",
+  "collaborators": [
+    "ChainSafe Systems"
+  ],
+  "description": "A browser client-side library for implementing Zcash wallets",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChainSafe/WebZjs"
+  },
+  "files": [
+    "webz_core_bg.wasm",
+    "webz_core.js",
+    "webz_core.d.ts",
+    "LICENSE-APACHE",
+    "LICENSE-MIT"
+  ],
+  "main": "webz_core.js",
+  "types": "webz_core.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

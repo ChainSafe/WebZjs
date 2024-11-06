@@ -1,23 +1,23 @@
 {
-  "name": "e2e-tests",
+  "name": "@webzjs/e2e-tests",
   "version": "1.0.0",
   "description": "",
   "source": "src/index.html",
   "scripts": {
     "pretest": "parcel build --no-cache src/index.html",
-    "test": "playwright test"
+    "test": "yarn pretest && playwright test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@parcel/core": "^2.12.0",
     "@playwright/test": "^1.47.2",
     "@types/node": "^22.7.4",
-    "@webzjs/webz-wallet": "workspace:^",
     "@webzjs/webz-keys": "workspace:^",
     "@webzjs/webz-requests": "workspace:^",
-    "serve": "^14.2.3",
-    "@parcel/core": "^2.12.0",
-    "parcel": "^2.12.0"
+    "@webzjs/webz-wallet": "workspace:^",
+    "parcel": "^2.12.0",
+    "serve": "^14.2.3"
   }
 }

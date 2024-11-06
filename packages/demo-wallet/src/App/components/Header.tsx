@@ -1,20 +1,19 @@
-import React, { useContext } from "react";
+import React, { useContext } from 'react';
 
-import Form from "react-bootstrap/Form";
-import Card from "react-bootstrap/Card";
-import Stack from "react-bootstrap/Stack";
+import Form from 'react-bootstrap/Form';
+import Card from 'react-bootstrap/Card';
+import Stack from 'react-bootstrap/Stack';
 
-import { WalletContext } from "../App";
-import { syncStateWithWallet, triggerRescan, flushDbToStore } from "../Actions";
-import { Button, Spinner } from "react-bootstrap";
-
-import { zatsToZec } from "../../utils";
+import { WalletContext } from '../App';
+import { syncStateWithWallet, triggerRescan, flushDbToStore } from '../Actions';
+import { Button, Spinner } from 'react-bootstrap';
+import { zatsToZec } from '../../utils';
 
 export function Header() {
   const { state, dispatch } = useContext(WalletContext);
 
   let activeBalanceReport = state.summary?.account_balances.find(
-    ([id]) => id === state.activeAccount
+    ([id]) => id === state.activeAccount,
   );
 
   let totalBalance = activeBalanceReport
@@ -27,7 +26,7 @@ export function Header() {
         value={state.activeAccount}
         onChange={(e) =>
           dispatch({
-            type: "set-active-account",
+            type: 'set-active-account',
             payload: parseInt(e.target.value),
           })
         }
@@ -38,10 +37,12 @@ export function Header() {
           </option>
         ))}
       </Form.Select>
-      <Card style={{ width: "30rem" }}>
-        <Card.Title>Available Balance: {zatsToZec(totalBalance)} ZEC</Card.Title>
+      <Card style={{ width: '30rem' }}>
+        <Card.Title>
+          Available Balance: {zatsToZec(totalBalance)} ZEC
+        </Card.Title>
       </Card>
-      <Card style={{ width: "30rem" }}>
+      <Card style={{ width: '30rem' }}>
         {state.syncInProgress ? (
           <div>
             <Spinner
@@ -55,13 +56,13 @@ export function Header() {
           </div>
         ) : null}
         <Card.Text>
-          Chain Height: {state.chainHeight ? "" + state.chainHeight : "?"}
+          Chain Height: {state.chainHeight ? '' + state.chainHeight : '?'}
         </Card.Text>
         <Card.Text>
-          Synced Height:{" "}
+          Synced Height:{' '}
           {state.summary?.fully_scanned_height
             ? state.summary?.fully_scanned_height
-            : "?"}
+            : '?'}
         </Card.Text>
       </Card>
       <Stack>

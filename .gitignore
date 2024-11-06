@@ -1,24 +1,27 @@
-/target
+# Common
+target
 node_modules
 .DS_STORE
-.idea
+dist
+
+# Package Manager
 .parcel-cache
-.vscode
-
-.pnp.*
 .yarn/*
-
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
 
-.parcel-cache
+# Developer tools
+.idea
+.vscode
 
+# Demo Wallet package
 packages/demo-wallet/dist/*
-packages/e2e-tests/dist/*
-./dist/*
+!/packages/demo-wallet/dist/_headers
 
-!packages/demo-wallet/dist/_headers
-!packages/e2e-tests/dist/serve.json
+# e2e Tests package
+packages/e2e-tests/dist/*
+!/packages/e2e-tests/dist/serve.json
+
