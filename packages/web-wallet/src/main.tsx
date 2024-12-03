@@ -1,10 +1,12 @@
-import React, { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
 import './styles/index.css';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Home from './pages/Home.tsx';
-import Layout from './components/Layout/Layout';
+import Home from '@pages/Home';
+import Layout from '@components/Layout/Layout';
+import { MetaMaskProvider } from '@hooks/MetamaskContext';
+import Dashboard from '@pages/Dashboard';
 
 const router = createBrowserRouter([
   {
@@ -15,12 +17,18 @@ const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
+      {
+        path: '/dashboard',
+        element: <Dashboard />,
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <MetaMaskProvider>
+      <RouterProvider router={router} />
+    </MetaMaskProvider>
   </StrictMode>,
 );

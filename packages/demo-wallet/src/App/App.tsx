@@ -19,7 +19,6 @@ import { ReceiveFunds } from './components/ReceiveFunds';
 import { Summary } from './components/Summary';
 import { Settings } from './components/Settings';
 import { RESCAN_INTERVAL } from './Constants';
-import { ConnectMetamaskButton } from './components/ConnectMetamaskButton';
 import { MetaMaskProvider } from '../hooks';
 
 export type State = {
