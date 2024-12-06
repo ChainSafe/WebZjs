@@ -11,11 +11,9 @@ const Footer = (): React.JSX.Element => {
           href="https://chainsafe.io/"
           target="_blank"
         >
-          <img
-            src={ChainsafeSvg}
-            alt="Chainsafe Systems Logo"
-            className="inline-block w-6 h-6 mr-1"
-          />
+          <div className="inline-block w-6 h-6 mr-1">
+            <ChainsafeSvg />
+          </div>
           ChainSafe
         </a>
       </div>

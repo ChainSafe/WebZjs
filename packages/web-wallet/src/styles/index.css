@@ -9,6 +9,24 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
+@layer components {
+  .navbar-link {
+    &:hover {
+      svg path {
+        fill: #e27625;
+      }
+    }
+  }
+
+  .navbar-link-active {
+    svg path {
+      fill: #e27625;
+    }
+  }
+}
+
 body {
   position: relative;
   background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);

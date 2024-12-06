@@ -7,7 +7,7 @@ const Layout = (): React.JSX.Element => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow flex items-center justify-center p-6">
+      <main className="flex-grow flex justify-center py-3">
         <Outlet />
       </main>
       <Footer />
