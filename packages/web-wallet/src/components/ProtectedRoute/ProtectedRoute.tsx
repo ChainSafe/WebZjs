@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useMetaMask } from '@hooks/useMetaMask.ts';
+import { useMetaMask } from '@hooks/snaps/useMetaMask.ts';
 import React from 'react';
 
 const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({

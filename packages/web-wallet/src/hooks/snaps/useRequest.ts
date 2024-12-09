@@ -1,6 +1,6 @@
 import type { RequestArguments } from '@metamask/providers';
 
-import { useMetaMaskContext } from './MetamaskContext';
+import { useMetaMaskContext } from '../../context/MetamaskContext.tsx';
 
 export type Request = (params: RequestArguments) => Promise<unknown | null>;
 

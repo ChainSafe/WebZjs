@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { MetaMaskLogoSvg, ZcashYellowSvg, FormTransferSvg } from '../assets';
-import { useMetaMask } from '@hooks/useMetaMask.ts';
-import { useRequestSnap } from '@hooks/useRequestSnap.ts';
+import { useMetaMask } from '@hooks/snaps/useMetaMask.ts';
+import { useRequestSnap } from '@hooks/snaps/useRequestSnap.ts';
 import { useNavigate } from 'react-router-dom';
 
 const Home: React.FC = () => {

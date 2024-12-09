@@ -18,6 +18,24 @@ export default defineConfig({
       include: '**/*.svg',
     }),
   ],
+  server: {
+    headers: {
+      // required to support web-workers spawning web-workers
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        worker:
+          'node_modules/@webzjs/webz-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js',
+      },
+    },
+    manifest: true,
+  },
+
   resolve: {
     alias: {
       '@components': resolve(__dirname, 'src/components'),
