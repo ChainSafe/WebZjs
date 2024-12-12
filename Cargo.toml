@@ -1,8 +1,10 @@
 [workspace]
 resolver = "2"
 
-members = [ "crates/webz-common",
-    "crates/webz-keys", "crates/webz-requests",
+members = [
+    "crates/webz-common",
+    "crates/webz-keys",
+    "crates/webz-requests",
     "crates/webz-wallet",
 ]
 

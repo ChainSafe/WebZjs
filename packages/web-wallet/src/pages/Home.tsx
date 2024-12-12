@@ -1,13 +1,31 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MetaMaskLogoSvg, ZcashYellowSvg, FormTransferSvg } from '../assets';
 import { useMetaMask } from '@hooks/snaps/useMetaMask.ts';
 import { useRequestSnap } from '@hooks/snaps/useRequestSnap.ts';
 import { useNavigate } from 'react-router-dom';
+import { useInvokeSnap } from '@hooks/snaps/useInvokeSnap.ts';
+import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
 
 const Home: React.FC = () => {
+  const [birthdayHeight, setBirthdayHeight] = useState(0);
   const navigate = useNavigate();
+  const { flushDbToStore, addNewAccountFromUfvk } = useWebZjsActions();
+  const invokeSnap = useInvokeSnap();
   const { installedSnap, isFlask } = useMetaMask();
   const requestSnap = useRequestSnap();
+
+  const handleRequestSnapAndGetViewingkey = async (e) => {
+    e.preventDefault();
+    await requestSnap();
+
+    const viewKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
+    console.log(viewKey);
+
+    await addNewAccountFromUfvk(viewKey, birthdayHeight);
+    setBirthdayHeight(0);
+
+    await flushDbToStore();
+  };
 
   useEffect(() => {
     if (installedSnap) navigate('/dashboard/account-summary');
@@ -31,7 +49,7 @@ const Home: React.FC = () => {
           </p>
           <button
             disabled={!isFlask}
-            onClick={requestSnap}
+            onClick={handleRequestSnapAndGetViewingkey}
             className="flex items-center bg-buttonBlackGradient hover:bg-buttonBlackGradientHover text-white px-6 py-3 rounded-[2rem]"
           >
             <span>Connect MetaMask Snap</span>

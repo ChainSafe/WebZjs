@@ -12,6 +12,7 @@ import ClockSvg from './icons/clock.svg';
 import ShieldSvg from './icons/shield.svg';
 import ShieldDividedSvg from './icons/shield-divided.svg';
 import SummarySvg from './icons/summary.svg';
+import CoinsSvg from './icons/coins.svg';
 
 export {
   ChainsafeSvg,
@@ -26,4 +27,5 @@ export {
   ShieldSvg,
   ShieldDividedSvg,
   SummarySvg,
+  CoinsSvg,
 };

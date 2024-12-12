@@ -47,7 +47,7 @@ const getClassNames = (isActive: boolean) => {
 const Dashboard: React.FC = () => {
   return (
     <div>
-      <nav className="flex space-x-9 mb-3">
+      <nav className="flex space-x-9 mb-3 max-w-[720px] items-center align-middle self-center m-auto ">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -60,7 +60,9 @@ const Dashboard: React.FC = () => {
               <span
                 className={`inline-flex items-center hover:text-brand-orange navbar-link ${isActive && 'navbar-link-active'}`}
               >
-                <span className="text-brand-grey10  mr-2">{item.icon}</span>
+                <span className="text-brand-grey10 text-sm  mr-2">
+                  {item.icon}
+                </span>
                 {item.label}
               </span>
             )}

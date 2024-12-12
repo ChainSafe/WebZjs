@@ -1,8 +1,8 @@
 import { useInterval } from 'usehooks-ts';
-import { RESCAN_INTERVAL } from '@webzjs/demo-wallet/src/App/Constants.tsx';
 import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
 import Layout from '@components/Layout/Layout.tsx';
 import { Outlet } from 'react-router-dom';
+import { RESCAN_INTERVAL } from './config/constants.ts';
 
 function App() {
   const { triggerRescan } = useWebZjsActions();

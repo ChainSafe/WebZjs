@@ -15,7 +15,6 @@ build-keys *features:
 build-requests *features:
     cd crates/webz-requests && wasm-pack build -t web --release --scope webzjs --out-dir ../../packages/webz-requests --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
 
-
 # All Wasm Tests
 test-web *features:
     WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --firefox --no-default-features --features "wasm no-bundler {{features}}" -Z build-std="panic_abort,std"
@@ -27,7 +26,6 @@ test-message-board-web *features:
 # simple example in the web: additional args:
 test-simple-web *features:
     WASM_BINDGEN_TEST_TIMEOUT=99999 wasm-pack test --release --chrome --no-default-features --features "wasm no-bundler {{features}}" -Z build-std="panic_abort,std" --test simple-sync-and-send
-
 
 # simple example: additional args:, sqlite-db
 example-simple *features:
