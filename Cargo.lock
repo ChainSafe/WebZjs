@@ -1323,7 +1323,8 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 [[package]]
 name = "incrementalmerkletree"
 version = "0.6.0"
-source = "git+https://github.com/ec2/incrementalmerkletree.git?rev=16eff253ad2575d48feec04f7387e6507a7dd698#16eff253ad2575d48feec04f7387e6507a7dd698"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75346da3bd8e3d8891d02508245ed2df34447ca6637e343829f8d08986e9cde2"
 dependencies = [
  "either",
 ]
@@ -2499,7 +2500,8 @@ dependencies = [
 [[package]]
 name = "shardtree"
 version = "0.4.0"
-source = "git+https://github.com/ec2/incrementalmerkletree.git?rev=16eff253ad2575d48feec04f7387e6507a7dd698#16eff253ad2575d48feec04f7387e6507a7dd698"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78222845cd8bbe5eb95687407648ff17693a35de5e8abaa39a4681fb21e033f9"
 dependencies = [
  "bitflags",
  "either",
@@ -3178,8 +3180,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-rayon"
-version = "1.2.1"
-source = "git+https://github.com/9SMTM6/wasm-bindgen-rayon?rev=d1816e5bc2bf928ff5442355c04500a381d66a41#d1816e5bc2bf928ff5442355c04500a381d66a41"
+version = "1.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d560adf232b44f860ada9759435f24c7446732aac10a7c17f64937c8014b1c7e"
 dependencies = [
  "crossbeam-channel",
  "js-sys",
