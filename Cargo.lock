@@ -3179,9 +3179,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-rayon"
-version = "1.2.2"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d560adf232b44f860ada9759435f24c7446732aac10a7c17f64937c8014b1c7e"
+checksum = "c9e02b7785fe15de188657b7d3a234ef042bfd8da10822016915e06d4e29cba7"
 dependencies = [
  "crossbeam-channel",
  "js-sys",
