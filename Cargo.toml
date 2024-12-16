@@ -16,7 +16,7 @@ codegen-units = 1
 
 [workspace.dependencies]
 ## Web dependencies
-wasm-bindgen = "0.2.93"
+wasm-bindgen = "=0.2.93"
 js-sys = "0.3.70"
 wasm-bindgen-futures = "0.4.43"
 web-sys = { version = "0.3.70", features = [
@@ -81,7 +81,7 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 
 
 [patch.crates-io]
-zip32 = { git = "https://github.com/zcash/zip32.git"}
+
 
 #[patch.'https://github.com/chainsafe/librustzcash']
 #zcash_address = { path = "../librustzcash/components/zcash_address" }
