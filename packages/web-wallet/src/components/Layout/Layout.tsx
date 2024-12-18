@@ -5,9 +5,9 @@ import Footer from '../Footer/Footer.tsx';
 
 const Layout = (): React.JSX.Element => {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="container mx-auto flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow flex items-center justify-center p-6">
+      <main className="flex-grow flex justify-center py-3 self-stretch w-full">
         <Outlet />
       </main>
       <Footer />

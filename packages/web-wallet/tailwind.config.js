@@ -18,6 +18,9 @@ export default {
       colors: {
         dividerColor: '#525866',
         brand: {
+          orange: '#e27625',
+          grey: '#525866',
+          grey10: '#0F0F0F',
           background: '#EFEFEF',
         },
       },

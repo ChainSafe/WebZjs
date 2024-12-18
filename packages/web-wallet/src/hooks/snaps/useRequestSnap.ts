@@ -1,7 +1,7 @@
-import { defaultSnapOrigin } from '../config';
-import type { Snap } from '../types';
-import { useMetaMaskContext } from './MetamaskContext';
-import { useRequest } from './useRequest';
+import { defaultSnapOrigin } from '../../config';
+import type { Snap } from '../../types';
+import { useMetaMaskContext } from '../../context/MetamaskContext.tsx';
+import { useRequest } from './useRequest.ts';
 
 /**
  * Utility hook to wrap the `wallet_requestSnaps` method.

@@ -1,8 +1,10 @@
 [workspace]
 resolver = "2"
 
-members = [ "crates/webz-common",
-    "crates/webz-keys", "crates/webz-requests",
+members = [
+    "crates/webz-common",
+    "crates/webz-keys",
+    "crates/webz-requests",
     "crates/webz-wallet",
 ]
 
@@ -14,13 +16,13 @@ codegen-units = 1
 
 [workspace.dependencies]
 ## Web dependencies
-wasm-bindgen = "0.2.93"
+wasm-bindgen = "=0.2.93" # higher versions has an issues with attachment of the file: webz-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js
 js-sys = "0.3.70"
 wasm-bindgen-futures = "0.4.43"
 web-sys = { version = "0.3.70", features = [
     "console",
 ] }
-wasm-bindgen-rayon = { version = "1.2.1" }
+wasm-bindgen-rayon = { version = "=1.2.1" } # Update to higher version cause playwright test in chtomium fail
 
 # WASM specific dependencies
 tracing-web = { version = "0.1.3" }
@@ -79,15 +81,7 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 
 
 [patch.crates-io]
-zip32 = { git = "https://github.com/zcash/zip32.git", branch = "diversifier_index_ord" }
-# TODO: See: https://github.com/RReverser/wasm-bindgen-rayon/pull/12
-wasm-bindgen-rayon = { git = "https://github.com/9SMTM6/wasm-bindgen-rayon", rev = "d1816e5bc2bf928ff5442355c04500a381d66a41" }
-# TODO: Remove these once the PRs are merged
-shardtree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
-incrementalmerkletree = { git = "https://github.com/ec2/incrementalmerkletree.git", rev = "16eff253ad2575d48feec04f7387e6507a7dd698" }
 
-# [patch.'https://github.com/WilsonGramer/wasm_thread']
-# wasm_thread = { git = "https://github.com/ec2/wasm_thread", rev = "9e432077948d927d49373d1d039c23447d3648df" }
 
 #[patch.'https://github.com/chainsafe/librustzcash']
 #zcash_address = { path = "../librustzcash/components/zcash_address" }
