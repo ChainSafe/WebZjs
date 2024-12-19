@@ -22,6 +22,7 @@ export default {
           grey: '#525866',
           grey10: '#0F0F0F',
           background: '#EFEFEF',
+          error: '#da4f3c',
         },
       },
     },
