@@ -4,7 +4,7 @@ import { MetaMaskSnapsLogoSvg, ZcashSvg } from '../../assets';
 
 const Header = (): React.JSX.Element => {
   return (
-    <header className="font-inter w-full px-16 flex items-center justify-between bg-transparent py-3 max-h-[3.125rem]">
+    <header className="font-inter h-[61px] w-full px-16 flex items-center justify-between bg-transparent py-3 max-h-[3.125rem]">
       <Link to={'/'}>
         <div className="flex items-center">
           <div className="h-6 w-6 mr-3">

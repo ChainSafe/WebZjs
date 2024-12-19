@@ -3,7 +3,7 @@ import Home from '@pages/Home.tsx';
 import ProtectedRoute from '@components/ProtectedRoute/ProtectedRoute.tsx';
 import Dashboard from '@pages/Dashboard.tsx';
 import AccountSummary from '@pages/AccountSummary.tsx';
-import TransferBalance from '@pages/TransferBalance.tsx';
+import TransferBalance from '@pages/TransferBalance/TransferBalance.tsx';
 import Receive from '@pages/Receive.tsx';
 import TransactionHistory from '@pages/TransactionHistory.tsx';
 import App from '../App.tsx';
