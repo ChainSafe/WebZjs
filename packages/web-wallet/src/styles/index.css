@@ -27,32 +27,36 @@
 
 body {
   position: relative;
-  background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);
   overflow: hidden;
+  background: #FAFAFA url('../assets/diamond-bg.png') no-repeat center center fixed;
 
-  /* Noise background */
-  &:before {
-    content: '';
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    opacity: 0.25;
-    background: url('../assets/noise.png') lightgray 0 0 / 15px 15px repeat;
-    mix-blend-mode: color-burn;
-  }
+  &.home-page-bg {
+    background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);
 
-  /* Yellow oval shape background */
-  &:after {
-    content: '';
-    position: absolute;
-    width: 75.5vw;
-    height: 88.1875rem;
-    top: 20rem;
-    left: 2.5rem;
-    z-index: -1;
-    border-radius: 88.1875rem;
-    background: rgba(187, 160, 17, 0.5);
-    filter: blur(274px);
+    /* Noise background */
+    &:before {
+      content: '';
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      opacity: 0.25;
+      background: url('../assets/noise.png') lightgray 0 0 / 15px 15px repeat;
+      mix-blend-mode: color-burn;
+    }
+
+    /* Yellow oval shape background */
+    &:after {
+      content: '';
+      position: absolute;
+      width: 75.5vw;
+      height: 88.1875rem;
+      top: 20rem;
+      left: 2.5rem;
+      z-index: -1;
+      border-radius: 88.1875rem;
+      background: rgba(187, 160, 17, 0.5);
+      filter: blur(274px);
+    }
   }
 }
