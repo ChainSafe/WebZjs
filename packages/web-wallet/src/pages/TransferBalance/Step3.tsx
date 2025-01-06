@@ -45,7 +45,7 @@ function Step3({ resetForm }: Step3Props): React.JSX.Element {
             <div className="h-12 rounded-xl flex-col justify-start items-start gap-4 flex">
               <div className="self-stretch justify-start items-start inline-flex">
                 <Button
-                  onClick={() => resetForm}
+                  onClick={() => resetForm()}
                   label={'Make Another Transfer'}
                 />
               </div>
