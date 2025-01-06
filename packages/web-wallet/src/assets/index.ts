@@ -1,18 +1,19 @@
-import ChainsafeSvg from './chainsafe.svg';
-import FormTransferSvg from './form-transfer.svg';
-import MetaMaskLogoSvg from './metaMask-logo.svg';
-import MetaMaskSnapsLogoSvg from './metamask-snaps-logo.svg';
-import ZcashSvg from './zcash.svg';
-import ZcashYellowSvg from './zcash-yellow.svg';
+import { ReactComponent as ChainsafeSvg } from './chainsafe.svg';
+import { ReactComponent as FormTransferSvg } from './form-transfer.svg';
+import { ReactComponent as MetaMaskLogoSvg } from './metaMask-logo.svg';
+import { ReactComponent as MetaMaskSnapsLogoSvg } from './metamask-snaps-logo.svg';
+import { ReactComponent as ZcashSvg } from './zcash.svg';
+import { ReactComponent as ZcashYellowSvg } from './zcash-yellow.svg';
 
 // Icons
-import ArrowReceiveSvg from './icons/arrow-receive.svg';
-import ArrowTransferSvg from './icons/arrow-transfer.svg';
-import ClockSvg from './icons/clock.svg';
-import ShieldSvg from './icons/shield.svg';
-import ShieldDividedSvg from './icons/shield-divided.svg';
-import SummarySvg from './icons/summary.svg';
-import CoinsSvg from './icons/coins.svg';
+import { ReactComponent as ArrowReceiveSvg } from './icons/arrow-receive.svg';
+import { ReactComponent as ArrowTransferSvg } from './icons/arrow-transfer.svg';
+import { ReactComponent as ClockSvg } from './icons/clock.svg';
+import { ReactComponent as ShieldSvg } from './icons/shield.svg';
+import { ReactComponent as ShieldDividedSvg } from './icons/shield-divided.svg';
+import { ReactComponent as SummarySvg } from './icons/summary.svg';
+import { ReactComponent as CoinsSvg } from './icons/coins.svg';
+import { ReactComponent as ChevronSVG } from './icons/chevron.svg';
 
 export {
   ChainsafeSvg,
@@ -28,4 +29,5 @@ export {
   ShieldDividedSvg,
   SummarySvg,
   CoinsSvg,
+  ChevronSVG,
 };

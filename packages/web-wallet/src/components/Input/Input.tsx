@@ -1,4 +1,5 @@
 import React from 'react';
+import ErrorMessage from '@components/ErrorMessage/ErrorMessage';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -6,6 +7,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   containerClassName?: string;
   labelClassName?: string;
   inputClassName?: string;
+  suffix?: string;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -14,6 +16,7 @@ const Input: React.FC<InputProps> = ({
   containerClassName = '',
   labelClassName = '',
   inputClassName = '',
+  suffix = '',
   ...props
 }) => {
   return (
@@ -26,11 +29,21 @@ const Input: React.FC<InputProps> = ({
           {label}
         </label>
       )}
-      <input
-        className={`p-3 bg-neutral-50 rounded-xl border border-[#afafaf] text-base leading-normal text-[#0e0e0e] ${inputClassName}`}
-        {...props}
-      />
-      {error && <span className={`text-sm text-red-500`}>{error}</span>}
+      <div className="h-full flex items-center bg-neutral-50 rounded-xl border border-[#afafaf] p-3">
+        <input
+          id={props.id}
+          className={`flex-grow bg-transparent focus:outline-none text-[#0e0e0e] text-base font-semibold font-inter ${inputClassName}`}
+          {...props}
+          aria-describedby={props.id ? `${props.id}-suffix` : undefined}
+        />
+        <span
+          id={props.id ? `${props.id}-suffix` : undefined}
+          className="ml-2 text-[#a9aaab] text-base font-medium leading-normal"
+        >
+          {suffix}
+        </span>
+      </div>
+      <ErrorMessage text={error} />
     </div>
   );
 };

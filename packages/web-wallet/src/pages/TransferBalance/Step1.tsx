@@ -2,50 +2,49 @@ import React, { useState } from 'react';
 import Input from '@components/Input/Input';
 import Select from '@components/Select/Select';
 import Button from '@components/Button/Button';
-
-enum TransactionType {
-  SHIELDED = 'shielded',
-  TRANSPARENT = 'transparent',
-}
-
-enum PoolType {
-  ORCHARD = 'orchard',
-  SAPLING = 'sapling',
-}
+import useBalance from '@hooks/useBalance';
+import {
+  TransferBalanceFormData,
+  TransferBalanceFormHandleChange,
+} from './useTransferBalanceForm';
+import { PoolType, TransactionType } from '../../types/transfer';
 
 const TransactionTypeSelectOptions = [
-  { value: '', label: '-Select-' },
   { value: TransactionType.SHIELDED, label: 'Shielded' },
   { value: TransactionType.TRANSPARENT, label: 'Transparent' },
 ];
-
 const PoolSelectOptions = [
   { value: PoolType.ORCHARD, label: 'Orchard' },
   { value: PoolType.SAPLING, label: 'Sapling' },
 ];
 
-function TransferForm(): React.JSX.Element {
-  const [toAddress, setToAddress] = useState('');
-  const [transactionType, setTransactionType] = useState('');
-  const [amount, setAmount] = useState('');
-  const [pool, setPool] = useState<PoolType>(PoolType.ORCHARD);
-  const [memo, setMemo] = useState('');
+interface Step1Props {
+  formData: TransferBalanceFormData;
+  handleChange: TransferBalanceFormHandleChange;
+  nextStep: () => void;
+}
 
+function Step1({
+  formData: { recipient, transactionType, amount, pool, memo },
+  nextStep,
+  handleChange,
+}: Step1Props): React.JSX.Element {
+  const { orchardBalance, saplingBalance } = useBalance();
   const [errors, setErrors] = useState({
-    toAddress: '',
+    recipient: '',
     transactionType: '',
     amount: '',
   });
 
   const validateFields = () => {
     const newErrors = {
-      toAddress: '',
+      recipient: '',
       transactionType: '',
       amount: '',
     };
 
-    if (!toAddress) {
-      newErrors.toAddress = 'Please enter a valid address';
+    if (!recipient) {
+      newErrors.recipient = 'Please enter a valid address';
     }
 
     if (!transactionType) {
@@ -62,14 +61,24 @@ function TransferForm(): React.JSX.Element {
   };
 
   const handleContinue = () => {
-    if (transactionType === TransactionType.TRANSPARENT && memo.length > 0) {
-      setMemo('');
-    }
+    if (
+      transactionType === TransactionType.TRANSPARENT &&
+      memo &&
+      memo.length > 0
+    )
+      handleChange('memo')('');
 
-    if (validateFields()) {
-      // Proceed with form submission
-      console.log('Form is valid, proceed with transaction');
-    }
+    if (validateFields()) nextStep();
+  };
+
+  const renderSelectLabel = (balance: number) => {
+    return (
+      <div className="h-[25px] px-4 py-0.5 bg-neutral-200 rounded-3xl justify-center items-center gap-2.5 inline-flex">
+        <div className="text-[#434343] text-sm font-medium font-['Roboto'] leading-[21px]">
+          {balance} ZEC
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -82,9 +91,9 @@ function TransferForm(): React.JSX.Element {
                 label="To:"
                 id="recipient"
                 placeholder="Zcash Address"
-                error={errors.toAddress}
-                value={toAddress}
-                onChange={(e) => setToAddress(e.target.value)}
+                error={errors.recipient}
+                value={recipient}
+                onChange={(event) => handleChange('recipient')(event)}
               />
             </div>
             <div className="grow shrink basis-0 flex-col justify-start items-start gap-2 inline-flex">
@@ -94,7 +103,10 @@ function TransferForm(): React.JSX.Element {
                   id="tx-type"
                   value={transactionType}
                   error={errors.transactionType}
-                  onChange={(e) => setTransactionType(e.target.value)}
+                  handleChange={(value) => {
+                    console.log('handleChange', value);
+                    handleChange('transactionType')(value);
+                  }}
                   options={TransactionTypeSelectOptions}
                 />
               </div>
@@ -105,10 +117,11 @@ function TransferForm(): React.JSX.Element {
               <Input
                 label="Amount:"
                 id="amount"
+                suffix="ZEC"
                 error={errors.amount}
                 placeholder="Enter amount"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(event) => handleChange('amount')(event)}
               />
             </div>
             <div className="grow shrink basis-0 flex-col justify-start items-start gap-2 inline-flex">
@@ -116,8 +129,14 @@ function TransferForm(): React.JSX.Element {
                 label="Pools:"
                 id="pools"
                 value={pool}
-                onChange={(e) => setPool(e.target.value as PoolType)}
+                suffix={
+                  pool === PoolType.ORCHARD
+                    ? renderSelectLabel(orchardBalance)
+                    : renderSelectLabel(saplingBalance)
+                }
+                handleChange={(value) => handleChange('pool')(value)}
                 options={PoolSelectOptions}
+                defaultOption={PoolSelectOptions[0]}
               />
             </div>
           </div>
@@ -131,7 +150,7 @@ function TransferForm(): React.JSX.Element {
               className="p-3 rounded-xl border border-[#afafaf] flex h-[10rem] text-[#afafaf] bg-neutral-50 text-base font-normal leading-normal resize-none"
               placeholder="Write private memo here..."
               value={memo}
-              onChange={(e) => setMemo(e.target.value)}
+              onChange={(event) => handleChange('memo')(event)}
             />
           </div>
         )}
@@ -143,4 +162,4 @@ function TransferForm(): React.JSX.Element {
   );
 }
 
-export default TransferForm;
+export default Step1;

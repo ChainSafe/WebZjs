@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
+import React from 'react';
 import { zatsToZec } from '../utils';
 import { CoinsSvg, ShieldDividedSvg, ShieldSvg } from '../assets';
+import useBalance from '@hooks/useBalance';
 
 interface BalanceCard {
   name: string;
@@ -10,10 +10,7 @@ interface BalanceCard {
 }
 
 function AccountSummary() {
-  const [totalBalance, setTotalBalance] = useState<number>(0);
-  const [totalShieldedBalance, setTotalShieldedBalance] = useState<number>(0);
-  const [unshieldedBalance, setUnshieldedBalance] = useState<number>(0);
-  const { getBalance } = useWebZjsActions();
+  const { totalBalance, unshieldedBalance, shieldedBalance } = useBalance();
 
   const BalanceCards: BalanceCard[] = [
     {
@@ -24,7 +21,7 @@ function AccountSummary() {
     {
       name: 'Shielded Balance',
       icon: <ShieldSvg />,
-      balance: totalShieldedBalance,
+      balance: shieldedBalance,
     },
     {
       name: 'Unshielded Balance',
@@ -32,19 +29,6 @@ function AccountSummary() {
       balance: unshieldedBalance,
     },
   ];
-
-  const fetchBalances = useCallback(() => {
-    const { totalBalance, unshieldedBalance, totalShieldedBalance } =
-      getBalance();
-
-    setTotalBalance(totalBalance);
-    setTotalShieldedBalance(totalShieldedBalance);
-    setUnshieldedBalance(unshieldedBalance);
-  }, [getBalance]);
-
-  useEffect(() => {
-    fetchBalances();
-  }, [fetchBalances]);
 
   const renderBalanceCard = ({ name, balance, icon }: BalanceCard) => {
     return (
