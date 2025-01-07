@@ -2,10 +2,8 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { MetaMaskLogoSvg, MetaMaskSnapsLogoSvg, ZcashSvg } from '../../assets';
 import Button from '@components/Button/Button';
-import { useMetaMask } from '@hooks/snaps/useMetaMask';
 
 const Header = (): React.JSX.Element => {
-  const { clearState } = useMetaMask();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
@@ -53,7 +51,10 @@ const Header = (): React.JSX.Element => {
         <Button
           variant={'secondary'}
           classNames={'min-w-max '}
-          onClick={() => clearState()}
+          onClick={() => {
+            // TODO: Clarify sign out functionality
+            console.log('Sign out');
+          }}
           label={'Sign out'}
         />
       )}
