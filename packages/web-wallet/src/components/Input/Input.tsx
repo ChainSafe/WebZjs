@@ -8,6 +8,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   labelClassName?: string;
   inputClassName?: string;
   suffix?: string;
+  id: string;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -17,13 +18,14 @@ const Input: React.FC<InputProps> = ({
   labelClassName = '',
   inputClassName = '',
   suffix = '',
+  id,
   ...props
 }) => {
   return (
     <div className={`flex flex-col gap-1 w-full ${containerClassName}`}>
       {label && (
         <label
-          htmlFor={props.id}
+          htmlFor={id}
           className={`text-black text-base font-normal leading-normal ${labelClassName}`}
         >
           {label}
@@ -31,13 +33,13 @@ const Input: React.FC<InputProps> = ({
       )}
       <div className="h-full flex items-center bg-neutral-50 rounded-xl border border-[#afafaf] p-3">
         <input
-          id={props.id}
-          className={`flex-grow bg-transparent focus:outline-none text-[#0e0e0e] text-base font-semibold font-inter ${inputClassName}`}
           {...props}
-          aria-describedby={props.id ? `${props.id}-suffix` : undefined}
+          id={id}
+          className={`flex-grow bg-transparent focus:outline-none text-[#0e0e0e] text-base font-semibold font-inter ${inputClassName}`}
+          aria-describedby={`${id}-suffix`}
         />
         <span
-          id={props.id ? `${props.id}-suffix` : undefined}
+          id={`${id}-suffix`}
           className="ml-2 text-[#a9aaab] text-base font-medium leading-normal"
         >
           {suffix}
