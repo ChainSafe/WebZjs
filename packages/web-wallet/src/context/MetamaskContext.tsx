@@ -51,12 +51,6 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
     return undefined;
   }, [error]);
 
-  function clearState() {
-    setProvider(null);
-    setInstalledSnap(null);
-    setError(null);
-  }
-
   return (
     <MetaMaskContext.Provider
       value={{
