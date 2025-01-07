@@ -71,7 +71,7 @@ function Step1({
     if (validateFields()) nextStep();
   };
 
-  const renderSelectLabel = (balance: number) => {
+  const renderBalanceLabel = (balance: number) => {
     return (
       <div className="h-[25px] px-4 py-0.5 bg-neutral-200 rounded-3xl justify-center items-center gap-2.5 inline-flex">
         <div className="text-[#434343] text-sm font-medium font-['Roboto'] leading-[21px]">
@@ -131,8 +131,8 @@ function Step1({
                 value={pool}
                 suffix={
                   pool === PoolType.ORCHARD
-                    ? renderSelectLabel(orchardBalance)
-                    : renderSelectLabel(saplingBalance)
+                    ? renderBalanceLabel(orchardBalance)
+                    : renderBalanceLabel(saplingBalance)
                 }
                 handleChange={(value) => handleChange('pool')(value)}
                 options={PoolSelectOptions}

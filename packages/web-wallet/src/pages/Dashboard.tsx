@@ -69,7 +69,7 @@ const Dashboard: React.FC = () => {
           </NavLink>
         ))}
       </nav>
-      <div className="flex mt-12 flex-col align-middle w-full mx-auto max-w-[1000px]">
+      <div className="flex flex-col align-middle w-full mx-auto max-w-[1000px]">
         <Outlet />
       </div>
     </div>

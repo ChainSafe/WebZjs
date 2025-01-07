@@ -34,7 +34,7 @@ const Home: React.FC = () => {
   }, [installedSnap, navigate]);
 
   return (
-    <div className="flex items-start md:items-center justify-center px-4">
+    <div className="home-page flex items-start md:items-center justify-center px-4">
       <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-14">
         <div className="hidden md:flex items-end justify-end">
           <FormTransferSvg />

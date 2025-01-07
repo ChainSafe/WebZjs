@@ -11,9 +11,12 @@ function App() {
 
   useEffect(() => {
     // Add custom background to home page
-    document.body.classList.remove('home-page-bg');
-    if (location.pathname === '/') document.body.classList.add('home-page-bg');
-  }, [location]);
+    if (location.pathname === '/') {
+      document.body.classList.add('home-page', 'home-page-bg');
+    } else {
+      document.body.classList.remove('home-page', 'home-page-bg');
+    }
+  }, [location.pathname]);
 
   useInterval(() => {
     triggerRescan();

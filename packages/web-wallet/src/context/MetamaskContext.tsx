@@ -17,12 +17,8 @@ const MetaMaskContext = createContext<MetaMaskContextType>({
   provider: null,
   installedSnap: null,
   error: null,
-  setInstalledSnap: () => {
-    /* no-op */
-  },
-  setError: () => {
-    /* no-op */
-  },
+  setInstalledSnap: () => {},
+  setError: () => {},
 });
 
 /**
@@ -55,9 +51,21 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
     return undefined;
   }, [error]);
 
+  function clearState() {
+    setProvider(null);
+    setInstalledSnap(null);
+    setError(null);
+  }
+
   return (
     <MetaMaskContext.Provider
-      value={{ provider, error, setError, installedSnap, setInstalledSnap }}
+      value={{
+        provider,
+        error,
+        setError,
+        installedSnap,
+        setInstalledSnap,
+      }}
     >
       {children}
     </MetaMaskContext.Provider>

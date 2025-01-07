@@ -25,6 +25,12 @@
   }
 }
 
+.home-page {
+  header {
+    border-bottom: none;
+  }
+}
+
 body {
   position: relative;
   overflow: hidden;

@@ -14,6 +14,8 @@ import { ReactComponent as ShieldDividedSvg } from './icons/shield-divided.svg';
 import { ReactComponent as SummarySvg } from './icons/summary.svg';
 import { ReactComponent as CoinsSvg } from './icons/coins.svg';
 import { ReactComponent as ChevronSVG } from './icons/chevron.svg';
+import { ReactComponent as CheckSVG } from './icons/check.svg';
+import { ReactComponent as WarningSVG } from './icons/warning.svg';
 
 export {
   ChainsafeSvg,
@@ -30,4 +32,6 @@ export {
   SummarySvg,
   CoinsSvg,
   ChevronSVG,
+  CheckSVG,
+  WarningSVG,
 };
