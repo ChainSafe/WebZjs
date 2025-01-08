@@ -14,3 +14,6 @@ zcash_address.workspace = true
 thiserror.workspace = true
 wasm-bindgen.workspace = true
 js-sys.workspace = true
+
+[lints]
+workspace = true

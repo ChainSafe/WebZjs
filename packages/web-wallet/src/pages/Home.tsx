@@ -14,7 +14,9 @@ const Home: React.FC = () => {
   const { installedSnap, isFlask } = useMetaMask();
   const requestSnap = useRequestSnap();
 
-  const handleRequestSnapAndGetViewingkey = async (e) => {
+  const handleRequestSnapAndGetViewingKey: React.MouseEventHandler<
+    HTMLButtonElement
+  > = async (e) => {
     e.preventDefault();
     await requestSnap();
 
@@ -32,7 +34,7 @@ const Home: React.FC = () => {
   }, [installedSnap, navigate]);
 
   return (
-    <div className="flex items-start md:items-center justify-center px-4">
+    <div className="home-page flex items-start md:items-center justify-center px-4">
       <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-14">
         <div className="hidden md:flex items-end justify-end">
           <FormTransferSvg />
@@ -49,7 +51,7 @@ const Home: React.FC = () => {
           </p>
           <button
             disabled={!isFlask}
-            onClick={handleRequestSnapAndGetViewingkey}
+            onClick={handleRequestSnapAndGetViewingKey}
             className="flex items-center bg-buttonBlackGradient hover:bg-buttonBlackGradientHover text-white px-6 py-3 rounded-[2rem]"
           >
             <span>Connect MetaMask Snap</span>

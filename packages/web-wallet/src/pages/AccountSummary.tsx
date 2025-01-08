@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
+import React from 'react';
 import { zatsToZec } from '../utils';
 import { CoinsSvg, ShieldDividedSvg, ShieldSvg } from '../assets';
+import useBalance from '@hooks/useBalance';
 
 interface BalanceCard {
   name: string;
@@ -10,10 +10,7 @@ interface BalanceCard {
 }
 
 function AccountSummary() {
-  const [totalBalance, setTotalBalance] = useState<number>(0);
-  const [totalShieldedBalance, setTotalShieldedBalance] = useState<number>(0);
-  const [unshieldedBalance, setUnshieldedBalance] = useState<number>(0);
-  const { getBalance } = useWebZjsActions();
+  const { totalBalance, unshieldedBalance, shieldedBalance } = useBalance();
 
   const BalanceCards: BalanceCard[] = [
     {
@@ -24,7 +21,7 @@ function AccountSummary() {
     {
       name: 'Shielded Balance',
       icon: <ShieldSvg />,
-      balance: totalShieldedBalance,
+      balance: shieldedBalance,
     },
     {
       name: 'Unshielded Balance',
@@ -32,19 +29,6 @@ function AccountSummary() {
       balance: unshieldedBalance,
     },
   ];
-
-  const fetchBalances = useCallback(() => {
-    const { totalBalance, unshieldedBalance, totalShieldedBalance } =
-      getBalance();
-
-    setTotalBalance(totalBalance);
-    setTotalShieldedBalance(totalShieldedBalance);
-    setUnshieldedBalance(unshieldedBalance);
-  }, [getBalance]);
-
-  useEffect(() => {
-    fetchBalances();
-  }, [fetchBalances]);
 
   const renderBalanceCard = ({ name, balance, icon }: BalanceCard) => {
     return (
@@ -60,14 +44,13 @@ function AccountSummary() {
           <div className="text-black text-2xl font-medium font-['Inter'] leading-9">
             Available Balance: {zatsToZec(balance)} ZEC
           </div>
-          <div className="w-7 h-7 relative" />
         </div>
       </div>
     );
   };
 
   return (
-    <div className="h-[390px] px-16 pt-12 pb-[72px] flex-col justify-center items-center gap-6 inline-flex">
+    <div className=" pb-[72px] flex-col justify-center items-center gap-6 inline-flex">
       <div className="py-6 self-start  gap-3 inline-flex">
         <div className="grow shrink basis-0 flex-col justify-start items-start gap-2 inline-flex">
           <div className="self-stretch text-black text-[44px] font-semibold font-['Inter'] leading-[52.80px]">

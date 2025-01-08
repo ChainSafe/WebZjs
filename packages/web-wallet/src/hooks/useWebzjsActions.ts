@@ -2,18 +2,11 @@ import { set } from 'idb-keyval';
 import { useCallback } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext.tsx';
 
-export interface AccountBalance {
-  totalShieldedBalance: number;
-  unshieldedBalance: number;
-  totalBalance: number;
-}
-
 interface UseWebzjsActions {
   addNewAccountFromUfvk: (
     ufvk: string,
     birthdayHeight: number,
   ) => Promise<void>;
-  getBalance: () => AccountBalance;
   triggerRescan: () => Promise<void>;
   flushDbToStore: () => Promise<void>;
   syncStateWithWallet: () => Promise<void>;
@@ -125,27 +118,7 @@ export function useWebZjsActions(): UseWebzjsActions {
     flushDbToStore,
   ]);
 
-  const getBalance = useCallback((): AccountBalance => {
-    const activeBalanceReport = state.summary?.account_balances.find(
-      ([id]) => id === state.activeAccount,
-    );
-
-    const totalShieldedBalance = activeBalanceReport
-      ? activeBalanceReport[1].sapling_balance +
-        activeBalanceReport[1].orchard_balance
-      : 0;
-
-    const unshieldedBalance = activeBalanceReport?.[1]?.unshielded_balance || 0;
-
-    return {
-      totalShieldedBalance,
-      unshieldedBalance,
-      totalBalance: totalShieldedBalance + unshieldedBalance,
-    };
-  }, [state.activeAccount, state.summary?.account_balances]);
-
   return {
-    getBalance,
     addNewAccountFromUfvk,
     triggerRescan,
     flushDbToStore,

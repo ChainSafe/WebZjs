@@ -46,8 +46,8 @@ const getClassNames = (isActive: boolean) => {
 
 const Dashboard: React.FC = () => {
   return (
-    <div>
-      <nav className="flex space-x-9 mb-3 max-w-[720px] items-center align-middle self-center m-auto ">
+    <div className="w-full">
+      <nav className="flex space-x-9 mb-3 max-w-[720px] items-center align-middle self-center m-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -69,7 +69,9 @@ const Dashboard: React.FC = () => {
           </NavLink>
         ))}
       </nav>
-      <Outlet />
+      <div className="flex flex-col align-middle w-full mx-auto max-w-[1000px]">
+        <Outlet />
+      </div>
     </div>
   );
 };

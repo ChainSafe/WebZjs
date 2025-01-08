@@ -82,6 +82,8 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 
 [patch.crates-io]
 
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(wasm_bindgen)', 'cfg(wasm_bindgen_unstable_test_coverage)'] }
 
 #[patch.'https://github.com/chainsafe/librustzcash']
 #zcash_address = { path = "../librustzcash/components/zcash_address" }
