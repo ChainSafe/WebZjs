@@ -38,7 +38,10 @@ example-message-board *features:
 alias c := check
 
 check:
-    cargo check 
+    cargo check
+
+lint:
+    cargo clippy
 
 alias cw := check-wasm
 

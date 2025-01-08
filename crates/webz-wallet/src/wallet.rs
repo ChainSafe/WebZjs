@@ -63,7 +63,6 @@ const BATCH_SIZE: u32 = 10000;
 ///
 /// TODO
 ///
-
 pub struct Wallet<W, T> {
     /// Internal database used to maintain wallet data (e.g. accounts, transactions, cached blocks)
     pub(crate) db: Arc<RwLock<W>>,
