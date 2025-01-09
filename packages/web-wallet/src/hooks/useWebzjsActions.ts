@@ -38,21 +38,6 @@ export function useWebZjsActions(): UseWebzjsActions {
     }
   }, [state.webWallet, dispatch]);
 
-  const addNewAccountFromUfvk = useCallback(
-    async (ufvk: string, birthdayHeight: number) => {
-      const account_id =
-        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
-      dispatch({ type: 'set-active-account', payload: account_id });
-
-      if (state.webWallet) {
-        const summary = await state.webWallet.get_wallet_summary();
-        console.log(summary?.account_balances.length);
-      }
-      await syncStateWithWallet();
-    },
-    [dispatch, state.webWallet, syncStateWithWallet],
-  );
-
   const flushDbToStore = useCallback(async () => {
     if (!state.webWallet) {
       dispatch({
@@ -71,6 +56,22 @@ export function useWebZjsActions(): UseWebzjsActions {
       dispatch({ type: 'set-error', payload: error });
     }
   }, [state.webWallet, dispatch]);
+
+  const addNewAccountFromUfvk = useCallback(
+    async (ufvk: string, birthdayHeight: number) => {
+      const account_id =
+        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
+      dispatch({ type: 'set-active-account', payload: account_id });
+
+      if (state.webWallet) {
+        const summary = await state.webWallet.get_wallet_summary();
+        console.log(summary?.account_balances.length);
+      }
+      await syncStateWithWallet();
+      await flushDbToStore();
+    },
+    [dispatch, flushDbToStore, state.webWallet, syncStateWithWallet],
+  );
 
   const triggerRescan = useCallback(async () => {
     if (state.loading) {
