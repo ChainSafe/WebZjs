@@ -4,8 +4,6 @@ import Layout from '@components/Layout/Layout.tsx';
 import { Outlet, useLocation } from 'react-router-dom';
 import { RESCAN_INTERVAL } from './config/constants.ts';
 import { useEffect } from 'react';
-import { MetaMaskProvider } from './context/MetamaskContext.tsx';
-import { WebZjsProvider } from './context/WebzjsContext.tsx';
 
 function App() {
   const { triggerRescan } = useWebZjsActions();
@@ -25,13 +23,9 @@ function App() {
   }, RESCAN_INTERVAL);
 
   return (
-    <MetaMaskProvider>
-      <WebZjsProvider>
-        <Layout>
-          <Outlet />
-        </Layout>
-      </WebZjsProvider>
-    </MetaMaskProvider>
+    <Layout>
+      <Outlet />
+    </Layout>
   );
 }
 
