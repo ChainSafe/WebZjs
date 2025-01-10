@@ -7,6 +7,7 @@ interface UseWebzjsActions {
     ufvk: string,
     birthdayHeight: number,
   ) => Promise<void>;
+  getAccountData: () => Promise<{ unifiedAddress: string } | undefined>;
   triggerRescan: () => Promise<void>;
   flushDbToStore: () => Promise<void>;
   syncStateWithWallet: () => Promise<void>;
@@ -14,6 +15,26 @@ interface UseWebzjsActions {
 
 export function useWebZjsActions(): UseWebzjsActions {
   const { state, dispatch } = useWebZjsContext();
+
+  const getAccountData = useCallback(async () => {
+    console.log('state.activeAccount', state.activeAccount);
+    try {
+      if (state.activeAccount !== undefined) {
+        const unifiedAddress = await state.webWallet!.get_current_address(
+          state.activeAccount || 0,
+        );
+        return { unifiedAddress };
+      } else {
+        const unifiedAddress = await state.webWallet!.get_current_address(0);
+        return { unifiedAddress };
+      }
+    } catch (error) {
+      dispatch({
+        type: 'set-error',
+        payload: 'Cannot get Active account data',
+      });
+    }
+  }, [dispatch, state.activeAccount, state.webWallet]);
 
   const syncStateWithWallet = useCallback(async () => {
     if (!state.webWallet) {
@@ -34,7 +55,7 @@ export function useWebZjsActions(): UseWebzjsActions {
       }
     } catch (error) {
       console.error('Error syncing state with wallet:', error);
-      dispatch({ type: 'set-error', payload: error });
+      dispatch({ type: 'set-error', payload: String(error) });
     }
   }, [state.webWallet, dispatch]);
 
@@ -53,7 +74,7 @@ export function useWebZjsActions(): UseWebzjsActions {
       console.info('Wallet saved to storage');
     } catch (error) {
       console.error('Error flushing DB to store:', error);
-      dispatch({ type: 'set-error', payload: error });
+      dispatch({ type: 'set-error', payload: String(error) });
     }
   }, [state.webWallet, dispatch]);
 
@@ -65,7 +86,7 @@ export function useWebZjsActions(): UseWebzjsActions {
 
       if (state.webWallet) {
         const summary = await state.webWallet.get_wallet_summary();
-        console.log(summary?.account_balances.length);
+        console.log('account_balances', summary?.account_balances.length);
       }
       await syncStateWithWallet();
       await flushDbToStore();
@@ -103,9 +124,9 @@ export function useWebZjsActions(): UseWebzjsActions {
       await state.webWallet.sync();
       await syncStateWithWallet();
       await flushDbToStore();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error during rescan:', err);
-      dispatch({ type: 'set-error', payload: err });
+      dispatch({ type: 'set-error', payload: String(err) });
     } finally {
       dispatch({ type: 'set-sync-in-progress', payload: false });
     }
@@ -120,6 +141,7 @@ export function useWebZjsActions(): UseWebzjsActions {
   ]);
 
   return {
+    getAccountData,
     addNewAccountFromUfvk,
     triggerRescan,
     flushDbToStore,
