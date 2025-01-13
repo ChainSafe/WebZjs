@@ -80,6 +80,8 @@ pub enum Error {
     Zip321(#[from] zcash_client_backend::zip321::Zip321Error),
     #[error("serde wasm-bindgen error")]
     SerdeWasmBindgen(#[from] serde_wasm_bindgen::Error),
+    #[error("Fail to parse TxIds")]
+    TxIdParse,
     // TODO: Remove this. It is just to help with the inability to handle the generic tests from LRZ at the moment
     #[error("An generic error occurred: {0}")]
     Generic(String),
