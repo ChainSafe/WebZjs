@@ -12,6 +12,7 @@ use crate::error::Error;
 use crate::BlockRange;
 use webz_common::Network;
 
+use pczt::roles::prover::Prover;
 use pczt::Pczt;
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
@@ -465,6 +466,22 @@ where
             &proposal,
         )
         .map_err(|_| Error::PcztCreate)?;
+        Ok(pczt)
+    }
+
+    ///
+    /// Prove a PCZT
+    ///
+    pub async fn pczt_prove(&self, pczt: Pczt) -> Result<Pczt, Error> {
+        let prover = LocalTxProver::bundled();
+        let pczt = Prover::new(pczt)
+            .create_orchard_proof(&orchard::circuit::ProvingKey::build())
+            // .map_err(|e| anyhow!("Failed to create Orchard proof: {:?}", e))?
+            .unwrap()
+            .create_sapling_proofs(&prover, &prover)
+            // .map_err(|e| anyhow!("Failed to create Sapling proofs: {:?}", e))?
+            .unwrap()
+            .finish();
         Ok(pczt)
     }
 }
