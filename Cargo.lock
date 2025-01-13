@@ -3228,6 +3228,7 @@ dependencies = [
  "indexed_db_futures",
  "js-sys",
  "nonempty",
+ "orchard",
  "pczt",
  "postcard",
  "prost",
