@@ -1,7 +1,6 @@
+use super::wallet::NoteRef;
 use wasm_bindgen::prelude::*;
 use zcash_client_backend::fees::StandardFeeRule;
-use super::wallet::NoteRef;
-use zcash_primitives::transaction::fees::zip317::FeeRule;
 
 /// A handler to an immutable proposal. This can be passed to `create_proposed_transactions` to prove/authorize the transactions
 /// before they are sent to the network.
@@ -24,10 +23,10 @@ impl From<Proposal> for zcash_client_backend::proposal::Proposal<StandardFeeRule
     }
 }
 
-#[wasm_bindgen]
-impl Proposal {
-    /// Returns a JSON object with the details of the proposal.
-    pub fn describe(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner).unwrap()
-    }
-}
+// #[wasm_bindgen]
+// impl Proposal {
+//     /// Returns a JSON object with the details of the proposal.
+//     pub fn describe(&self) -> JsValue {
+//         serde_wasm_bindgen::to_value(&self.inner).unwrap()
+//     }
+// }

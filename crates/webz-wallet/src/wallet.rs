@@ -44,6 +44,7 @@ use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
 use zcash_client_backend::sync::run;
+use zcash_protocol::consensus::Parameters;
 use zcash_protocol::value::Zatoshis;
 
 const BATCH_SIZE: u32 = 10000;
@@ -93,6 +94,15 @@ impl<W, T: Clone> Clone for Wallet<W, T> {
     }
 }
 
+impl<P: Parameters, T> Wallet<MemoryWalletDb<P>, T> {
+    // Encodes the MemoryWallet into protobuf bytes
+    pub async fn db_to_bytes(&self) -> Result<Vec<u8>, Error> {
+        let mut memory_wallet_bytes = Vec::new();
+        self.db.read().await.encode(&mut memory_wallet_bytes)?;
+        Ok(memory_wallet_bytes)
+    }
+}
+
 impl<W, T, AccountId, NoteRef> Wallet<W, T>
 where
     W: WalletRead<AccountId = AccountId>
@@ -133,21 +143,6 @@ where
         })
     }
 
-    // pub async fn serialize_db<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    // where
-    //     W: Serialize,
-    //     S: Serializer,
-    // {
-    //     self.db.read().await.serialize(serializer)
-    // }
-    //
-    // pub async fn db_to_bytes(&self) -> Result<Vec<u8>, Error>
-    // where
-    //     W: Serialize,
-    // {
-    //     Ok(postcard::to_allocvec(&*self.db.read().await)?)
-    // }
-    //
     /// Add a new account to the wallet
     ///
     /// # Arguments

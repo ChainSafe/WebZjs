@@ -1849,15 +1849,6 @@ dependencies = [
 
 [[package]]
 name = "prost"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deb1435c188b76130da55f17a466d252ff7b1418b2ad3e037d127b94e3411f29"
-dependencies = [
- "bytes",
-]
-
-[[package]]
-name = "prost"
 version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c0fef6c4230e4ccf618a35c59d7ede15dea37de8427500f50aff708806e42ec"
@@ -1879,7 +1870,7 @@ dependencies = [
  "once_cell",
  "petgraph",
  "prettyplease",
- "prost 0.13.4",
+ "prost",
  "prost-types",
  "regex",
  "syn",
@@ -1905,7 +1896,7 @@ version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cc2f1e56baa61e93533aebc21af4d2134b70f66275e0fcdf3cbe43d77ff7e8fc"
 dependencies = [
- "prost 0.13.4",
+ "prost",
 ]
 
 [[package]]
@@ -2598,7 +2589,7 @@ dependencies = [
  "hyper-util",
  "percent-encoding",
  "pin-project",
- "prost 0.13.4",
+ "prost",
  "rustls-pemfile",
  "tokio",
  "tokio-rustls",
@@ -3110,7 +3101,7 @@ dependencies = [
  "js-sys",
  "nonempty",
  "postcard",
- "prost 0.12.6",
+ "prost",
  "rayon",
  "ripemd",
  "secrecy",
@@ -3310,7 +3301,7 @@ dependencies = [
  "orchard",
  "pasta_curves",
  "percent-encoding",
- "prost 0.13.4",
+ "prost",
  "rand_core",
  "rayon",
  "sapling-crypto",
@@ -3346,7 +3337,7 @@ dependencies = [
  "jubjub",
  "nonempty",
  "orchard",
- "prost 0.13.4",
+ "prost",
  "prost-build",
  "rayon",
  "sapling-crypto",
@@ -3382,7 +3373,7 @@ dependencies = [
  "maybe-rayon",
  "nonempty",
  "orchard",
- "prost 0.13.4",
+ "prost",
  "regex",
  "rusqlite",
  "sapling-crypto",
