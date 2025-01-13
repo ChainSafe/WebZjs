@@ -12,6 +12,7 @@ use crate::error::Error;
 use crate::BlockRange;
 use webz_common::Network;
 
+use pczt::Pczt;
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -20,7 +21,8 @@ use subtle::ConditionallySelectable;
 use tokio::sync::RwLock;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
-    create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
+    create_pczt_from_proposal, create_proposed_transactions, input_selection::GreedyInputSelector,
+    propose_transfer,
 };
 use zcash_client_backend::data_api::WalletCommitmentTrees;
 use zcash_client_backend::data_api::{
@@ -43,6 +45,7 @@ use zcash_primitives::transaction::fees::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
+use crate::error::Error::PcztCreate;
 use zcash_client_backend::sync::run;
 use zcash_protocol::consensus::Parameters;
 use zcash_protocol::value::Zatoshis;
@@ -113,7 +116,8 @@ where
             NoteRef = NoteRef,
         > + WalletCommitmentTrees,
 
-    AccountId: Copy + Debug + Eq + Hash + Default + Send + ConditionallySelectable + 'static,
+    AccountId:
+        Copy + Debug + Eq + Hash + Default + Send + ConditionallySelectable + Serialize + 'static,
     NoteRef: Copy + Eq + Ord + Debug,
     Error: From<<W as WalletRead>::Error>,
 
@@ -406,6 +410,62 @@ where
         // send the transactions to the network!!
         tracing::info!("Sending transactions");
         self.send_authorized_transactions(&txids).await
+    }
+
+    ///
+    /// Create a PCZT
+    ///
+    pub async fn pczt_create(
+        &self,
+        account_id: AccountId,
+        to_address: ZcashAddress,
+        value: u64,
+    ) -> Result<Pczt, Error> {
+        // Create the PCZT.
+        let change_strategy = MultiOutputChangeStrategy::new(
+            StandardFeeRule::Zip317,
+            None,
+            ShieldedProtocol::Orchard,
+            DustOutputPolicy::default(),
+            SplitPolicy::with_min_output_value(
+                NonZeroUsize::new(self.target_note_count)
+                    .ok_or(Error::FailedToCreateTransaction)?,
+                Zatoshis::from_u64(self.min_split_output_value)?,
+            ),
+        );
+        let input_selector = GreedyInputSelector::new();
+        let request = TransactionRequest::new(vec![Payment::without_memo(
+            to_address,
+            NonNegativeAmount::from_u64(value)?,
+        )])?;
+        let mut db = self.db.write().await;
+        let proposal = propose_transfer::<_, _, _,_, <W as WalletCommitmentTrees>::Error>(
+            &mut *db,
+            &self.network,
+            account_id,
+            &input_selector,
+            &change_strategy,
+            request,
+            self.min_confirmations,
+        )
+            .map_err(|_e| Error::Generic("something bad happened when calling propose transfer. Possibly insufficient balance..".to_string()))?;
+        tracing::info!("Proposal: {:#?}", proposal);
+        let pczt = create_pczt_from_proposal::<
+            _,
+            _,
+            <MemoryWalletDb<Network> as InputSource>::Error,
+            _,
+            <StandardFeeRule as FeeRule>::Error,
+            _,
+        >(
+            &mut *db,
+            &self.network,
+            account_id,
+            OvkPolicy::Sender,
+            &proposal,
+        )
+        .map_err(|_| Error::PcztCreate)?;
+        Ok(pczt)
     }
 }
 
