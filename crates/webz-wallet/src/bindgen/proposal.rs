@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-
+use zcash_client_backend::fees::StandardFeeRule;
 use super::wallet::NoteRef;
 use zcash_primitives::transaction::fees::zip317::FeeRule;
 
@@ -9,16 +9,16 @@ use zcash_primitives::transaction::fees::zip317::FeeRule;
 /// The proposal can be reviewed by calling `describe` which will return a JSON object with the details of the proposal.
 #[wasm_bindgen]
 pub struct Proposal {
-    inner: zcash_client_backend::proposal::Proposal<FeeRule, NoteRef>,
+    inner: zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef>,
 }
 
-impl From<zcash_client_backend::proposal::Proposal<FeeRule, NoteRef>> for Proposal {
-    fn from(inner: zcash_client_backend::proposal::Proposal<FeeRule, NoteRef>) -> Self {
+impl From<zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef>> for Proposal {
+    fn from(inner: zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef>) -> Self {
         Self { inner }
     }
 }
 
-impl From<Proposal> for zcash_client_backend::proposal::Proposal<FeeRule, NoteRef> {
+impl From<Proposal> for zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef> {
     fn from(proposal: Proposal) -> Self {
         proposal.inner
     }
