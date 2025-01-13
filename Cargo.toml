@@ -34,13 +34,13 @@ tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "syn
 
 zcash_keys = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
 zcash_client_backend = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
-zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", features = ["orchard"] }
+zcash_client_memory = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", features = ["orchard", "transparent-inputs"] }
 zcash_primitives = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b" }
 zcash_address = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b" }
 zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false, features = ["bundled-prover", "multicore"] }
 zip321 = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b" }
 zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false }
-
+pczt = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false, features = ["orchard", "sapling", "transparent"] }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }
@@ -97,3 +97,4 @@ zcash_keys = { path = "../librustzcash/zcash_keys" }
 zcash_primitives = { path = "../librustzcash/zcash_primitives" }
 zcash_proofs = { path = "../librustzcash/zcash_proofs" }
 zcash_protocol = { path = "../librustzcash/components/zcash_protocol" }
+pczt = { path = "../librustzcash/pczt" }

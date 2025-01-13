@@ -82,6 +82,8 @@ pub enum Error {
     SerdeWasmBindgen(#[from] serde_wasm_bindgen::Error),
     #[error("Fail to parse TxIds")]
     TxIdParse,
+    #[error("Failed to create Pczt")]
+    PcztCreate,
     // TODO: Remove this. It is just to help with the inability to handle the generic tests from LRZ at the moment
     #[error("An generic error occurred: {0}")]
     Generic(String),

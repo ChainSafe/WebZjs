@@ -47,14 +47,14 @@ tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "syn
 ## Zcash dependencies
 
 zcash_keys = { workspace = true, features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { workspace = true, default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard"] }
-zcash_client_memory = { workspace = true, features = ["orchard"] }
+zcash_client_backend = { workspace = true, default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard", "pczt", "transparent-inputs"] }
+zcash_client_memory = { workspace = true, features = ["orchard", "transparent-inputs"] }
 zcash_primitives = { workspace = true }
 zcash_address = { workspace = true }
 zcash_protocol = { workspace = true, default-features = false }
 zcash_proofs = { workspace = true, default-features = false, features = ["bundled-prover", "multicore"] }
 zip321 = { workspace = true }
-
+pczt = { workspace = true, default-features = false, features = ["orchard", "sapling", "transparent"] }
 
 ## gRPC Web dependencies
 prost = { version = "0.13", default-features = false }
