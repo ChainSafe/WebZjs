@@ -135,7 +135,7 @@ impl WebWallet {
                 tracing::info!(
                     "Serialized db was provided to constructor. Attempting to deserialize"
                 );
-                postcard::from_bytes(&bytes)?
+                MemoryWalletDb::decode_new(bytes.as_ref(), network, PRUNING_DEPTH)?
             }
             None => MemoryWalletDb::new(network, PRUNING_DEPTH),
         };
@@ -161,13 +161,20 @@ impl WebWallet {
     /// ```
     pub async fn create_account(
         &self,
+        account_name: &str,
         seed_phrase: &str,
         account_hd_index: u32,
         birthday_height: Option<u32>,
     ) -> Result<u32, Error> {
         tracing::info!("Create account called");
         self.inner
-            .create_account(seed_phrase, account_hd_index, birthday_height)
+            .create_account(
+                account_name,
+                seed_phrase,
+                account_hd_index,
+                birthday_height,
+                None,
+            )
             .await
             .map(|id| *id)
     }
@@ -187,6 +194,7 @@ impl WebWallet {
     /// ```
     pub async fn create_account_ufvk(
         &self,
+        account_name: &str,
         encoded_ufvk: &str,
         birthday_height: Option<u32>,
     ) -> Result<u32, Error> {
@@ -194,7 +202,7 @@ impl WebWallet {
             .map_err(Error::KeyParse)?;
 
         self.inner
-            .import_ufvk(&ufvk, birthday_height)
+            .import_ufvk(account_name, &ufvk, birthday_height, None)
             .await
             .map(|id| *id)
     }

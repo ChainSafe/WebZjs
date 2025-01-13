@@ -46,7 +46,7 @@ pub enum Error {
     )]
     InvalidMinConformations(u32),
     #[error("Error parsing zatoshi amount: {0}")]
-    InvalidAmount(#[from] zcash_primitives::transaction::components::amount::BalanceError),
+    InvalidAmount(#[from] zcash_protocol::value::BalanceError),
     #[error("Failed to send transaction")]
     SendFailed { code: i32, reason: String },
     #[error("Failed to parse key: {0}")]
@@ -77,7 +77,7 @@ pub enum Error {
     #[error("Transaction with given txid not found: {0}")]
     TransactionNotFound(zcash_primitives::transaction::TxId),
     #[error("Error constructing ZIP321 transaction request: {0}")]
-    Zip321(#[from] zip321::Zip321Error),
+    Zip321(#[from] zcash_client_backend::zip321::Zip321Error),
     #[error("serde wasm-bindgen error")]
     SerdeWasmBindgen(#[from] serde_wasm_bindgen::Error),
     // TODO: Remove this. It is just to help with the inability to handle the generic tests from LRZ at the moment

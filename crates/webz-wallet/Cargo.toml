@@ -51,6 +51,7 @@ zcash_client_backend = { workspace = true, default-features = false, features = 
 zcash_client_memory = { workspace = true, features = ["orchard"] }
 zcash_primitives = { workspace = true }
 zcash_address = { workspace = true }
+zcash_protocol = { workspace = true, default-features = false }
 zcash_proofs = { workspace = true, default-features = false, features = ["bundled-prover", "multicore"] }
 zip321 = { workspace = true }
 
@@ -64,7 +65,7 @@ tonic = { version = "0.12", default-features = false, features = [
 
 # Used in Native tests
 tokio.workspace = true
-zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "9673cc2859e8a2528d1efd3c74795363f87ddf8f", default-features = false, features = ["unstable", "orchard"], optional = true }
+zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror.workspace = true
@@ -74,7 +75,7 @@ ripemd = "0.1"
 bip0039 = "0.12.0"
 secrecy = "0.8.0"
 futures-util = "0.3.30"
-nonempty = "0.7"
+nonempty = "0.11"
 hex = "0.4.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = "0.1.40"
