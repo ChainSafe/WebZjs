@@ -17,7 +17,6 @@ use zcash_primitives::zip32::AccountId;
 pub struct SeedFingerprint {
     inner: zip32::fingerprint::SeedFingerprint,
 }
-
 #[wasm_bindgen]
 impl SeedFingerprint {
     /// Construct a new SeedFingerprint
@@ -35,12 +34,30 @@ impl SeedFingerprint {
     }
 }
 
+impl From<SeedFingerprint> for zip32::fingerprint::SeedFingerprint {
+    fn from(value: SeedFingerprint) -> Self {
+        value.inner
+    }
+}
+
 /// A Zcash Sapling proof generation key
 ///
 /// This is a wrapper around the `sapling::ProofGenerationKey` type. It is used for generating proofs for Sapling PCZTs.
 #[wasm_bindgen]
 pub struct ProofGenerationKey {
     inner: sapling::ProofGenerationKey,
+}
+
+impl From<ProofGenerationKey> for sapling::ProofGenerationKey {
+    fn from(value: ProofGenerationKey) -> sapling::ProofGenerationKey {
+        value.inner
+    }
+}
+
+impl From<sapling::ProofGenerationKey> for ProofGenerationKey {
+    fn from(value: sapling::ProofGenerationKey) -> Self {
+        Self { inner: value }
+    }
 }
 
 /// A Zcash spending key
@@ -84,6 +101,12 @@ impl UnifiedSpendingKey {
         ProofGenerationKey {
             inner: self.inner.sapling().expsk.proof_generation_key(),
         }
+    }
+}
+
+impl From<UnifiedSpendingKey> for zcash_keys::keys::UnifiedSpendingKey {
+    fn from(value: UnifiedSpendingKey) -> Self {
+        value.inner
     }
 }
 

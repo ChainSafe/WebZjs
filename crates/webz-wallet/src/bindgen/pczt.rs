@@ -14,3 +14,11 @@ impl From<Pczt> for pczt::Pczt {
         pczt.0
     }
 }
+
+#[wasm_bindgen]
+impl Pczt {
+    /// Returns a JSON object with the details of the Pczt.
+    pub fn describe(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.0).unwrap()
+    }
+}
