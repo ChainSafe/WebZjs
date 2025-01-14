@@ -20,7 +20,8 @@ use pczt::roles::updater::Updater;
 use pczt::roles::verifier::Verifier;
 use pczt::Pczt;
 use sapling::ProofGenerationKey;
-use serde::{Serialize, Serializer};
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize, Serializer};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -28,7 +29,8 @@ use subtle::ConditionallySelectable;
 use tokio::sync::RwLock;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
-    create_pczt_from_proposal, create_proposed_transactions, input_selection::GreedyInputSelector,
+    create_pczt_from_proposal, create_proposed_transactions,
+    extract_and_store_transaction_from_pczt, input_selection::GreedyInputSelector,
     propose_transfer,
 };
 use zcash_client_backend::data_api::WalletCommitmentTrees;
@@ -126,8 +128,16 @@ where
             NoteRef = NoteRef,
         > + WalletCommitmentTrees,
 
-    AccountId:
-        Copy + Debug + Eq + Hash + Default + Send + ConditionallySelectable + Serialize + 'static,
+    AccountId: Copy
+        + Debug
+        + Eq
+        + Hash
+        + Default
+        + Send
+        + ConditionallySelectable
+        + Serialize
+        + DeserializeOwned
+        + 'static,
     NoteRef: Copy + Eq + Ord + Debug,
     Error: From<<W as WalletRead>::Error>,
 
@@ -685,6 +695,25 @@ where
         }
 
         Ok(signer.finish())
+    }
+
+    pub async fn pczt_send(&self, pczt: Pczt) -> Result<(), Error> {
+        let prover = LocalTxProver::bundled();
+        let (spend_vk, output_vk) = prover.verifying_keys();
+        let mut db = self.db.write().await;
+        let txid = extract_and_store_transaction_from_pczt::<_, ()>(
+            &mut *db,
+            pczt,
+            &spend_vk,
+            &output_vk,
+            &orchard::circuit::VerifyingKey::build(),
+        )
+        .unwrap();
+
+        drop(db);
+        // .map_err(|e| anyhow!("Failed to extract and store transaction from PCZT: {:?}", e))?;
+        self.send_authorized_transactions(&NonEmpty::new(txid))
+            .await
     }
 }
 
