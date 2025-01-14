@@ -82,8 +82,10 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 
 
 [patch.crates-io]
+# Also patching for pczt improvments
 # See: https://github.com/zcash/librustzcash/pull/1661
-orchard = { git = "https://github.com/zcash/orchard.git", rev = "cd3e0901ccac2c630dd7fd03eb496d5030c1bbfe" }
+orchard = { git = "https://github.com/zcash/orchard.git", rev = "4fa6d3b549f8803016a309281404eab095d04de8" }
+sapling = { package = "sapling-crypto", git = "https://github.com/zcash/sapling-crypto.git", rev = "3c2235747553da642fb142d1eeb9b1afa8391987" }
 
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(wasm_bindgen)', 'cfg(wasm_bindgen_unstable_test_coverage)'] }
