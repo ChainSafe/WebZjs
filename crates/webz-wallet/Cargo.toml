@@ -56,6 +56,8 @@ zcash_proofs = { workspace = true, default-features = false, features = ["bundle
 zip321 = { workspace = true }
 pczt = { workspace = true, default-features = false, features = ["orchard", "sapling", "transparent"] }
 orchard = { version = "0.10.1", default-features = false }
+sapling = { package = "sapling-crypto", version = "0.4", default-features = false }
+
 ## gRPC Web dependencies
 prost = { version = "0.13", default-features = false }
 tonic = { version = "0.12", default-features = false, features = [

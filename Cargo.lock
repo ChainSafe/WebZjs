@@ -1439,9 +1439,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.22"
+version = "0.4.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
+checksum = "04cbf5b083de1c7e0222a7a51dbfdba1cbe1c6ab0b15e29fff3f6c077fd9cd9f"
 dependencies = [
  "value-bag",
 ]
@@ -1532,9 +1532,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ffbe83022cedc1d264172192511ae958937694cd57ce297164951b8b3568394"
+checksum = "b8402cab7aefae129c6977bb0ff1b8fd9a04eb5b51efc50a70bea51cda0c7924"
 dependencies = [
  "adler2",
 ]
@@ -1650,7 +1650,7 @@ checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 [[package]]
 name = "orchard"
 version = "0.10.1"
-source = "git+https://github.com/zcash/orchard.git?rev=cd3e0901ccac2c630dd7fd03eb496d5030c1bbfe#cd3e0901ccac2c630dd7fd03eb496d5030c1bbfe"
+source = "git+https://github.com/zcash/orchard.git?rev=4fa6d3b549f8803016a309281404eab095d04de8#4fa6d3b549f8803016a309281404eab095d04de8"
 dependencies = [
  "aes",
  "bitvec",
@@ -2235,8 +2235,7 @@ checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 [[package]]
 name = "sapling-crypto"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85c2acdbbab83d554fc2dceea5f7d6d3da71e57adb18a6c80b8901bd0eee54b0"
+source = "git+https://github.com/zcash/sapling-crypto.git?rev=3c2235747553da642fb142d1eeb9b1afa8391987#3c2235747553da642fb142d1eeb9b1afa8391987"
 dependencies = [
  "aes",
  "bellman",
@@ -2931,9 +2930,9 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "uuid"
-version = "1.11.1"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b913a3b5fe84142e269d63cc62b64319ccaf89b748fc31fe025177f767a756c4"
+checksum = "744018581f9a3454a9e15beb8a33b017183f1e7c0cd170232a2d1453b23a51c4"
 dependencies = [
  "getrandom",
  "wasm-bindgen",
@@ -3234,6 +3233,7 @@ dependencies = [
  "prost",
  "rayon",
  "ripemd",
+ "sapling-crypto",
  "secrecy",
  "serde",
  "serde-wasm-bindgen",
