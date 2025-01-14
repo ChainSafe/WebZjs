@@ -10,19 +10,21 @@ use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
 use crate::wallet::usk_from_seed_str;
-use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
+use crate::{
+    bindgen::{pczt::Pczt, proposal::Proposal},
+    Wallet, PRUNING_DEPTH,
+};
 use wasm_thread as thread;
 use webz_common::Network;
+use webz_keys::{ProofGenerationKey, SeedFingerprint, UnifiedSpendingKey};
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::{InputSource, WalletRead};
 use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
-use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::transaction::TxId;
-
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
 pub type AccountId = <MemoryWalletDb<Network> as WalletRead>::AccountId;
 pub type NoteRef = <MemoryWalletDb<Network> as InputSource>::NoteRef;
@@ -388,19 +390,61 @@ impl WebWallet {
         }
     }
 
-    /// Get the current unified address for a given account and extracts the transparent component. This is returned as a string in canonical encoding
+    /// Creates a PCZT (Partially Constructed Zcash Transaction).
+    ///
+    /// A Proposal is created similar to `create_proposed_transactions` and then a PCZT is constructed from it.
+    /// Note: This does NOT sign, generate a proof, or send the transaction.
+    /// It will only craft the PCZT which designates how notes from this account can be spent to realize the requested transfer.
+    /// The PCZT will still need to be signed and proofs will need to be generated before sending.
     ///
     /// # Arguments
     ///
-    /// * `account_id` - The ID of the account to get the address for
+    /// * `account_id` - The ID of the account in this wallet to send funds from
+    /// * `to_address` - [ZIP316](https://zips.z.cash/zip-0316) encoded address to send funds to
+    /// * `value` - Amount to send in Zatoshis (1 ZEC = 100_000_000 Zatoshis)
     ///
-    pub async fn get_current_address_transparent(&self, account_id: u32) -> Result<String, Error> {
-        let db = self.inner.db.read().await;
-        if let Some(address) = db.get_current_address(account_id.into())? {
-            Ok(address.transparent().unwrap().encode(&self.inner.network))
-        } else {
-            Err(Error::AccountNotFound(account_id))
-        }
+    pub async fn pczt_create(
+        &self,
+        account_id: u32,
+        to_address: String,
+        value: u64,
+    ) -> Result<Pczt, Error> {
+        todo!()
+    }
+
+    /// Creates and inserts proofs for a PCZT.
+    ///
+    /// If there are Sapling spends, a ProofGenerationKey needs to be supplied. It can be derived from the UFVK.
+    ///
+    /// # Arguments
+    ///
+    /// * `pczt` - The PCZT that needs to be signed
+    /// * `sapling_proof_gen_key` - The Sapling proof generation key (needed only if there are Sapling spends)
+    ///
+    pub async fn pczt_prove(
+        &self,
+        pczt: Pczt,
+        sapling_proof_gen_key: Option<ProofGenerationKey>,
+    ) -> Result<Pczt, Error> {
+        todo!()
+    }
+
+    /// Signs and applies signatures to a PCZT.
+    /// Should in a secure environment (e.g. Metamask snap).
+    ///
+    /// # Arguments
+    ///
+    /// * `pczt` - The PCZT that needs to signed
+    /// * `usk` - UnifiedSpendingKey used to sign the PCZT
+    /// * `seed_fp` - The fingerprint of the seed used to create `usk`
+    ///
+    pub async fn pczt_sign(
+        &self,
+        pczt: Pczt,
+        usk: UnifiedSpendingKey,
+        seed_fp: SeedFingerprint,
+    ) -> Result<Pczt, Error> {
+        todo!()
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////

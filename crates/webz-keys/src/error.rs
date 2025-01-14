@@ -10,6 +10,8 @@ pub enum Error {
     Derivation(#[from] zcash_keys::keys::DerivationError),
     #[error("Error attempting to decode key: {0}")]
     KeyDecoding(String),
+    #[error("Error attempting to get seed fingerprint.")]
+    SeedFingerprint,
 }
 
 impl From<Error> for JsValue {

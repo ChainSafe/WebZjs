@@ -4,11 +4,44 @@
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
+use crate::error::Error;
 use bip0039::{Count, English, Mnemonic};
+use webz_common::Network;
 use zcash_primitives::zip32::AccountId;
 
-use crate::error::Error;
-use webz_common::Network;
+/// A ZIP32 seed fingerprint. Essentially a Blake2b hash of the seed.
+///
+/// This is a wrapper around the `zip32::fingerprint::SeedFingerprint` type.
+///
+#[wasm_bindgen]
+pub struct SeedFingerprint {
+    inner: zip32::fingerprint::SeedFingerprint,
+}
+
+#[wasm_bindgen]
+impl SeedFingerprint {
+    /// Construct a new SeedFingerprint
+    ///
+    /// # Arguments
+    ///
+    /// * `seed` - At least 32 bytes of entry. Care should be taken as to how this is derived
+    ///
+    #[wasm_bindgen(constructor)]
+    pub fn new(seed: Box<[u8]>) -> Result<SeedFingerprint, Error> {
+        Ok(Self {
+            inner: zip32::fingerprint::SeedFingerprint::from_seed(&seed)
+                .ok_or_else(|| Error::SeedFingerprint)?,
+        })
+    }
+}
+
+/// A Zcash Sapling proof generation key
+///
+/// This is a wrapper around the `sapling::ProofGenerationKey` type. It is used for generating proofs for Sapling PCZTs.
+#[wasm_bindgen]
+pub struct ProofGenerationKey {
+    inner: sapling::ProofGenerationKey,
+}
 
 /// A Zcash spending key
 ///
@@ -44,6 +77,12 @@ impl UnifiedSpendingKey {
     pub fn to_unified_full_viewing_key(&self) -> UnifiedFullViewingKey {
         UnifiedFullViewingKey {
             inner: self.inner.to_unified_full_viewing_key(),
+        }
+    }
+
+    pub fn to_sapling_proof_generation_key(&self) -> ProofGenerationKey {
+        ProofGenerationKey {
+            inner: self.inner.sapling().expsk.proof_generation_key(),
         }
     }
 }
