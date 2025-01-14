@@ -409,7 +409,11 @@ impl WebWallet {
         to_address: String,
         value: u64,
     ) -> Result<Pczt, Error> {
-        todo!()
+        let to_address = ZcashAddress::try_from_encoded(&to_address)?;
+        self.inner
+            .pczt_create(AccountId::from(account_id), to_address, value)
+            .await
+            .map(Into::into)
     }
 
     /// Creates and inserts proofs for a PCZT.
@@ -426,7 +430,10 @@ impl WebWallet {
         pczt: Pczt,
         sapling_proof_gen_key: Option<ProofGenerationKey>,
     ) -> Result<Pczt, Error> {
-        todo!()
+        self.inner
+            .pczt_prove(pczt.into(), sapling_proof_gen_key.map(Into::into))
+            .await
+            .map(Into::into)
     }
 
     /// Signs and applies signatures to a PCZT.
@@ -444,7 +451,10 @@ impl WebWallet {
         usk: UnifiedSpendingKey,
         seed_fp: SeedFingerprint,
     ) -> Result<Pczt, Error> {
-        todo!()
+        self.inner
+            .pczt_sign(pczt.into(), usk.into(), seed_fp.into())
+            .await
+            .map(Into::into)
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////

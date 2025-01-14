@@ -22,11 +22,3 @@ impl From<Proposal> for zcash_client_backend::proposal::Proposal<StandardFeeRule
         proposal.inner
     }
 }
-
-// #[wasm_bindgen]
-// impl Proposal {
-//     /// Returns a JSON object with the details of the proposal.
-//     pub fn describe(&self) -> JsValue {
-//         serde_wasm_bindgen::to_value(&self.inner).unwrap()
-//     }
-// }
