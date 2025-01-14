@@ -41,6 +41,7 @@ zcash_proofs = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c
 zip321 = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b" }
 zcash_protocol = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false }
 pczt = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false, features = ["orchard", "sapling", "transparent"] }
+sapling = { package = "sapling-crypto", version = "0.4", default-features = false }
 
 ## gRPC Web dependencies
 prost = { version = "0.12", default-features = false }

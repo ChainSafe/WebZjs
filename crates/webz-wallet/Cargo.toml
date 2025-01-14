@@ -29,7 +29,7 @@ no-bundler = ["wasm-bindgen-rayon?/no-bundler", "wasm_thread/no-bundler"]
 
 [dependencies]
 webz-common = { path = "../webz-common" }
-
+webz-keys = { path = "../webz-keys" }
 ## Web dependencies
 wasm-bindgen.workspace = true
 js-sys.workspace = true
@@ -56,7 +56,7 @@ zcash_proofs = { workspace = true, default-features = false, features = ["bundle
 zip321 = { workspace = true }
 pczt = { workspace = true, default-features = false, features = ["orchard", "sapling", "transparent"] }
 orchard = { version = "0.10.1", default-features = false }
-sapling = { package = "sapling-crypto", version = "0.4", default-features = false }
+sapling = { workspace = true }
 bip32 = "0.5"
 ## gRPC Web dependencies
 prost = { version = "0.13", default-features = false }

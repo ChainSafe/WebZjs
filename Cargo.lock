@@ -3309,11 +3309,13 @@ dependencies = [
  "bip0039",
  "getrandom",
  "js-sys",
+ "sapling-crypto",
  "thiserror",
  "wasm-bindgen",
  "webz-common",
  "zcash_keys",
  "zcash_primitives",
+ "zip32",
 ]
 
 [[package]]
@@ -3371,6 +3373,7 @@ dependencies = [
  "wasm_thread",
  "web-sys",
  "webz-common",
+ "webz-keys",
  "zcash_address",
  "zcash_client_backend",
  "zcash_client_memory",
