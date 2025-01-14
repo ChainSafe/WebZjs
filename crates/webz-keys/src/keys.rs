@@ -29,7 +29,7 @@ impl SeedFingerprint {
     pub fn new(seed: Box<[u8]>) -> Result<SeedFingerprint, Error> {
         Ok(Self {
             inner: zip32::fingerprint::SeedFingerprint::from_seed(&seed)
-                .ok_or_else(|| Error::SeedFingerprint)?,
+                .ok_or(Error::SeedFingerprint)?,
         })
     }
 }
