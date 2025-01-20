@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 
 import QRCode from 'react-qr-code';
 import Form from 'react-bootstrap/Form';
-import { useWebZjsContext } from '@webzjs/web-wallet/src/context/WebzjsContext';
+import { WalletContext } from '../App';
 
 export function ReceiveFunds() {
-  let { state, dispatch } = useWebZjsContext();
+  let { state, dispatch } = useContext(WalletContext);
 
   let [unifiedAddress, setUnifiedAddress] = useState('');
 
