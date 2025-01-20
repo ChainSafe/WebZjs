@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useWebZjsActions } from '@hooks/useWebzjsActions';
 import QrCode from '@pages/Receive/QrCode';
 import Tab from '@pages/Receive/Tab';
+import PageHeading from '@components/PageHeading/PageHeading';
 
 enum TabTypes {
   UNIFIED = 'unified',
@@ -40,15 +41,7 @@ function Receive(): React.JSX.Element {
 
   return (
     <>
-      <section className="py-6 mb-12 border-b border-[#bfbfbf] flex flex-col items-center gap-3">
-        <div className="w-full flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <h2 className="text-black text-4xl font-medium font-inter leading-normal">
-              Receive
-            </h2>
-          </div>
-        </div>
-      </section>
+      <PageHeading title="Receive" />
       <div className="max-w-[1000px] p-9 bg-white rounded-3xl border border-[#afafaf] flex-col justify-start items-center gap-9 inline-flex">
         <div className="self-stretch px-[75px] justify-center items-start gap-3 inline-flex">
           {Object.keys(tabs).map((tab) => (
