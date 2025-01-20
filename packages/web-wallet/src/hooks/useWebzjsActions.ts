@@ -2,7 +2,7 @@ import { set } from 'idb-keyval';
 import { useCallback } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
 
-interface UseWebzjsActions {
+interface WebzjsActions {
   addNewAccountFromUfvk: (
     ufvk: string,
     birthdayHeight: number,
@@ -13,25 +13,26 @@ interface UseWebzjsActions {
   syncStateWithWallet: () => Promise<void>;
 }
 
-export function useWebZjsActions(): UseWebzjsActions {
+export function useWebZjsActions(): WebzjsActions {
   const { state, dispatch } = useWebZjsContext();
 
   const getAccountData = useCallback(async () => {
-    console.log('state.activeAccount', state.activeAccount);
     try {
       if (state.activeAccount !== undefined) {
-        const unifiedAddress = await state.webWallet!.get_current_address(
-          state.activeAccount || 0,
-        );
-        return { unifiedAddress };
+        return {
+          unifiedAddress: await state.webWallet!.get_current_address(
+            state.activeAccount,
+          ),
+        };
       } else {
-        const unifiedAddress = await state.webWallet!.get_current_address(0);
-        return { unifiedAddress };
+        return {
+          unifiedAddress: await state.webWallet!.get_current_address(0),
+        };
       }
     } catch (error) {
       dispatch({
         type: 'set-error',
-        payload: 'Cannot get Active account data',
+        payload: 'Cannot get active account data',
       });
     }
   }, [dispatch, state.activeAccount, state.webWallet]);
