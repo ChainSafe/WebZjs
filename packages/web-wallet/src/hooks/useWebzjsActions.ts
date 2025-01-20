@@ -1,6 +1,6 @@
 import { set } from 'idb-keyval';
 import { useCallback } from 'react';
-import { useWebZjsContext } from '../context/WebzjsContext.tsx';
+import { useWebZjsContext } from '../context/WebzjsContext';
 
 interface UseWebzjsActions {
   addNewAccountFromUfvk: (

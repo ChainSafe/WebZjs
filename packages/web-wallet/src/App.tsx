@@ -1,8 +1,8 @@
 import { useInterval } from 'usehooks-ts';
-import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
-import Layout from '@components/Layout/Layout.tsx';
+import { useWebZjsActions } from '@hooks/useWebzjsActions';
+import Layout from '@components/Layout/Layout';
 import { Outlet, useLocation } from 'react-router-dom';
-import { RESCAN_INTERVAL } from './config/constants.ts';
+import { RESCAN_INTERVAL } from './config/constants';
 import { useEffect } from 'react';
 
 function App() {

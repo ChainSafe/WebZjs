@@ -2,7 +2,7 @@ import React from 'react';
 import { ZcashYellowSvg } from '../../assets';
 import useBalance from '@hooks/useBalance';
 import useTransferBalanceForm from './useTransferBalanceForm';
-import Step1 from '@pages/TransferBalance/Step1.tsx';
+import Step1 from '@pages/TransferBalance/Step1';
 import Step2 from '@pages/TransferBalance/Step2';
 import Step3 from '@pages/TransferBalance/Step3';
 

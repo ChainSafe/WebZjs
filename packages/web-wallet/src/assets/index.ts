@@ -16,6 +16,10 @@ import { ReactComponent as CoinsSvg } from './icons/coins.svg';
 import { ReactComponent as ChevronSVG } from './icons/chevron.svg';
 import { ReactComponent as CheckSVG } from './icons/check.svg';
 import { ReactComponent as WarningSVG } from './icons/warning.svg';
+import { ReactComponent as EyeSvg } from './icons/eye.svg';
+import { ReactComponent as EyeSlashSvg } from './icons/eye-slash.svg';
+import { ReactComponent as CircleSvg } from './icons/circle.svg';
+import { ReactComponent as CircleDashedSvg } from './icons/circle-dashed.svg';
 
 export {
   ChainsafeSvg,
@@ -34,4 +38,8 @@ export {
   ChevronSVG,
   CheckSVG,
   WarningSVG,
+  EyeSvg,
+  EyeSlashSvg,
+  CircleSvg,
+  CircleDashedSvg,
 };

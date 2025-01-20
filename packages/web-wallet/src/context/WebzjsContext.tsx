@@ -42,7 +42,7 @@ const initialState: State = {
   error: null,
   summary: undefined,
   chainHeight: undefined,
-  activeAccount: undefined,
+  activeAccount: 0,
   syncInProgress: false,
   loading: true,
 };
