@@ -13,7 +13,7 @@ export function ReceiveFunds() {
     const updateUnifiedAddress = async () => {
       if (state.webWallet && state.activeAccount !== undefined) {
         let address = await state.webWallet.get_current_address(
-          state.activeAccount || 0,
+          state.activeAccount,
         );
         setUnifiedAddress(address);
       }
