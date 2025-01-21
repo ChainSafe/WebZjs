@@ -47,7 +47,7 @@ const getClassNames = (isActive: boolean) => {
 
 function NavBar() {
   return (
-    <nav className="flex space-x-9 mb-3 max-w-[720px] items-center align-middle self-center m-auto">
+    <nav className="flex space-x-9 mb-3 justify-center self-center items-center align-middle">
       {navItems.map((item) => (
         <NavLink
           key={item.to}
