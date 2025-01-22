@@ -5917,6 +5917,7 @@ __metadata:
     "@webzjs/webz-keys": "workspace:^"
     "@webzjs/webz-wallet": "workspace:^"
     autoprefixer: "npm:^10.4.20"
+    classnames: "npm:^2.5.1"
     eslint: "npm:^9.13.0"
     eslint-plugin-react-hooks: "npm:^5.0.0"
     eslint-plugin-react-refresh: "npm:^0.4.14"
@@ -13694,7 +13695,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root@workspace:."
   dependencies:
-    classnames: "npm:^2.5.1"
     prettier: "npm:^3.3.3"
     prettier-plugin-packagejson: "npm:^2.5.3"
   languageName: unknown
