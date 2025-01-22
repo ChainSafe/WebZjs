@@ -1,19 +1,41 @@
 import { set } from 'idb-keyval';
 import { useCallback } from 'react';
-import { useWebZjsContext } from '../context/WebzjsContext.tsx';
+import { useWebZjsContext } from '../context/WebzjsContext';
 
-interface UseWebzjsActions {
+interface WebzjsActions {
   addNewAccountFromUfvk: (
     ufvk: string,
     birthdayHeight: number,
   ) => Promise<void>;
+  getAccountData: () => Promise<{ unifiedAddress: string } | undefined>;
   triggerRescan: () => Promise<void>;
   flushDbToStore: () => Promise<void>;
   syncStateWithWallet: () => Promise<void>;
 }
 
-export function useWebZjsActions(): UseWebzjsActions {
+export function useWebZjsActions(): WebzjsActions {
   const { state, dispatch } = useWebZjsContext();
+
+  const getAccountData = useCallback(async () => {
+    try {
+      if (state.activeAccount !== undefined) {
+        return {
+          unifiedAddress: await state.webWallet!.get_current_address(
+            state.activeAccount,
+          ),
+        };
+      } else {
+        return {
+          unifiedAddress: await state.webWallet!.get_current_address(0),
+        };
+      }
+    } catch (error) {
+      dispatch({
+        type: 'set-error',
+        payload: 'Cannot get active account data',
+      });
+    }
+  }, [dispatch, state.activeAccount, state.webWallet]);
 
   const syncStateWithWallet = useCallback(async () => {
     if (!state.webWallet) {
@@ -34,24 +56,9 @@ export function useWebZjsActions(): UseWebzjsActions {
       }
     } catch (error) {
       console.error('Error syncing state with wallet:', error);
-      dispatch({ type: 'set-error', payload: error });
+      dispatch({ type: 'set-error', payload: String(error) });
     }
   }, [state.webWallet, dispatch]);
-
-  const addNewAccountFromUfvk = useCallback(
-    async (ufvk: string, birthdayHeight: number) => {
-      const account_id =
-        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
-      dispatch({ type: 'set-active-account', payload: account_id });
-
-      if (state.webWallet) {
-        const summary = await state.webWallet.get_wallet_summary();
-        console.log(summary?.account_balances.length);
-      }
-      await syncStateWithWallet();
-    },
-    [dispatch, state.webWallet, syncStateWithWallet],
-  );
 
   const flushDbToStore = useCallback(async () => {
     if (!state.webWallet) {
@@ -68,9 +75,25 @@ export function useWebZjsActions(): UseWebzjsActions {
       console.info('Wallet saved to storage');
     } catch (error) {
       console.error('Error flushing DB to store:', error);
-      dispatch({ type: 'set-error', payload: error });
+      dispatch({ type: 'set-error', payload: String(error) });
     }
   }, [state.webWallet, dispatch]);
+
+  const addNewAccountFromUfvk = useCallback(
+    async (ufvk: string, birthdayHeight: number) => {
+      const account_id =
+        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
+      dispatch({ type: 'set-active-account', payload: account_id });
+
+      if (state.webWallet) {
+        const summary = await state.webWallet.get_wallet_summary();
+        console.log('account_balances', summary?.account_balances.length);
+      }
+      await syncStateWithWallet();
+      await flushDbToStore();
+    },
+    [dispatch, flushDbToStore, state.webWallet, syncStateWithWallet],
+  );
 
   const triggerRescan = useCallback(async () => {
     if (state.loading) {
@@ -102,9 +125,9 @@ export function useWebZjsActions(): UseWebzjsActions {
       await state.webWallet.sync();
       await syncStateWithWallet();
       await flushDbToStore();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error during rescan:', err);
-      dispatch({ type: 'set-error', payload: err });
+      dispatch({ type: 'set-error', payload: String(err) });
     } finally {
       dispatch({ type: 'set-sync-in-progress', payload: false });
     }
@@ -119,6 +142,7 @@ export function useWebZjsActions(): UseWebzjsActions {
   ]);
 
   return {
+    getAccountData,
     addNewAccountFromUfvk,
     triggerRescan,
     flushDbToStore,

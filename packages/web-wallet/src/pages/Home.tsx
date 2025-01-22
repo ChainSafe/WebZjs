@@ -5,14 +5,24 @@ import { useRequestSnap } from '@hooks/snaps/useRequestSnap.ts';
 import { useNavigate } from 'react-router-dom';
 import { useInvokeSnap } from '@hooks/snaps/useInvokeSnap.ts';
 import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
+import { useWebZjsContext } from '../context/WebzjsContext';
 
 const Home: React.FC = () => {
   const [birthdayHeight, setBirthdayHeight] = useState(0);
   const navigate = useNavigate();
+  const { state } = useWebZjsContext();
   const { flushDbToStore, addNewAccountFromUfvk } = useWebZjsActions();
   const invokeSnap = useInvokeSnap();
   const { installedSnap, isFlask } = useMetaMask();
   const requestSnap = useRequestSnap();
+
+  useEffect(() => {
+    const fetchBirthday = async () => {
+      const birthday = await state.webWallet?.get_latest_block();
+      setBirthdayHeight(Number(birthday) || 0);
+    };
+    fetchBirthday();
+  }, [state]);
 
   const handleRequestSnapAndGetViewingKey: React.MouseEventHandler<
     HTMLButtonElement
