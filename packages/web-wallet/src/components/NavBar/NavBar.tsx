@@ -1,4 +1,5 @@
 import React from 'react';
+import cn from 'classnames';
 import { NavLink } from 'react-router-dom';
 
 import {
@@ -37,14 +38,6 @@ const navItems: NavItem[] = [
   },
 ];
 
-const getClassNames = (isActive: boolean) => {
-  const baseClasses =
-    'text-sm font-medium text-[#0e0e0e] font-inter font-semibold leading-tight pb-3';
-  return isActive
-    ? `${baseClasses}  text-black border-b border-orange-500`
-    : `${baseClasses}`;
-};
-
 function NavBar() {
   return (
     <nav className="flex space-x-9 mb-3 justify-center self-center items-center align-middle">
@@ -52,13 +45,18 @@ function NavBar() {
         <NavLink
           key={item.to}
           to={item.to}
-          className={({ isActive }) => {
-            return getClassNames(isActive);
-          }}
+          className={({ isActive }) =>
+            cn('text-sm text-[#0e0e0e] font-semibold leading-tight pb-3', {
+              'text-black border-b border-orange-500': isActive,
+            })
+          }
         >
           {({ isActive }) => (
             <span
-              className={`inline-flex items-center hover:text-brand-orange navbar-link ${isActive && 'navbar-link-active'}`}
+              className={cn(
+                'inline-flex items-center hover:text-brand-orange navbar-link',
+                { 'navbar-link-active': isActive },
+              )}
             >
               <span className="text-brand-grey10 text-sm  mr-2">
                 {item.icon}

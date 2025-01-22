@@ -22,5 +22,8 @@
     "snap:start": "yarn workspace @webzjs/zcash-snap run start",
     "snap:build": "yarn workspace @webzjs/zcash-snap run build",
     "just:build-keys": "just build-keys"
+  },
+  "dependencies": {
+    "classnames": "^2.5.1"
   }
 }

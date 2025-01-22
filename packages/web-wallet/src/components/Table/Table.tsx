@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import cn from 'classnames';
 
 const PAGE_SIZE = 6;
 
@@ -78,13 +79,13 @@ const Table: React.FC<TableProps> = ({
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`w-[30px] h-[30px] p-1.5 rounded-md border flex items-center justify-center text-sm font-normal font-['Roboto'] leading-[21px]
-                    ${
-                      isActive
-                        ? 'border-black text-black'
-                        : 'border-transparent text-black'
-                    }
-                  `}
+                  className={cn(
+                    'w-[30px] h-[30px] p-1.5 rounded-md border text-black flex items-center justify-center text-sm font-normal font-["Roboto"] leading-[21px]',
+                    {
+                      'border-black': isActive,
+                      'border-transparent': !isActive,
+                    },
+                  )}
                 >
                   {page}
                 </button>
