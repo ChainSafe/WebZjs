@@ -67,7 +67,7 @@ tonic = { version = "0.12", default-features = false, features = [
 
 # Used in Native tests
 tokio.workspace = true
-zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "dcd2c3aa03af46fb6f07956d9894041b6d5dc81b", default-features = false, features = ["unstable", "orchard"], optional = true }
+zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "991cfd0460f554d8e29fde32c1101e96a1e09112", default-features = false, features = ["unstable", "orchard"], optional = true }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror.workspace = true

@@ -528,8 +528,12 @@ where
 
                     Ok(())
                 })
-                // .map_err(|e| anyhow!("Failed to add Sapling proof generation key: {:?}", e))?
-                .unwrap()
+                .map_err(|e| {
+                    Error::PcztProve(format!(
+                        "Failed to add Sapling proof generation key: {:?}",
+                        e
+                    ))
+                })?
                 .finish()
         } else {
             pczt
@@ -538,11 +542,9 @@ where
         let prover = LocalTxProver::bundled();
         let pczt = Prover::new(pczt)
             .create_orchard_proof(&orchard::circuit::ProvingKey::build())
-            // .map_err(|e| anyhow!("Failed to create Orchard proof: {:?}", e))?
-            .unwrap()
+            .map_err(|e| Error::PcztProve(format!("Failed to create Orchard proof: {:?}", e)))?
             .create_sapling_proofs(&prover, &prover)
-            // .map_err(|e| anyhow!("Failed to create Sapling proofs: {:?}", e))?
-            .unwrap()
+            .map_err(|e| Error::PcztProve(format!("Failed to create Sapling proofs: {:?}", e)))?
             .finish();
         Ok(pczt)
     }
@@ -591,8 +593,7 @@ where
                 }
                 Ok(())
             })
-            // .map_err(|e| anyhow!("Invalid PCZT: {:?}", e))?
-            .unwrap()
+            .map_err(|e| Error::PcztSign(format!("Invalid PCZT: {:?}", e)))?
             .with_sapling::<Infallible, _>(|bundle| {
                 for (index, spend) in bundle.spends().iter().enumerate() {
                     if let Some(account_index) =
@@ -612,8 +613,7 @@ where
                 }
                 Ok(())
             })
-            // .map_err(|e| anyhow!("Invalid PCZT: {:?}", e))?
-            .unwrap()
+            .map_err(|e| Error::PcztSign(format!("Invalid PCZT: {:?}", e)))?
             .with_transparent::<Infallible, _>(|bundle| {
                 for (index, input) in bundle.inputs().iter().enumerate() {
                     for derivation in input.bip32_derivation().values() {
@@ -638,8 +638,7 @@ where
                 }
                 Ok(())
             })
-            // .map_err(|e| anyhow!("Invalid PCZT: {:?}", e))?
-            .unwrap()
+            .map_err(|e| Error::PcztSign(format!("Invalid PCZT: {:?}", e)))?
             .finish();
 
         let mut signer = Signer::new(pczt).unwrap();
@@ -654,18 +653,22 @@ where
                                 index,
                                 &orchard::keys::SpendAuthorizingKey::from(usk.orchard()),
                             )
-                            .unwrap();
-                        // .map_err(|e| {
-                        //     anyhow!("Failed to sign Orchard spend {index}: {:?}", e)
-                        // })?;
+                            .map_err(|e| {
+                                Error::PcztSign(format!(
+                                    "Failed to sign Orchard spend {index}: {:?}",
+                                    e
+                                ))
+                            })?;
                     }
                     KeyRef::Sapling { index } => {
                         signer
                             .sign_sapling(index, &usk.sapling().expsk.ask)
-                            .unwrap();
-                        // .map_err(|e| {
-                        //     anyhow!("Failed to sign Sapling spend {index}: {:?}", e)
-                        // })?;
+                            .map_err(|e| {
+                                Error::PcztSign(format!(
+                                    "Failed to sign Sapling spend {index}: {:?}",
+                                    e
+                                ))
+                            })?;
                     }
                     KeyRef::Transparent {
                         index,
@@ -676,20 +679,19 @@ where
                             index,
                             &usk.transparent()
                                 .derive_secret_key(scope, address_index)
-                                .unwrap(),
-                            // .map_err(|e| {
-                            //     anyhow!(
-                            //         "Failed to derive transparent key at .../{:?}/{:?}: {:?}",
-                            //         scope,
-                            //         address_index,
-                            //         e,
-                            //     )
-                            // })?,
+                                .map_err(|e| {
+                                    Error::PcztSign(format!(
+                                        "Failed to derive transparent key at .../{:?}/{:?}: {:?}",
+                                        scope, address_index, e,
+                                    ))
+                                })?,
                         )
-                        .unwrap(),
-                    // .map_err(|e| {
-                    //     anyhow!("Failed to sign transparent input {index}: {:?}", e)
-                    // })?,
+                        .map_err(|e| {
+                            Error::PcztSign(format!(
+                                "Failed to sign transparent input {index}: {:?}",
+                                e
+                            ))
+                        })?,
                 }
             }
         }
@@ -708,10 +710,14 @@ where
             &output_vk,
             &orchard::circuit::VerifyingKey::build(),
         )
-        .unwrap();
+        .map_err(|e| {
+            Error::PcztSend(format!(
+                "Failed to extract and store transaction from PCZT: {:?}",
+                e
+            ))
+        })?;
 
         drop(db);
-        // .map_err(|e| anyhow!("Failed to extract and store transaction from PCZT: {:?}", e))?;
         self.send_authorized_transactions(&NonEmpty::new(txid))
             .await
     }
