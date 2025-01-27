@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import Input from '@components/Input/Input';
-import Select from '@components/Select/Select';
-import Button from '@components/Button/Button';
-import useBalance from '@hooks/useBalance';
 import {
   TransferBalanceFormData,
   TransferBalanceFormHandleChange,
 } from './useTransferBalanceForm';
 import { PoolType, TransactionType } from '../../types/transfer';
+import useBalance from '../../hooks/useBalance';
+import Select from '../../components/Select/Select';
+import Input from '../../components/Input/Input';
+import Button from '../../components/Button/Button';
 
 const TransactionTypeSelectOptions = [
   { value: TransactionType.SHIELDED, label: 'Shielded' },

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { MetaMaskLogoSvg, ZcashYellowSvg, FormTransferSvg } from '../assets';
-import { useMetaMask } from '@hooks/snaps/useMetaMask.ts';
-import { useRequestSnap } from '@hooks/snaps/useRequestSnap.ts';
 import { useNavigate } from 'react-router-dom';
-import { useInvokeSnap } from '@hooks/snaps/useInvokeSnap.ts';
-import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
 import { useWebZjsContext } from '../context/WebzjsContext';
+import {
+  useInvokeSnap,
+  useRequestSnap,
+  useMetaMask,
+  useWebZjsActions,
+} from '../hooks';
 
 const Home: React.FC = () => {
   const [birthdayHeight, setBirthdayHeight] = useState(0);

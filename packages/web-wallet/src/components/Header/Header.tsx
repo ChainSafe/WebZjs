@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { MetaMaskLogoSvg, MetaMaskSnapsLogoSvg, ZcashSvg } from '../../assets';
-import Button from '@components/Button/Button';
+import Button from '../../components/Button/Button';
 
 const Header = (): React.JSX.Element => {
   const location = useLocation();
@@ -16,7 +16,7 @@ const Header = (): React.JSX.Element => {
           </div>
           <div className="h-6 w-full max-w-[200px]">
             {isHomePage ? (
-              <MetaMaskSnapsLogoSvg />
+              <img src={MetaMaskSnapsLogoSvg} alt={'MetaMaskSnapsLogoSvg'} />
             ) : (
               <MetaMaskLogoSvg className="w-[25px] h-[25px]" />
             )}

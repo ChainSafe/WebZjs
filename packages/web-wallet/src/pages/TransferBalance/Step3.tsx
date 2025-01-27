@@ -1,9 +1,9 @@
-import Button from '@components/Button/Button';
 import { useNavigate } from 'react-router-dom';
 import { TransferBalanceFormType } from './useTransferBalanceForm';
 import React from 'react';
 import { CheckSVG, WarningSVG } from '../../assets';
-import TransactionStatusCard from '@components/TransactionStatusCard/TransactionStatusCard';
+import Button from '../../components/Button/Button';
+import TransactionStatusCard from '../../components/TransactionStatusCard/TransactionStatusCard';
 
 interface Step3Props {
   resetForm: TransferBalanceFormType['resetForm'];

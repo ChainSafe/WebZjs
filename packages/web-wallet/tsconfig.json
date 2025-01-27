@@ -4,14 +4,9 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
+  "include": ["src/types/*.d.ts"],
   "typeRoots": ["node_modules/@types", "src/types"],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@components/*": ["src/components/*"],
-      "@pages/*": ["src/pages/*"],
-      "@hooks/*": ["src/hooks/*"],
-      "@utils/*": ["src/utils/*"],
-    }
+    "baseUrl": "."
   }
 }

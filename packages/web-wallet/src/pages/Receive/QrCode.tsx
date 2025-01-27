@@ -1,7 +1,7 @@
 import QRCode from 'react-qr-code';
 import { EyeSlashSvg, EyeSvg } from '../../assets';
-import CopyButton from '@components/CopyButton/CopyButton';
 import { useState } from 'react';
+import CopyButton from '../../components/CopyButton/CopyButton';
 
 interface QrCodeProps {
   address: string; // Unified or transparent

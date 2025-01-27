@@ -1,11 +1,11 @@
 import React from 'react';
 import { ZcashYellowSvg } from '../../assets';
-import useBalance from '@hooks/useBalance';
 import useTransferBalanceForm from './useTransferBalanceForm';
-import Step1 from '@pages/TransferBalance/Step1';
-import Step2 from '@pages/TransferBalance/Step2';
-import Step3 from '@pages/TransferBalance/Step3';
-import PageHeading from '@components/PageHeading/PageHeading';
+import PageHeading from '../../components/PageHeading/PageHeading';
+import useBalance from '../../hooks/useBalance';
+import Step1 from './Step1';
+import Step2 from './Step2';
+import Step3 from './Step3';
 
 function TransferBalance(): React.JSX.Element {
   const { totalBalance } = useBalance();

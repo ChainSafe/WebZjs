@@ -1,12 +1,13 @@
+import React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import Home from '@pages/Home';
-import ProtectedRoute from '@components/ProtectedRoute/ProtectedRoute';
-import Dashboard from '@pages/Dashboard';
-import AccountSummary from '@pages/AccountSummary';
-import TransferBalance from '@pages/TransferBalance/TransferBalance';
-import Receive from '@pages/Receive/Receive';
-import TransactionHistory from '@pages/TransactionHistory';
 import App from '../App';
+import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
+import Home from '../pages/Home';
+import Dashboard from '../pages/Dashboard';
+import AccountSummary from '../pages/AccountSummary';
+import TransferBalance from '../pages/TransferBalance/TransferBalance';
+import Receive from '../pages/Receive/Receive';
+import TransactionHistory from '../pages/TransactionHistory';
 
 const router = createBrowserRouter([
   {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { zatsToZec } from '../utils';
 import { CoinsSvg, ShieldDividedSvg, ShieldSvg } from '../assets';
-import useBalance from '@hooks/useBalance';
+import useBalance from '../hooks/useBalance';
 
 interface BalanceCard {
   name: string;

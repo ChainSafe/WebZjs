@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useWebZjsActions } from '@hooks/useWebzjsActions';
-import QrCode from '@pages/Receive/QrCode';
-import Tab from '@pages/Receive/Tab';
-import PageHeading from '@components/PageHeading/PageHeading';
-import Loader from '@components/Loader/Loader';
+import { useWebZjsActions } from '../../hooks';
+import QrCode from './QrCode';
+import PageHeading from '../../components/PageHeading/PageHeading';
+import Loader from '../../components/Loader/Loader';
+import Tab from './Tab';
 
 enum AddressType {
   UNIFIED = 'unified',

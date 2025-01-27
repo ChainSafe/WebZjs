@@ -1,5 +1,5 @@
 import React from 'react';
-import ErrorMessage from '@components/ErrorMessage/ErrorMessage';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
