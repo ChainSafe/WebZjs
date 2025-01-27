@@ -22,5 +22,9 @@
     "snap:start": "yarn workspace @webzjs/zcash-snap run start",
     "snap:build": "yarn workspace @webzjs/zcash-snap run build",
     "just:build-keys": "just build-keys"
+  },
+  "dependencies": {
+    "http-proxy-middleware": "^3.0.3",
+    "portfinder": "^1.0.32"
   }
 }
