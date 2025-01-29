@@ -1,29 +1,34 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MetaMaskLogoSvg, MetaMaskSnapsLogoSvg, ZcashSvg } from '../../assets';
-import Button from '../../components/Button/Button';
+import { MetaMaskLogoPNG, MetaMaskSnapsLogoPNG, ZcashPNG } from '../../assets';
 
 const Header = (): React.JSX.Element => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
   return (
-    <header className="font-inter h-[60px] fixed top-0 left-0 w-full px-16 flex flex-grow items-center justify-between bg-transparent py-3 border-b border-neutral-200">
+    <header className="font-inter h-[60px] fixed top-0 left-0 w-full px-16 flex grow items-center justify-between bg-transparent py-3 border-b border-neutral-200">
       <Link to={'/'}>
         <div className="flex items-center">
-          <div className="h-6 w-6 mr-3">
-            <ZcashSvg className="w-[25px] h-[25px]" />
-          </div>
-          <div className="h-6 w-full max-w-[200px]">
+          <img
+            src={ZcashPNG}
+            className="w-[25px] h-[25px] mr-3"
+            alt="Zcash logo"
+          />
+          <div className="w-full max-w-[200px]">
             {isHomePage ? (
-              <img src={MetaMaskSnapsLogoSvg} alt={'MetaMaskSnapsLogoSvg'} />
+              <img src={MetaMaskSnapsLogoPNG} alt={'MetaMaskSnapsLogoSvg'} />
             ) : (
-              <MetaMaskLogoSvg className="w-[25px] h-[25px]" />
+              <img
+                src={MetaMaskLogoPNG}
+                className="w-[32px] h-[25px]"
+                alt="MetaMask logo"
+              />
             )}
           </div>
         </div>
       </Link>
-      {isHomePage ? (
+      {isHomePage ?? (
         <nav className="flex">
           <a
             target="_blank"
@@ -47,16 +52,6 @@ const Header = (): React.JSX.Element => {
             Snap Registry
           </a>
         </nav>
-      ) : (
-        <Button
-          variant={'secondary'}
-          classNames={'min-w-max '}
-          onClick={() => {
-            // TODO: Clarify sign out functionality
-            console.log('Sign out');
-          }}
-          label={'Sign out'}
-        />
       )}
     </header>
   );

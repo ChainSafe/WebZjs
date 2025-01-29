@@ -1,4 +1,3 @@
-import React from 'react';
 import type { MetaMaskInpageProvider } from '@metamask/providers';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';

@@ -11,8 +11,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 async function run() {
-  console.log('Starting server...', process.env.SNAP_ORIGIN);
-
   const bundler = new Parcel({
     entries: 'index.html',
     defaultConfig: '@parcel/config-default',

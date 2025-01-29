@@ -35,7 +35,7 @@ const Input: React.FC<InputProps> = ({
         <input
           {...props}
           id={id}
-          className={`flex-grow bg-transparent focus:outline-none text-[#0e0e0e] text-base font-semibold font-inter ${inputClassName}`}
+          className={`grow bg-transparent focus:outline-hidden text-[#0e0e0e] text-base font-semibold font-inter ${inputClassName}`}
           aria-describedby={`${id}-suffix`}
         />
         <span

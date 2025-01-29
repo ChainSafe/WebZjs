@@ -9,8 +9,7 @@
   ],
   "scripts": {
     "dev": "node server.js",
-    "build": "parcel build index.html --dist-dir dist",
-    "lint": "eslint ."
+    "build": "parcel build index.html --dist-dir dist"
   },
   "dependencies": {
     "@metamask/providers": "^18.2.0",

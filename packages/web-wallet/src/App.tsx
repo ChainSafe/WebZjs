@@ -1,4 +1,3 @@
-import React from 'react';
 import { useInterval } from 'usehooks-ts';
 import { Outlet, useLocation } from 'react-router-dom';
 import { RESCAN_INTERVAL } from './config/constants';
@@ -7,7 +6,6 @@ import { useWebZjsActions } from './hooks';
 import Layout from './components/Layout/Layout';
 
 function App() {
-  console.log('SNAP_ORIGIN', process.env.SNAP_ORIGIN);
   const { triggerRescan } = useWebZjsActions();
   const location = useLocation();
 

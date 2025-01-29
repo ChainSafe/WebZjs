@@ -1,9 +1,9 @@
-import ChainsafeSvg from './chainsafe.svg';
+import ChainsafePNG from './chainsafe.png';
 import FormTransferSvg from './form-transfer.svg';
-import MetaMaskLogoSvg from './metaMask-logo.svg';
-import MetaMaskSnapsLogoSvg from './metamask-snaps-logo.png';
-import ZcashSvg from './zcash.svg';
-import ZcashYellowSvg from './zcash-yellow.svg';
+import MetaMaskLogoPNG from './metaMask-logo.png';
+import MetaMaskSnapsLogoPNG from './metamask-snaps-logo.png';
+import ZcashPNG from './zcash.png';
+import ZcashYellowPNG from './zcash-yellow.png';
 
 // Icons
 import ArrowReceiveSvg from './icons/arrow-receive.svg';
@@ -22,11 +22,11 @@ import CircleSvg from './icons/circle.svg';
 import CircleDashedSvg from './icons/circle-dashed.svg';
 
 export {
-  ChainsafeSvg,
-  MetaMaskLogoSvg,
-  MetaMaskSnapsLogoSvg,
-  ZcashSvg,
-  ZcashYellowSvg,
+  ChainsafePNG,
+  MetaMaskLogoPNG,
+  MetaMaskSnapsLogoPNG,
+  ZcashPNG,
+  ZcashYellowPNG,
   FormTransferSvg,
   ArrowReceiveSvg,
   ArrowTransferSvg,

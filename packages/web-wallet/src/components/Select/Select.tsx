@@ -73,7 +73,7 @@ const Select: React.FC<SelectProps> = ({
         className="relative h-full flex items-center bg-neutral-50 rounded-xl border border-[#afafaf] p-3 cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="flex-grow bg-transparent focus:outline-none text-[#0e0e0e] text-base font-semibold font-inter">
+        <span className="grow bg-transparent focus:outline-hidden text-[#0e0e0e] text-base font-semibold font-inter">
           {selected ? (
             selected.label
           ) : (

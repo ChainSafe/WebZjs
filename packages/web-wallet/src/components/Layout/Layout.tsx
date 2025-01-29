@@ -7,7 +7,7 @@ const Layout = ({ children }: React.PropsWithChildren): React.JSX.Element => {
   return (
     <div className="container mx-auto flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow flex justify-center py-3 self-stretch mt-[60px] w-full">
+      <main className="grow flex justify-center py-3 self-stretch mt-[60px] w-full">
         {children ? children : <Outlet />}
       </main>
       <Footer />

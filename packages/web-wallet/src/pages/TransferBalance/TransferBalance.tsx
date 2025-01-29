@@ -1,5 +1,5 @@
 import React from 'react';
-import { ZcashYellowSvg } from '../../assets';
+import { ZcashYellowPNG } from '../../assets';
 import useTransferBalanceForm from './useTransferBalanceForm';
 import PageHeading from '../../components/PageHeading/PageHeading';
 import useBalance from '../../hooks/useBalance';
@@ -21,7 +21,11 @@ function TransferBalance(): React.JSX.Element {
               Available:
             </span>
             <div className="px-4 py-2 bg-[#e8e8e8] rounded-3xl flex items-center gap-2.5">
-              <ZcashYellowSvg className="w-5 h-5" />
+              <img
+                src={ZcashYellowPNG}
+                alt="Zcash Yellow"
+                className="w-5 h-5"
+              />
               <span className="text-[#434343] text-base font-semibold font-inter leading-tight">
                 {totalBalance} ZEC
               </span>

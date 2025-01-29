@@ -14,13 +14,16 @@
   },
   "packageManager": "yarn@4.5.1",
   "scripts": {
-    "serve": "yarn workspace @webzjs/demo-wallet run serve",
-    "dev": "yarn run just:build-keys && yarn run snap:start & yarn run demo-wallet:dev",
-    "build": "yarn workspace @webzjs/demo-wallet run build",
-    "demo-wallet:dev": "yarn workspace @webzjs/demo-wallet run dev",
+    "dev": "yarn workspace @webzjs/web-wallet run dev & yarn run snap:start",
+    "demo-wallet:serve": "yarn workspace @webzjs/demo-wallet run serve",
+    "demo-wallet:dev": "yarn run just:build-keys && yarn run snap:start & yarn run web-wallet:dev",
+    "demo-wallet:build": "yarn workspace @webzjs/demo-wallet run build",
+    "web-wallet:dev": "yarn workspace @webzjs/web-wallet run dev",
+    "web-wallet:build": "yarn workspace @webzjs/web-wallet run build",
     "test:e2e": "yarn workspace @webzjs/e2e-tests test",
     "snap:start": "yarn workspace @webzjs/zcash-snap run start",
     "snap:build": "yarn workspace @webzjs/zcash-snap run build",
+    "just:build": "just build",
     "just:build-keys": "just build-keys"
   },
   "dependencies": {

@@ -33,7 +33,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Build
-        run: yarn build
+        run: yarn demo-wallet:build
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
