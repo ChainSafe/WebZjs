@@ -52,7 +52,7 @@ const Home: React.FC = () => {
           <FormTransferSvg />
         </div>
         <div className="flex flex-col items-start space-y-8">
-          <img src={ZcashYellowPNG} alt="Zcash Logo" />
+          <img src={ZcashYellowPNG} className="w-10 h-10" alt="Zcash Logo" />
           <h1 className="font-inter font-semibold text-[5rem] leading-[5rem] we">
             Zcash <br />
             Web Wallet
@@ -70,7 +70,7 @@ const Home: React.FC = () => {
             <div className="ml-3">
               <img
                 src={MetaMaskLogoPNG}
-                className="w-[21px] h-[20px]"
+                className="w-[22px] h-[20px]"
                 alt="MetaMask Logo"
               />
             </div>
