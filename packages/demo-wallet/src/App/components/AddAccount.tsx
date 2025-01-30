@@ -45,6 +45,8 @@ export function AddAccount() {
 
   const handleMetamaskImport = async (e: FormEvent) => {
     e.preventDefault();
+    console.log('-------------++++++++++++++++++++++++++++++++++');
+    console.log('birthdayHeight', birthdayHeight);
     const viewKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
     console.log(viewKey);
     await addNewAccountFromUfvk(state, dispatch, viewKey, birthdayHeight);

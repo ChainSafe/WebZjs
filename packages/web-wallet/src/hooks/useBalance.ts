@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
+import { useInterval } from 'usehooks-ts';
 
 type BalanceType = {
   shieldedBalance: number;
@@ -12,7 +13,7 @@ type BalanceType = {
 };
 
 const useBalance = () => {
-  const { state } = useWebZjsContext();
+  const { state, dispatch } = useWebZjsContext();
 
   const [balances, setBalances] = useState<BalanceType>({
     shieldedBalance: 0,
@@ -24,11 +25,32 @@ const useBalance = () => {
     error: null,
   });
 
+  useInterval(() => {
+    async function getWalletSummary() {
+      console.log('Getting wallet summary');
+      const summary = await state.webWallet?.get_wallet_summary();
+      console.log('summary', summary);
+      if (summary) {
+        dispatch({ type: 'set-summary', payload: summary });
+        if (summary.account_balances.length > 0) {
+          dispatch({
+            type: 'set-active-account',
+            payload: summary.account_balances[0][0],
+          });
+        }
+      }
+    }
+    getWalletSummary();
+  }, 10000);
+
+  console.log(balances);
+
   const activeBalanceReport = useMemo(() => {
+    console.log('fully_scanned_height', state.summary);
     return state.summary?.account_balances.find(
       ([accountId]: [number]) => accountId === state.activeAccount,
     );
-  }, [state.activeAccount, state.summary?.account_balances]);
+  }, []);
 
   // Compute shielded, unshielded, and total balances
   const {
