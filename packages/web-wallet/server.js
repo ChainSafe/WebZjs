@@ -14,7 +14,6 @@ async function run() {
   const bundler = new Parcel({
     entries: 'index.html',
     defaultConfig: '@parcel/config-default',
-    sourceMaps: true,
     mode: 'development',
     defaultTargetOptions: {
       distDir: 'dist',

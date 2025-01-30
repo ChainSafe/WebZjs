@@ -2,71 +2,82 @@
 @import 'tailwindcss';
 
 @layer base {
-    :root {
-        --font-sans: 'Roboto', 'sans-serif';
-        --font-body: 'Roboto', 'sans-serif';
-        --font-inter: 'Inter', 'sans-serif';
-        --buttonBlackGradient: radial-gradient(82.64% 800.96% at 50% -550.96%, #000 0%, rgba(59, 59, 59, 0.81) 55%, #000 100%);
-        --buttonBlackGradientHover: radial-gradient(82.64% 800.96% at 50% -550.96%, #000 0%, rgba(59, 59, 59, 0.81) 74%, #000 100%);
-    }
+  :root {
+    --font-sans: 'Roboto', 'sans-serif';
+    --font-body: 'Roboto', 'sans-serif';
+    --font-inter: 'Inter', 'sans-serif';
+    --buttonBlackGradient: radial-gradient(
+      82.64% 800.96% at 50% -550.96%,
+      #000 0%,
+      rgba(59, 59, 59, 0.81) 55%,
+      #000 100%
+    );
+    --buttonBlackGradientHover: radial-gradient(
+      82.64% 800.96% at 50% -550.96%,
+      #000 0%,
+      rgba(59, 59, 59, 0.81) 74%,
+      #000 100%
+    );
+  }
 }
 
 @layer utilities {
-    .navbar-link:hover svg path {
-        fill: #e27625;
-    }
-    .navbar-link-active svg path {
-        fill: #e27625;
-    }
-    .bg-button-black-gradient {
-        background-image: var(--buttonBlackGradient);
-    }
+  .navbar-link:hover svg path {
+    fill: #e27625;
+  }
+  .navbar-link-active svg path {
+    fill: #e27625;
+  }
+  .bg-button-black-gradient {
+    background-image: var(--buttonBlackGradient);
+  }
 
-    .bg-button-black-gradient-hover:hover {
-        background-image: var(--buttonBlackGradientHover);
-    }
+  .bg-button-black-gradient-hover:hover {
+    background-image: var(--buttonBlackGradientHover);
+  }
 }
 
 .home-page {
-    header {
-        border-bottom: none;
-    }
+  header {
+    border-bottom: none;
+  }
 }
 
 body {
-    position: relative;
-    overflow: hidden;
-    background: #FAFAFA url('../assets/diamond-bg.png') no-repeat center center fixed;
+  position: relative;
+  overflow: hidden;
+  background: #fafafa url('../assets/diamond-bg.png') no-repeat center center
+    fixed;
 
-    &.home-page-bg {
-        background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);
+  &.home-page-bg {
+    background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);
 
-        /* Noise background */
+    /* Noise background */
 
-        &:before {
-            content: '';
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            opacity: 0.25;
-            background: url('../assets/noise.png') lightgray 0 0 / 15px 15px repeat;
-            mix-blend-mode: color-burn;
-        }
-
-        /* Yellow oval shape background */
-
-        &:after {
-            content: '';
-            position: absolute;
-            width: 75.5vw;
-            height: 88.1875rem;
-            top: 20rem;
-            left: 2.5rem;
-            z-index: -1;
-            border-radius: 88.1875rem;
-            background: rgba(187, 160, 17, 0.5);
-            filter: blur(274px);
-        }
+    &:before {
+      content: '';
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      opacity: 0.25;
+      background: url('../assets/noise.png') lightgray 0 0 / 15px 15px repeat;
+      mix-blend-mode: color-burn;
     }
+
+    /* Yellow oval shape background */
+
+    &:after {
+      content: '';
+      position: absolute;
+      width: 75.5vw;
+      height: 88.1875rem;
+      top: 20rem;
+      left: 2.5rem;
+      z-index: -1;
+      border-radius: 88.1875rem;
+      background: rgba(187, 160, 17, 0.5);
+      filter: blur(274px);
+    }
+  }
 }
