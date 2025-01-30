@@ -21,10 +21,10 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchBirthday = async () => {
       const birthday = await state.webWallet?.get_latest_block();
-      setBirthdayHeight(2803082);
+      setBirthdayHeight(Number(birthday) || 0);
     };
     fetchBirthday();
-  }, []);
+  }, [state]);
 
   const handleRequestSnapAndGetViewingKey: React.MouseEventHandler<
     HTMLButtonElement
@@ -34,7 +34,6 @@ const Home: React.FC = () => {
 
     const viewKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
     console.log(viewKey);
-    console.log('birthdayHeight', birthdayHeight);
 
     await addNewAccountFromUfvk(viewKey, birthdayHeight);
     setBirthdayHeight(0);
