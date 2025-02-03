@@ -1,6 +1,6 @@
-import Table from '@components/Table/Table';
 import React from 'react';
-import PageHeading from '@components/PageHeading/PageHeading';
+import PageHeading from '../components/PageHeading/PageHeading';
+import Table from '../components/Table/Table';
 
 const data = [
   {

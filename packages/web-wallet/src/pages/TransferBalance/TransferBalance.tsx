@@ -1,11 +1,12 @@
 import React from 'react';
-import { ZcashYellowSvg } from '../../assets';
-import useBalance from '@hooks/useBalance';
+import { ZcashYellowPNG } from '../../assets';
 import useTransferBalanceForm from './useTransferBalanceForm';
-import Step1 from '@pages/TransferBalance/Step1';
-import Step2 from '@pages/TransferBalance/Step2';
-import Step3 from '@pages/TransferBalance/Step3';
-import PageHeading from '@components/PageHeading/PageHeading';
+import PageHeading from '../../components/PageHeading/PageHeading';
+import useBalance from '../../hooks/useBalance';
+import Step1 from './Step1';
+import Step2 from './Step2';
+import Step3 from './Step3';
+import { zatsToZec } from '../../utils';
 
 function TransferBalance(): React.JSX.Element {
   const { totalBalance } = useBalance();
@@ -21,9 +22,13 @@ function TransferBalance(): React.JSX.Element {
               Available:
             </span>
             <div className="px-4 py-2 bg-[#e8e8e8] rounded-3xl flex items-center gap-2.5">
-              <ZcashYellowSvg className="w-5 h-5" />
+              <img
+                src={ZcashYellowPNG}
+                alt="Zcash Yellow"
+                className="w-5 h-5"
+              />
               <span className="text-[#434343] text-base font-semibold font-inter leading-tight">
-                {totalBalance} ZEC
+                {zatsToZec(totalBalance)} ZEC
               </span>
             </div>
           </div>

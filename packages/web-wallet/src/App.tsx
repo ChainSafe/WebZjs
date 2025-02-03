@@ -1,9 +1,9 @@
 import { useInterval } from 'usehooks-ts';
-import { useWebZjsActions } from '@hooks/useWebzjsActions';
-import Layout from '@components/Layout/Layout';
 import { Outlet, useLocation } from 'react-router-dom';
 import { RESCAN_INTERVAL } from './config/constants';
 import { useEffect } from 'react';
+import { useWebZjsActions } from './hooks';
+import Layout from './components/Layout/Layout';
 
 function App() {
   const { triggerRescan } = useWebZjsActions();

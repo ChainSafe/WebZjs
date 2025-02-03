@@ -138,7 +138,7 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
       dispatch({ type: 'set-error', payload: Error(String(err)) });
       dispatch({ type: 'set-loading', payload: false });
     }
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     initAll().catch(console.error);

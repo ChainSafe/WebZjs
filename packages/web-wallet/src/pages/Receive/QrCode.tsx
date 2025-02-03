@@ -1,7 +1,7 @@
 import QRCode from 'react-qr-code';
 import { EyeSlashSvg, EyeSvg } from '../../assets';
-import CopyButton from '@components/CopyButton/CopyButton';
 import { useState } from 'react';
+import CopyButton from '../../components/CopyButton/CopyButton';
 
 interface QrCodeProps {
   address: string; // Unified or transparent
@@ -20,18 +20,18 @@ function QrCode({ address }: QrCodeProps) {
           {exposeAddress ? (
             <span className="break-words">{address}</span>
           ) : (
-            <span className="overflow-ellipsis overflow-hidden block">
+            <span className="text-ellipsis overflow-hidden block">
               {address}
             </span>
           )}
         </div>
         <div
-          className="flex-grow-0"
+          className="grow-0"
           onClick={() => setExposeAddress(!exposeAddress)}
         >
           {exposeAddress ? <EyeSlashSvg /> : <EyeSvg />}
         </div>
-        <div className="justify-start flex-grow-0">
+        <div className="justify-start grow-0">
           <CopyButton textToCopy={address} />
         </div>
       </div>

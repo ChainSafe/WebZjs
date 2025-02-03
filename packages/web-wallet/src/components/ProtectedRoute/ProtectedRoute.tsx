@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useMetaMask } from '@hooks/snaps/useMetaMask.ts';
 import React from 'react';
+import { useMetaMask } from '../../hooks';
 
 const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({
   children,

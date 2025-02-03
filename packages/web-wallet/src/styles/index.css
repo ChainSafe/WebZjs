@@ -1,27 +1,39 @@
-@import '@fontsource/roboto/400.css';
-@import '@fontsource/roboto/500.css';
-@import '@fontsource/roboto/700.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Roboto:wdth,wght@75..100,100..900&display=swap');
+@import 'tailwindcss';
 
-@import '@fontsource/inter/400.css';
-@import '@fontsource/inter/600.css';
+@layer base {
+  :root {
+    --font-sans: 'Roboto', 'sans-serif';
+    --font-body: 'Roboto', 'sans-serif';
+    --font-inter: 'Inter', 'sans-serif';
+    --buttonBlackGradient: radial-gradient(
+      82.64% 800.96% at 50% -550.96%,
+      #000 0%,
+      rgba(59, 59, 59, 0.81) 55%,
+      #000 100%
+    );
+    --buttonBlackGradientHover: radial-gradient(
+      82.64% 800.96% at 50% -550.96%,
+      #000 0%,
+      rgba(59, 59, 59, 0.81) 74%,
+      #000 100%
+    );
+  }
+}
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer components {
-  .navbar-link {
-    &:hover {
-      svg path {
-        fill: #e27625;
-      }
-    }
+@layer utilities {
+  .navbar-link:hover svg path {
+    fill: #e27625;
+  }
+  .navbar-link-active svg path {
+    fill: #e27625;
+  }
+  .bg-button-black-gradient {
+    background-image: var(--buttonBlackGradient);
   }
 
-  .navbar-link-active {
-    svg path {
-      fill: #e27625;
-    }
+  .bg-button-black-gradient-hover:hover {
+    background-image: var(--buttonBlackGradientHover);
   }
 }
 
@@ -34,12 +46,14 @@
 body {
   position: relative;
   overflow: hidden;
-  background: #FAFAFA url('../assets/diamond-bg.png') no-repeat center center fixed;
+  background: #fafafa url('../assets/diamond-bg.png') no-repeat center center
+    fixed;
 
   &.home-page-bg {
     background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);
 
     /* Noise background */
+
     &:before {
       content: '';
       position: absolute;
@@ -52,6 +66,7 @@ body {
     }
 
     /* Yellow oval shape background */
+
     &:after {
       content: '';
       position: absolute;
