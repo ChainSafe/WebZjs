@@ -126,7 +126,7 @@ const Select: React.FC<SelectProps> = ({
 
         {isOpen && (
           <div
-            className={`absolute top-full botto left-0 right-0 bg-white border border-[#afafaf] rounded-xl overflow-hidden z-10 ${dropdownClassName}`}
+            className={`absolute top-full left-0 right-0 bg-white border border-[#afafaf] rounded-xl overflow-hidden z-10 ${dropdownClassName}`}
           >
             {options.map((option) => (
               <DropdownOption
