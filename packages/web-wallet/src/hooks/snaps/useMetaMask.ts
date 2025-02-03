@@ -49,7 +49,7 @@ export const useMetaMask = () => {
     };
 
     detect().catch(console.error);
-  }, [detectFlask, getSnap, provider]);
+  }, [provider]);
 
   return { isFlask, snapsDetected, installedSnap, getSnap };
 };
