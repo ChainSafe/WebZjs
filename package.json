@@ -18,7 +18,7 @@
     "demo-wallet:serve": "yarn workspace @webzjs/demo-wallet run serve",
     "demo-wallet:dev": "yarn run just:build-keys && yarn run snap:start & yarn run web-wallet:dev",
     "demo-wallet:build": "yarn workspace @webzjs/demo-wallet run build",
-    "web-wallet:dev": "yarn workspace @webzjs/web-wallet run dev",
+    "web-wallet:dev": "yarn workspace @webzjs/web-wallet run dev & yarn run snap:start",
     "web-wallet:build": "yarn workspace @webzjs/web-wallet run build",
     "test:e2e": "yarn workspace @webzjs/e2e-tests test",
     "snap:start": "yarn workspace @webzjs/zcash-snap run start",

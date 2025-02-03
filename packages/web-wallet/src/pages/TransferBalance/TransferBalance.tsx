@@ -6,6 +6,7 @@ import useBalance from '../../hooks/useBalance';
 import Step1 from './Step1';
 import Step2 from './Step2';
 import Step3 from './Step3';
+import { zatsToZec } from '../../utils';
 
 function TransferBalance(): React.JSX.Element {
   const { totalBalance } = useBalance();
@@ -27,7 +28,7 @@ function TransferBalance(): React.JSX.Element {
                 className="w-5 h-5"
               />
               <span className="text-[#434343] text-base font-semibold font-inter leading-tight">
-                {totalBalance} ZEC
+                {zatsToZec(totalBalance)} ZEC
               </span>
             </div>
           </div>
