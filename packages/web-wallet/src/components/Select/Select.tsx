@@ -59,9 +59,8 @@ const DropdownOption: React.FC<DropdownOptionProps> = ({
     </span>
     {suffixOptions && (
       <div className="ml-2">
-        {suffixOptions.map((suffix) => {
-          if (suffix.label === option.value) return suffix.value;
-          return null;
+        {suffixOptions.map(({ label, value }) => {
+          if (label === option.value) return <div key={label}>{value}</div>;
         })}
       </div>
     )}
