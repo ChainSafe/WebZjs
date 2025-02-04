@@ -167,7 +167,7 @@ function Step1({
           </div>
         )}
         <div className="justify-start items-start inline-flex">
-          <Button onClick={() => handleContinue()} label="Continue" />
+          <Button classNames='cursor-pointer' onClick={() => handleContinue()} label="Continue" />
         </div>
       </div>
     </div>
