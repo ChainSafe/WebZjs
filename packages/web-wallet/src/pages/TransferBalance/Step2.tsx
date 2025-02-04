@@ -8,9 +8,11 @@ import Button from '../../components/Button/Button';
 interface Step2Props {
   formData: TransferBalanceFormData;
   nextStep: TransferBalanceFormType['nextStep'];
+  submitForm: () => void;
 }
 
 function Step2({
+  submitForm,
   formData: { recipient, amount, memo, pool, transactionType },
   nextStep,
 }: Step2Props): React.JSX.Element {
@@ -71,7 +73,7 @@ function Step2({
         )}
         <div className="self-stretch pt-6 flex-col justify-center items-center gap-3 flex">
           <div className="justify-start items-start inline-flex">
-            <Button onClick={nextStep} label={'Complete transfer'} />
+            <Button onClick={submitForm} label={'Complete transfer'} />
           </div>
         </div>
       </div>

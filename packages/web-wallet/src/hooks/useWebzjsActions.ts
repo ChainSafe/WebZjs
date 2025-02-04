@@ -82,7 +82,11 @@ export function useWebZjsActions(): WebzjsActions {
   const addNewAccountFromUfvk = useCallback(
     async (ufvk: string, birthdayHeight: number) => {
       const account_id =
-        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
+        (await state.webWallet?.create_account_ufvk(
+          '0',
+          ufvk,
+          birthdayHeight,
+        )) || 0;
       dispatch({ type: 'set-active-account', payload: account_id });
 
       if (state.webWallet) {

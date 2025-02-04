@@ -48,6 +48,8 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
     }
   };
 
+  const submitForm = () => {};
+
   const resetForm = () => {
     setFormData({
       amount: '',
