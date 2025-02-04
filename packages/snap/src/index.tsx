@@ -1,8 +1,9 @@
 import { getViewingKey } from './rpc/getViewingKey';
-import { InitOutput } from '@webzjs/webz-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
 import { OnRpcRequestHandler, OnUserInputHandler, UserInputEventType } from '@metamask/snaps-sdk';
 import { setBirthdayBlock, SetBirthdayBlockParams } from './rpc/setBirthdayBlock';
+import { signPczt } from './rpc/signPczt';
+import { InitOutput } from '@webzjs/webz-keys';
 
 let wasm: InitOutput;
 
@@ -23,6 +24,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
   switch (request.method) {
     case 'getViewingKey':
       return await getViewingKey();
+    case 'signPczt':
+      return await signPczt(request.params.pczt);
     case 'setBirthdayBlock':
       const params = request.params as SetBirthdayBlockParams;
       return await setBirthdayBlock(params);

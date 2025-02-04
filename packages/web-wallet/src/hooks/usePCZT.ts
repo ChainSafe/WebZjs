@@ -2,11 +2,23 @@ import { useWebZjsContext } from '../context/WebzjsContext';
 import { Pczt } from '@webzjs/webz-wallet';
 import { useInvokeSnap } from './snaps/useInvokeSnap';
 
-interface PcztActions {}
+interface PcztActions {
+  handlePcztTransaction: (
+    accountId: number,
+    toAddress: string,
+    value: bigint,
+  ) => void;
+}
 
-export function usePczt(): PcztActions {
+export const usePczt = (): PcztActions => {
   const { state } = useWebZjsContext();
   const invokeSnap = useInvokeSnap();
+
+  const checkWebWallet = () => {
+    if (!state.webWallet) {
+      throw new Error('Web Wallet not initialized');
+    }
+  };
 
   const createPCZT = async (
     accountId: number,
@@ -14,30 +26,46 @@ export function usePczt(): PcztActions {
     value: bigint,
   ) => {
     try {
-      return await state.webWallet?.pczt_create(accountId, toAddress, value);
+      return await state.webWallet!.pczt_create(accountId, toAddress, value);
     } catch (error) {
       console.error('Error creating PCZT:', error);
     }
   };
 
-  const provePczt = (pczt: Pczt) => async () => {
+  const provePczt = async (pczt: Pczt): Promise<Pczt> => {
     try {
-      await state.webWallet?.pczt_prove(pczt, null);
+      return await state.webWallet!.pczt_prove(pczt);
     } catch (error) {
       console.error('Error proving PCZT:', error);
+      throw new Error('Error proving PCZT');
     }
   };
 
-  const signPczt = (pczt: Pczt) => async () => {
-    const signedPczt = await invokeSnap({
+  const signPczt = async (pczt: Pczt): Promise<Pczt> => {
+    return (await invokeSnap({
       method: 'signPczt',
       params: { pczt },
-    });
+    })) as Pczt;
   };
 
-  const sendPczt = (signedPczt: Pczt) => async () => {
-    await state.webWallet?.pczt_send(signedPczt);
+  const sendPczt = async (signedPczt: Pczt) => {
+    await state.webWallet!.pczt_send(signedPczt);
   };
 
-  return {};
-}
+  const handlePcztTransaction = async (
+    accountId: number,
+    toAddress: string,
+    value: bigint,
+  ) => {
+    checkWebWallet();
+    debugger;
+    const pczt = await createPCZT(accountId, toAddress, value);
+    if (pczt) {
+      const provedPczt = await provePczt(pczt);
+      const signedPczt = await signPczt(provedPczt);
+      await sendPczt(signedPczt);
+    }
+  };
+
+  return { handlePcztTransaction };
+};

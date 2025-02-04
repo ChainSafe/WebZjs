@@ -29,6 +29,7 @@
   "dependencies": {
     "@metamask/snaps-sdk": "^6.17.1",
     "@webzjs/webz-keys": "workspace:^",
+    "@webzjs/webz-wallet": "workspace:^",
     "buffer": "^6.0.3",
     "fork-ts-checker-webpack-plugin": "^9.0.2"
   },
