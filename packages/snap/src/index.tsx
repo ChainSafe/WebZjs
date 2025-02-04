@@ -1,6 +1,7 @@
 import { getViewingKey } from './rpc/getViewingKey';
-import { InitOutput } from '@webzjs/webz-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
+import { signPczt } from './rpc/signPczt';
+import { InitOutput } from '@webzjs/webz-keys';
 
 let wasm: InitOutput;
 
@@ -13,11 +14,9 @@ let wasm: InitOutput;
  * @returns The ViewingKey
  * @throws If the request method is not valid for this snap.
  */
-export const onRpcRequest: ({
+export const onRpcRequest: ({ request }) => Promise<string> = async ({
   request,
-}: {
-  request: any;
-}) => Promise<string> = async ({ request }) => {
+}) => {
   if (!wasm) {
     wasm = initialiseWasm();
   }
@@ -25,6 +24,8 @@ export const onRpcRequest: ({
   switch (request.method) {
     case 'getViewingKey':
       return await getViewingKey();
+    case 'signPczt':
+      return await signPczt(request.params.pczt);
     default:
       throw new Error('Method not found.');
   }

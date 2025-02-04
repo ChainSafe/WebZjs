@@ -10,8 +10,14 @@ import { zatsToZec } from '../../utils';
 
 function TransferBalance(): React.JSX.Element {
   const { totalBalance } = useBalance();
-  const { currentStep, formData, nextStep, handleChange, resetForm } =
-    useTransferBalanceForm();
+  const {
+    currentStep,
+    formData,
+    nextStep,
+    handleChange,
+    resetForm,
+    submitForm,
+  } = useTransferBalanceForm();
 
   return (
     <div className="flex flex-col w-full">
@@ -41,8 +47,15 @@ function TransferBalance(): React.JSX.Element {
           handleChange={handleChange}
         />
       )}
-      {currentStep === 2 && <Step2 formData={formData} nextStep={nextStep} />}
-      {currentStep === 3 && <Step3 resetForm={resetForm} />}
+      {currentStep === 2 && (
+        <Step2
+          submitForm={submitForm}
+          formData={formData}
+          handleChange={handleChange}
+          nextStep={nextStep}
+        />
+      )}
+      {currentStep === 3 && <Step3 formData={formData} resetForm={resetForm} />}
     </div>
   );
 }

@@ -8,14 +8,27 @@ import Button from '../../components/Button/Button';
 interface Step2Props {
   formData: TransferBalanceFormData;
   nextStep: TransferBalanceFormType['nextStep'];
+  handleChange: TransferBalanceFormType['handleChange'];
   submitForm: () => void;
 }
 
 function Step2({
-  submitForm,
   formData: { recipient, amount, memo, pool, transactionType },
   nextStep,
+  submitForm,
+  handleChange,
 }: Step2Props): React.JSX.Element {
+  const handleNextStep = () => {
+    try {
+      submitForm();
+      nextStep();
+    } catch (error) {
+      handleChange('error')(String(error));
+      nextStep();
+      console.error(error);
+    }
+  };
+
   return (
     <div className="h-[461px] px-12 py-6 bg-white rounded-3xl border border-[#afafaf] flex-col justify-start items-center gap-6 inline-flex">
       <div className="self-stretch h-[413px] flex-col justify-center items-center gap-3 flex">
@@ -73,7 +86,7 @@ function Step2({
         )}
         <div className="self-stretch pt-6 flex-col justify-center items-center gap-3 flex">
           <div className="justify-start items-start inline-flex">
-            <Button onClick={submitForm} label={'Complete transfer'} />
+            <Button onClick={handleNextStep} label={'Complete transfer'} />
           </div>
         </div>
       </div>
