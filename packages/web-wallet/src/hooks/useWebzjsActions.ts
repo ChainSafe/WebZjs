@@ -50,6 +50,7 @@ export function useWebZjsActions(): WebzjsActions {
       });
       return;
     }
+
     try {
       const summary = await state.webWallet.get_wallet_summary();
       if (summary) {

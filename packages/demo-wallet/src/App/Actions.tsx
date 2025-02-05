@@ -75,8 +75,9 @@ export async function addNewAccountFromUfvk(
 ) {
   let account_id =
     (await state.webWallet?.create_account_ufvk(
+      'account-0',
       ufvk,
-      birthdayHeight.toString(),
+      birthdayHeight,
     )) || 0;
   dispatch({ type: 'set-active-account', payload: account_id });
 

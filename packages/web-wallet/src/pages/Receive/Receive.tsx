@@ -27,6 +27,7 @@ function Receive(): React.JSX.Element {
     const fetchData = async () => {
       try {
         const data = await getAccountData();
+        console.log('data', data);
         if (data)
           setAddresses({
             unifiedAddress: data.unifiedAddress,
