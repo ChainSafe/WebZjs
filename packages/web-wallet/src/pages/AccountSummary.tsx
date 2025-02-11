@@ -59,7 +59,7 @@ function AccountSummary() {
         </div>
       </div>
       <div
-        className={'rounded-2xl justify-start items-center gap-6 inline-flex'}
+        className={'rounded-2xl justify-start items-center gap-6 flex flex-col min-[1000px]:flex-row'}
       >
         {BalanceCards.map((card) => renderBalanceCard(card))}
       </div>
