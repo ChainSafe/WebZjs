@@ -13,7 +13,13 @@ enum AddressType {
 function Receive(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AddressType>(AddressType.UNIFIED);
-  const [unifiedAddress, setUnifiedAddress] = useState('');
+  const [addresses, setAddresses] = useState<{
+    unifiedAddress: string;
+    transparentAddress: string;
+  }>({
+    unifiedAddress: '',
+    transparentAddress: '',
+  });
   const [error, setError] = useState<string | null>(null);
   const { getAccountData } = useWebZjsActions();
 
@@ -21,10 +27,15 @@ function Receive(): React.JSX.Element {
     const fetchData = async () => {
       try {
         const data = await getAccountData();
-        if (data) setUnifiedAddress(data.unifiedAddress);
-        setLoading(false);
+        if (data)
+          setAddresses({
+            unifiedAddress: data.unifiedAddress,
+            transparentAddress: data.transparentAddress,
+          });
       } catch (err) {
         setError('Failed to fetch account data');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -34,11 +45,9 @@ function Receive(): React.JSX.Element {
   const tabs = {
     [AddressType.UNIFIED]: {
       label: 'Unified Address',
-      component: <QrCode address={unifiedAddress} />,
     },
     [AddressType.TRANSPARENT]: {
       label: 'Transparent Address',
-      component: <div>TODO: Transparent address</div>,
     },
   };
 
@@ -54,14 +63,19 @@ function Receive(): React.JSX.Element {
               {Object.keys(tabs).map((tab) => (
                 <Tab
                   key={tab}
+                  tabName={tab}
                   label={tabs[tab as AddressType].label}
                   isActive={activeTab === tab}
                   onClick={() => setActiveTab(tab as AddressType)}
                 />
               ))}
             </div>
-            {/* Tabs content */}
-            {tabs[activeTab].component}
+            {activeTab === AddressType.UNIFIED && (
+              <QrCode address={addresses.unifiedAddress} />
+            )}
+            {activeTab === AddressType.TRANSPARENT && (
+              <QrCode address={addresses.transparentAddress} />
+            )}
           </>
         )}
         {error && <div className="text-red-500">{error}</div>}
