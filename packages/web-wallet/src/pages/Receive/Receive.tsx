@@ -14,20 +14,14 @@ function Receive(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AddressType>(AddressType.UNIFIED);
   const [unifiedAddress, setUnifiedAddress] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const { getAccountData } = useWebZjsActions();
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const data = await getAccountData();
-        if (data) setUnifiedAddress(data.unifiedAddress);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch account data');
-      }
+      const data = await getAccountData();
+      if (data) setUnifiedAddress(data.unifiedAddress);
+      setLoading(false);
     };
-
     fetchData();
   }, [getAccountData]);
 
@@ -64,7 +58,6 @@ function Receive(): React.JSX.Element {
             {tabs[activeTab].component}
           </>
         )}
-        {error && <div className="text-red-500">{error}</div>}
       </div>
     </>
   );

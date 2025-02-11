@@ -7168,6 +7168,7 @@ __metadata:
     path: "npm:^0.12.7"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
+    react-hot-toast: "npm:^2.5.1"
     react-qr-code: "npm:^2.0.15"
     react-router-dom: "npm:^6.27.0"
     tailwindcss: "npm:^4.0.0"
@@ -9153,7 +9154,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.0.2":
+"csstype@npm:^3.0.2, csstype@npm:^3.1.3":
   version: 3.1.3
   resolution: "csstype@npm:3.1.3"
   checksum: 10c0/80c089d6f7e0c5b2bd83cf0539ab41474198579584fa10d86d0cafe0642202343cbc119e076a0b1aece191989477081415d66c9fefbf3c957fc2fc4b7009f248
@@ -11498,6 +11499,15 @@ __metadata:
     merge2: "npm:^1.4.1"
     slash: "npm:^4.0.0"
   checksum: 10c0/a8d7cc7cbe5e1b2d0f81d467bbc5bc2eac35f74eaded3a6c85fc26d7acc8e6de22d396159db8a2fc340b8a342e74cac58de8f4aee74146d3d146921a76062664
+  languageName: node
+  linkType: hard
+
+"goober@npm:^2.1.16":
+  version: 2.1.16
+  resolution: "goober@npm:2.1.16"
+  peerDependencies:
+    csstype: ^3.0.10
+  checksum: 10c0/f4c8256bf9c27873d47c1443f348779ac7f322516cb80a5dc647a6ebe790ce6bb9d3f487a0fb8be0b583fb96b9b2f6b7463f7fea3cd680306f95fa6fc9db1f6a
   languageName: node
   linkType: hard
 
@@ -15273,6 +15283,19 @@ __metadata:
   version: 6.0.9
   resolution: "react-error-overlay@npm:6.0.9"
   checksum: 10c0/02f51337f34589305f827249acb597446489794cc5b5e721a6260111325b56942a7471b76967cba304e797d7e4ef16dd0bd989c112dd0bb9586270df0d75a4a9
+  languageName: node
+  linkType: hard
+
+"react-hot-toast@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "react-hot-toast@npm:2.5.1"
+  dependencies:
+    csstype: "npm:^3.1.3"
+    goober: "npm:^2.1.16"
+  peerDependencies:
+    react: ">=16"
+    react-dom: ">=16"
+  checksum: 10c0/179efb089276fd20d246fa17e8282437f28e838561e83765d33ed8c03bc0ecff642243003aa08ccdf839616f9c00b3fad2e617de995ea2cd6bd6219325791fc5
   languageName: node
   linkType: hard
 
