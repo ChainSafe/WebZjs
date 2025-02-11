@@ -401,7 +401,6 @@ impl WebWallet {
     }
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 #[wasm_bindgen(inspectable)]
 pub struct WalletSummary {
