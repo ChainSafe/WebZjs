@@ -13,7 +13,7 @@ const Home: React.FC = () => {
   const [birthdayHeight, setBirthdayHeight] = useState(0);
   const navigate = useNavigate();
   const { state } = useWebZjsContext();
-  const { flushDbToStore, addNewAccountFromUfvk } = useWebZjsActions();
+  const { flushDbToStore, addNewAccountFromUfvk, getAccountData } = useWebZjsActions();
   const invokeSnap = useInvokeSnap();
   const { installedSnap, isFlask } = useMetaMask();
   const requestSnap = useRequestSnap();
@@ -32,18 +32,25 @@ const Home: React.FC = () => {
     e.preventDefault();
     await requestSnap();
 
-    const viewKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
-    console.log(viewKey);
+    const {viewingKey, customBirthdayBlock} = (await invokeSnap({ method: 'getViewingKey' })) as {viewingKey: string, customBirthdayBlock: number | null};
 
-    await addNewAccountFromUfvk(viewKey, birthdayHeight);
-    setBirthdayHeight(0);
+    const creationBlockHeight = customBirthdayBlock || birthdayHeight;
+
+    await addNewAccountFromUfvk(viewingKey, creationBlockHeight);
 
     await flushDbToStore();
   };
 
   useEffect(() => {
-    if (installedSnap) navigate('/dashboard/account-summary');
-  }, [installedSnap, navigate]);
+    if (installedSnap) {
+      const homeReload = async () => {
+        const accountData = await getAccountData();
+
+        if(accountData?.unifiedAddress) navigate('/dashboard/account-summary')
+      }
+      homeReload();
+    } ;
+  }, [installedSnap, navigate, getAccountData, state.activeAccount]);
 
   return (
     <div className="home-page flex items-start md:items-center justify-center px-4">

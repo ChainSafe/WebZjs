@@ -18,7 +18,7 @@ export function useWebZjsActions(): WebzjsActions {
 
   const getAccountData = useCallback(async () => {
     try {
-      if (state.activeAccount !== undefined) {
+      if (state.activeAccount !== undefined && state.activeAccount !== null) {
         return {
           unifiedAddress: await state.webWallet!.get_current_address(
             state.activeAccount,
@@ -81,10 +81,11 @@ export function useWebZjsActions(): WebzjsActions {
 
   const addNewAccountFromUfvk = useCallback(
     async (ufvk: string, birthdayHeight: number) => {
-      const account_id =
-        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
-      dispatch({ type: 'set-active-account', payload: account_id });
+      if(state.webWallet === null) {dispatch({ type: 'set-error', payload: new Error('Wallet not initialized') }); return;}
 
+      const account_id =
+        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight));
+      dispatch({ type: 'set-active-account', payload: account_id });
       if (state.webWallet) {
         const summary = await state.webWallet.get_wallet_summary();
         console.log('account_balances', summary?.account_balances.length);

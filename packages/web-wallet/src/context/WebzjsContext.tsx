@@ -22,7 +22,7 @@ interface State {
   error: Error | null | string;
   summary?: WalletSummary;
   chainHeight?: bigint;
-  activeAccount?: number;
+  activeAccount?: number | null;
   syncInProgress: boolean;
   loading: boolean;
 }
@@ -42,7 +42,7 @@ const initialState: State = {
   error: null,
   summary: undefined,
   chainHeight: undefined,
-  activeAccount: 0,
+  activeAccount: null,
   syncInProgress: false,
   loading: true,
 };
