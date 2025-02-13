@@ -31,7 +31,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy }) => {
       )}
       <button
         onClick={handleCopy}
-        className="text-[#e27625] text-base font-semibold leading-normal"
+        className="text-[#e27625] text-base font-semibold leading-normal cursor-pointer"
       >
         copy
       </button>
