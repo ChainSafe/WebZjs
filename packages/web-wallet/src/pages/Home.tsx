@@ -35,7 +35,7 @@ const Home: React.FC = () => {
     const viewingKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
     const customBirthdayBlock = (await invokeSnap({ method: 'setBirthdayBlock' })) as number | null;
 
-    const creationBlockHeight = customBirthdayBlock || birthdayHeight;
+    const creationBlockHeight = typeof customBirthdayBlock === 'number' ? customBirthdayBlock : birthdayHeight
 
     await addNewAccountFromUfvk(viewingKey, creationBlockHeight);
 
