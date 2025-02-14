@@ -2,6 +2,7 @@ import { getViewingKey } from './rpc/getViewingKey';
 import { InitOutput } from '@webzjs/webz-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
 import { OnRpcRequestHandler, OnUserInputHandler, UserInputEventType } from '@metamask/snaps-sdk';
+import { setBirthdayBlock } from './rpc/setBirthdayBlock';
 
 let wasm: InitOutput;
 
@@ -22,6 +23,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
   switch (request.method) {
     case 'getViewingKey':
       return await getViewingKey();
+    case 'setBirthdayBlock':
+      return await setBirthdayBlock();
     default:
       throw new Error('Method not found.');
   }

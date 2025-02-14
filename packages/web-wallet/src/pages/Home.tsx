@@ -32,7 +32,8 @@ const Home: React.FC = () => {
     e.preventDefault();
     await requestSnap();
 
-    const {viewingKey, customBirthdayBlock} = (await invokeSnap({ method: 'getViewingKey' })) as {viewingKey: string, customBirthdayBlock: number | null};
+    const viewingKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
+    const customBirthdayBlock = (await invokeSnap({ method: 'setBirthdayBlock' })) as number | null;
 
     const creationBlockHeight = customBirthdayBlock || birthdayHeight;
 
@@ -46,10 +47,10 @@ const Home: React.FC = () => {
       const homeReload = async () => {
         const accountData = await getAccountData();
 
-        if(accountData?.unifiedAddress) navigate('/dashboard/account-summary')
+        if (accountData?.unifiedAddress) navigate('/dashboard/account-summary')
       }
       homeReload();
-    } ;
+    };
   }, [installedSnap, navigate, getAccountData, state.activeAccount]);
 
   return (
