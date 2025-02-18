@@ -13,13 +13,23 @@ enum AddressType {
 function Receive(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AddressType>(AddressType.UNIFIED);
-  const [unifiedAddress, setUnifiedAddress] = useState('');
+  const [addresses, setAddresses] = useState<{
+    unifiedAddress: string;
+    transparentAddress: string;
+  }>({
+    unifiedAddress: '',
+    transparentAddress: '',
+  });
   const { getAccountData } = useWebZjsActions();
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await getAccountData();
-      if (data) setUnifiedAddress(data.unifiedAddress);
+      if (data)
+        setAddresses({
+          unifiedAddress: data.unifiedAddress,
+          transparentAddress: data.transparentAddress,
+        });
       setLoading(false);
     };
     fetchData();
@@ -28,11 +38,9 @@ function Receive(): React.JSX.Element {
   const tabs = {
     [AddressType.UNIFIED]: {
       label: 'Unified Address',
-      component: <QrCode address={unifiedAddress} />,
     },
     [AddressType.TRANSPARENT]: {
       label: 'Transparent Address',
-      component: <div>TODO: Transparent address</div>,
     },
   };
 
@@ -48,14 +56,19 @@ function Receive(): React.JSX.Element {
               {Object.keys(tabs).map((tab) => (
                 <Tab
                   key={tab}
+                  tabName={tab}
                   label={tabs[tab as AddressType].label}
                   isActive={activeTab === tab}
                   onClick={() => setActiveTab(tab as AddressType)}
                 />
               ))}
             </div>
-            {/* Tabs content */}
-            {tabs[activeTab].component}
+            {activeTab === AddressType.UNIFIED && (
+              <QrCode address={addresses.unifiedAddress} />
+            )}
+            {activeTab === AddressType.TRANSPARENT && (
+              <QrCode address={addresses.transparentAddress} />
+            )}
           </>
         )}
       </div>

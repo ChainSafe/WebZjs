@@ -7,7 +7,9 @@ interface WebzjsActions {
     ufvk: string,
     birthdayHeight: number,
   ) => Promise<void>;
-  getAccountData: () => Promise<{ unifiedAddress: string } | undefined>;
+  getAccountData: () => Promise<
+    { unifiedAddress: string; transparentAddress: string } | undefined
+  >;
   triggerRescan: () => Promise<void>;
   flushDbToStore: () => Promise<void>;
   syncStateWithWallet: () => Promise<void>;
@@ -18,17 +20,17 @@ export function useWebZjsActions(): WebzjsActions {
 
   const getAccountData = useCallback(async () => {
     try {
-      if (state.activeAccount !== undefined) {
-        return {
-          unifiedAddress: await state.webWallet!.get_current_address(
-            state.activeAccount,
-          ),
-        };
-      } else {
-        return {
-          unifiedAddress: await state.webWallet!.get_current_address(0),
-        };
-      }
+      const accountIndex = state.activeAccount ?? 0;
+
+      const unifiedAddress =
+        await state.webWallet!.get_current_address(accountIndex);
+      const transparentAddress =
+        await state.webWallet!.get_current_address_transparent(accountIndex);
+
+      return {
+        unifiedAddress,
+        transparentAddress,
+      };
     } catch (error) {
       dispatch({
         type: 'set-error',

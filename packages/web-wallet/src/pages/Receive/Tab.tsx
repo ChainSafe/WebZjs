@@ -3,17 +3,18 @@ import { CircleDashedSvg, CircleSvg } from '../../assets';
 import cn from 'classnames';
 
 interface TabProps {
+  tabName: string;
   label: string;
   isActive: boolean;
-  onClick: () => void;
+  onClick: (key: string) => void;
 }
 
-const Tab: React.FC<TabProps> = ({ label, isActive, onClick }) => {
+const Tab: React.FC<TabProps> = ({ tabName, label, isActive, onClick }) => {
   return (
     <div
-      onClick={onClick}
+      onClick={() => onClick(tabName)}
       className={cn(
-        'px-4 py-2 justify-center items-center gap-1.5 flex rounded-3xl',
+        'px-4 py-2 justify-center items-center gap-1.5 flex rounded-3xl cursor-pointer',
         {
           'bg-[#e8e8e8] text-black font-semibold': isActive,
           'bg-transparent text-[#afafaf]': !isActive,
