@@ -1,45 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ZcashYellowPNG, FormTransferSvg, MetaMaskLogoPNG } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { useWebZjsContext } from '../context/WebzjsContext';
 import {
-  useInvokeSnap,
-  useRequestSnap,
   useMetaMask,
   useWebZjsActions,
 } from '../hooks';
 
 const Home: React.FC = () => {
-  const [birthdayHeight, setBirthdayHeight] = useState(0);
   const navigate = useNavigate();
   const { state } = useWebZjsContext();
-  const { flushDbToStore, addNewAccountFromUfvk, getAccountData } = useWebZjsActions();
-  const invokeSnap = useInvokeSnap();
+  const { getAccountData, connectWebZjsSnap } = useWebZjsActions();
   const { installedSnap, isFlask } = useMetaMask();
-  const requestSnap = useRequestSnap();
 
-  useEffect(() => {
-    const fetchBirthday = async () => {
-      const birthday = await state.webWallet?.get_latest_block();
-      setBirthdayHeight(Number(birthday) || 0);
-    };
-    fetchBirthday();
-  }, [state]);
-
-  const handleRequestSnapAndGetViewingKey: React.MouseEventHandler<
+  const handleConnectButton: React.MouseEventHandler<
     HTMLButtonElement
   > = async (e) => {
     e.preventDefault();
-    await requestSnap();
-
-    const viewingKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
-    const customBirthdayBlock = (await invokeSnap({ method: 'setBirthdayBlock' })) as number | null;
-
-    const creationBlockHeight = typeof customBirthdayBlock === 'number' ? customBirthdayBlock : birthdayHeight
-
-    await addNewAccountFromUfvk(viewingKey, creationBlockHeight);
-
-    await flushDbToStore();
+    await connectWebZjsSnap();
   };
 
   useEffect(() => {
@@ -71,7 +49,7 @@ const Home: React.FC = () => {
           </p>
           <button
             disabled={!isFlask}
-            onClick={handleRequestSnapAndGetViewingKey}
+            onClick={handleConnectButton}
             className="flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] cursor-pointer"
           >
             <span>Connect MetaMask Snap</span>

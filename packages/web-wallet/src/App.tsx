@@ -2,13 +2,12 @@ import { useInterval } from 'usehooks-ts';
 import { Outlet, useLocation } from 'react-router-dom';
 import { RESCAN_INTERVAL } from './config/constants';
 import { useEffect } from 'react';
-import { useMetaMask, useWebZjsActions } from './hooks';
+import { useWebZjsActions } from './hooks';
 import Layout from './components/Layout/Layout';
 
 function App() {
   const { triggerRescan } = useWebZjsActions();
   const location = useLocation();
-  const { installedSnap } = useMetaMask();
 
   useEffect(() => {
     // Add custom background to home page
@@ -20,7 +19,7 @@ function App() {
   }, [location.pathname]);
 
   useInterval(() => {
-    if(installedSnap) triggerRescan();
+    triggerRescan();
   }, RESCAN_INTERVAL);
 
   return (

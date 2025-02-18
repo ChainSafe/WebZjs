@@ -1,48 +1,63 @@
-import { Form, Box, Heading, Input, Button, Text } from "@metamask/snaps-sdk/jsx";
+import {
+  Form,
+  Box,
+  Heading,
+  Input,
+  Button,
+  Text,
+  Bold,
+  Divider
+} from '@metamask/snaps-sdk/jsx';
 
-type BirthdayBlockForm = {customBirthdayBlock: number | null}
+type BirthdayBlockForm = { customBirthdayBlock: string | null };
 
-export async function setBirthdayBlock (): Promise<number | null> {
+export type SetBirthdayBlockParams = { latestBlock?: number };
+
+export async function setBirthdayBlock({
+  latestBlock,
+}: SetBirthdayBlockParams): Promise<string | null> {
 
   const interfaceId = await snap.request({
     method: 'snap_createInterface',
     params: {
-      ui:
+      ui: (
         <Form name="birthday-block-form">
           <Box>
             <Heading>Optional syncing block height</Heading>
             <Text>
-              If you alerady created Zcash Web Wallet account with this Metamask seed you can enter optional birthday block of that Wallet.
-              Syncing proccess will start from that block.
+              If you alerady created Zcash Web Wallet account with this Metamask
+              seed you can enter optional birthday block of that Wallet.
             </Text>
-            <Input min={0} step={1} type='number' name="customBirthdayBlock" placeholder='optional syncing block height' />
+            <Divider />
+            <Text>
+              Syncing
+              proccess will start from that block.
+            </Text>
+            <Divider />
+            {!!latestBlock && <Text>Latest block: <Bold>{latestBlock.toString()}</Bold></Text>}
+            <Input
+              min={0}
+              step={1}
+              type="number"
+              name="customBirthdayBlock"
+              placeholder="optional syncing block height"
+            />
           </Box>
-          <Button type='submit' name="next">Next</Button>
+          <Button type="submit" name="next">
+            Continue to wallet
+          </Button>
         </Form>
-      ,
+      ),
     },
   });
 
-  const {customBirthdayBlock} = await snap.request({
-    method: "snap_dialog",
+  const { customBirthdayBlock } = (await snap.request({
+    method: 'snap_dialog',
     params: {
       id: interfaceId,
     },
-  }) as BirthdayBlockForm;
+  })) as BirthdayBlockForm;
 
-  await snap.request(
-    {
-      method: "snap_manageState",
-      params: {
-        operation: "update",
-        newState: {
-          customBirthdayBlock
-        }
-      }
-    }
-  )
 
-  return customBirthdayBlock
-
+  return customBirthdayBlock;
 }
-
