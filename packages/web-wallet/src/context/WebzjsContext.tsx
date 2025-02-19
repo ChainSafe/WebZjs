@@ -13,6 +13,7 @@ import initWebzWallet, {
   WebWallet,
 } from '@webzjs/webz-wallet';
 import initWebzKeys from '@webzjs/webz-keys';
+
 import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
 import { Snap } from '../types';
 
