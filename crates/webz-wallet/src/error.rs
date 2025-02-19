@@ -86,8 +86,6 @@ pub enum Error {
     PcztCreate,
     #[error("Failed to prove Pczt: {0}")]
     PcztProve(String),
-    #[error("Failed to sign Pczt: {0}")]
-    PcztSign(String),
     #[error("Failed to send Pczt: {0}")]
     PcztSend(String),
     // TODO: Remove this. It is just to help with the inability to handle the generic tests from LRZ at the moment

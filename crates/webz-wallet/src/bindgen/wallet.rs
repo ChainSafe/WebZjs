@@ -10,12 +10,9 @@ use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
 use crate::wallet::usk_from_seed_str;
-use crate::{
-    bindgen::{pczt::Pczt, proposal::Proposal},
-    Wallet, PRUNING_DEPTH,
-};
+use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
-use webz_common::Network;
+use webz_common::{Network, Pczt};
 use webz_keys::{ProofGenerationKey, SeedFingerprint, UnifiedSpendingKey};
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::{InputSource, WalletRead};
@@ -23,6 +20,7 @@ use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
+use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::transaction::TxId;
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
@@ -436,29 +434,23 @@ impl WebWallet {
             .map(Into::into)
     }
 
-    /// Signs and applies signatures to a PCZT.
-    /// Should in a secure environment (e.g. Metamask snap).
+    pub async fn pczt_send(&self, pczt: Pczt) -> Result<(), Error> {
+        self.inner.pczt_send(pczt.into()).await
+    }
+
+    /// Get the current unified address for a given account and extracts the transparent component. This is returned as a string in canonical encoding
     ///
     /// # Arguments
     ///
-    /// * `pczt` - The PCZT that needs to signed
-    /// * `usk` - UnifiedSpendingKey used to sign the PCZT
-    /// * `seed_fp` - The fingerprint of the seed used to create `usk`
+    /// * `account_id` - The ID of the account to get the address for
     ///
-    pub async fn pczt_sign(
-        &self,
-        pczt: Pczt,
-        usk: UnifiedSpendingKey,
-        seed_fp: SeedFingerprint,
-    ) -> Result<Pczt, Error> {
-        self.inner
-            .pczt_sign(pczt.into(), usk.into(), seed_fp.into())
-            .await
-            .map(Into::into)
-    }
-
-    pub async fn pczt_send(&self, pczt: Pczt) -> Result<(), Error> {
-        self.inner.pczt_send(pczt.into()).await
+    pub async fn get_current_address_transparent(&self, account_id: u32) -> Result<String, Error> {
+        let db = self.inner.db.read().await;
+        if let Some(address) = db.get_current_address(account_id.into())? {
+            Ok(address.transparent().unwrap().encode(&self.inner.network))
+        } else {
+            Err(Error::AccountNotFound(account_id))
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
