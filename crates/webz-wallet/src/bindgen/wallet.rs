@@ -23,6 +23,7 @@ use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
+use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::transaction::TxId;
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
@@ -459,6 +460,21 @@ impl WebWallet {
 
     pub async fn pczt_send(&self, pczt: Pczt) -> Result<(), Error> {
         self.inner.pczt_send(pczt.into()).await
+    }
+
+    /// Get the current unified address for a given account and extracts the transparent component. This is returned as a string in canonical encoding
+    ///
+    /// # Arguments
+    ///
+    /// * `account_id` - The ID of the account to get the address for
+    ///
+    pub async fn get_current_address_transparent(&self, account_id: u32) -> Result<String, Error> {
+        let db = self.inner.db.read().await;
+        if let Some(address) = db.get_current_address(account_id.into())? {
+            Ok(address.transparent().unwrap().encode(&self.inner.network))
+        } else {
+            Err(Error::AccountNotFound(account_id))
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////

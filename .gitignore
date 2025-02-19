@@ -25,3 +25,4 @@ packages/demo-wallet/dist/*
 packages/e2e-tests/dist/*
 !/packages/e2e-tests/dist/serve.json
 
+!/packages/web-wallet/dist/_headers

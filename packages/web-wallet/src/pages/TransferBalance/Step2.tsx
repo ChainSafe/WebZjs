@@ -1,9 +1,9 @@
-import Button from '@components/Button/Button';
+import React from 'react';
 import {
   TransferBalanceFormData,
   TransferBalanceFormType,
-} from '@pages/TransferBalance/useTransferBalanceForm';
-import React from 'react';
+} from './useTransferBalanceForm';
+import Button from '../../components/Button/Button';
 
 interface Step2Props {
   formData: TransferBalanceFormData;

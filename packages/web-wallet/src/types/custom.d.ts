@@ -1,6 +1,3 @@
-/*
- * Window type extension to support ethereum
- */
 declare global {
   interface Window {
     ethereum: MetaMaskInpageProvider & {
@@ -15,3 +12,5 @@ declare global {
     'eip6963:announceProvider': EIP6963AnnounceProviderEvent;
   }
 }
+
+export {};

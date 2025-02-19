@@ -1,5 +1,10 @@
-import React, { createContext, useReducer, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+} from 'react';
 import { get, set } from 'idb-keyval';
 
 import initWebzWallet, {
@@ -8,14 +13,13 @@ import initWebzWallet, {
   WebWallet,
 } from '@webzjs/webz-wallet';
 import initWebzKeys from '@webzjs/webz-keys';
-
-import type { Snap } from '../types';
-import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants.ts';
+import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
+import { Snap } from '../types';
 
 interface State {
   webWallet: WebWallet | null;
   installedSnap: Snap | null;
-  error: Error | null;
+  error: Error | null | string;
   summary?: WalletSummary;
   chainHeight?: bigint;
   activeAccount?: number;
@@ -25,7 +29,7 @@ interface State {
 
 type Action =
   | { type: 'set-web-wallet'; payload: WebWallet }
-  | { type: 'set-error'; payload: Error | null }
+  | { type: 'set-error'; payload: Error | null | string }
   | { type: 'set-summary'; payload: WalletSummary }
   | { type: 'set-chain-height'; payload: bigint }
   | { type: 'set-active-account'; payload: number }
@@ -38,7 +42,7 @@ const initialState: State = {
   error: null,
   summary: undefined,
   chainHeight: undefined,
-  activeAccount: undefined,
+  activeAccount: 0,
   syncInProgress: false,
   loading: true,
 };
@@ -59,7 +63,6 @@ function reducer(state: State, action: Action): State {
       return { ...state, syncInProgress: action.payload };
     case 'set-loading':
       return { ...state, loading: action.payload };
-
     default:
       return state;
   }
@@ -75,27 +78,32 @@ const WebZjsContext = createContext<WebZjsContextType>({
   dispatch: () => {},
 });
 
-export const WebZjsProvider = ({ children }: { children: ReactNode }) => {
+export function useWebZjsContext(): WebZjsContextType {
+  return useContext(WebZjsContext);
+}
+
+export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Initialize provider and web wallet
-  useEffect(() => {
-    initAll();
-  }, []);
-
-  async function initAll() {
+  const initAll = useCallback(async () => {
     try {
       await initWebzWallet();
       await initWebzKeys();
+
       try {
-        await initThreadPool(10);
+        const concurrency = navigator.hardwareConcurrency || 4;
+        await initThreadPool(concurrency);
       } catch (err) {
-        console.error(err);
-        return Error('Unable to initialize Thread Pool');
+        console.error('Unable to initialize Thread Pool:', err);
+        dispatch({
+          type: 'set-error',
+          payload: new Error('Unable to initialize Thread Pool'),
+        });
+        return;
       }
 
       const bytes = await get('wallet');
-      let wallet;
+      let wallet: WebWallet;
 
       if (bytes) {
         console.info('Saved wallet detected. Restoring wallet from storage');
@@ -107,10 +115,10 @@ export const WebZjsProvider = ({ children }: { children: ReactNode }) => {
 
       dispatch({ type: 'set-web-wallet', payload: wallet });
 
+      // Retrieve summary (accounts, balances, etc.)
       const summary = await wallet.get_wallet_summary();
       if (summary) {
         dispatch({ type: 'set-summary', payload: summary });
-        // Set an active account from summary if available
         if (summary.account_balances.length > 0) {
           dispatch({
             type: 'set-active-account',
@@ -130,9 +138,12 @@ export const WebZjsProvider = ({ children }: { children: ReactNode }) => {
       dispatch({ type: 'set-error', payload: Error(String(err)) });
       dispatch({ type: 'set-loading', payload: false });
     }
-  }
+  }, []);
 
-  // Clear error after 10 seconds if any
+  useEffect(() => {
+    initAll().catch(console.error);
+  }, [initAll]);
+
   useEffect(() => {
     if (state.error) {
       const timeout = setTimeout(() => {
@@ -141,25 +152,21 @@ export const WebZjsProvider = ({ children }: { children: ReactNode }) => {
 
       return () => clearTimeout(timeout);
     }
-  }, [state.error]);
+  }, [state.error, dispatch]);
 
-  // Persist changes to IndexedDB whenever relevant parts of state change
   useEffect(() => {
     if (!state.webWallet) return;
-
-    async function flushDb() {
-      console.info('Serializing wallet and dumping to IndexedDB store');
-
-      if (state.webWallet instanceof WebWallet) {
-        const bytes = await state.webWallet.db_to_bytes();
-        await set('wallet', bytes);
-        console.info('Wallet saved to storage');
-      }
+    // If the wallet is not loading, not syncing, and is present, we flush it to store
+    if (!state.loading && !state.syncInProgress) {
+      flushDbToStore().catch(console.error);
     }
 
-    // Flush changes on these triggers:
-    if (!state.loading && !state.syncInProgress && state.webWallet) {
-      flushDb().catch(console.error);
+    async function flushDbToStore() {
+      if (!(state.webWallet instanceof WebWallet)) return;
+      console.info('Serializing wallet and dumping to IndexedDB store');
+      const bytes = await state.webWallet.db_to_bytes();
+      await set('wallet', bytes);
+      console.info('Wallet saved to storage');
     }
   }, [state.webWallet, state.syncInProgress, state.loading]);
 
@@ -169,12 +176,3 @@ export const WebZjsProvider = ({ children }: { children: ReactNode }) => {
     </WebZjsContext.Provider>
   );
 };
-
-export function useWebZjsContext(): WebZjsContextType {
-  const context = React.useContext(WebZjsContext);
-
-  if (context === undefined) {
-    throw new Error('useWebZjsContext must be used within a WebZjsProvider');
-  }
-  return context;
-}

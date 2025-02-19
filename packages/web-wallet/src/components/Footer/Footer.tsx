@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChainsafeSvg } from '../../assets';
+import { ChainsafePNG } from '../../assets';
 
 const Footer = (): React.JSX.Element => {
   return (
@@ -12,7 +12,11 @@ const Footer = (): React.JSX.Element => {
           target="_blank"
         >
           <div className="inline-block w-6 h-6 mr-1">
-            <ChainsafeSvg />
+            <img
+              src={ChainsafePNG}
+              className="w-5 h-[20px]"
+              alt="Chainsafe logo"
+            />
           </div>
           ChainSafe
         </a>

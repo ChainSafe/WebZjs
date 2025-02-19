@@ -1,6 +1,6 @@
 import { defaultSnapOrigin } from '../../config';
 import type { Snap } from '../../types';
-import { useMetaMaskContext } from '../../context/MetamaskContext.tsx';
+import { useMetaMaskContext } from '../../context/MetamaskContext';
 import { useRequest } from './useRequest.ts';
 
 /**

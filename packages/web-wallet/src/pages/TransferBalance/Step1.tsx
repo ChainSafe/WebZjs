@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
-import Input from '@components/Input/Input';
-import Select from '@components/Select/Select';
-import Button from '@components/Button/Button';
-import useBalance from '@hooks/useBalance';
 import {
   TransferBalanceFormData,
   TransferBalanceFormHandleChange,
 } from './useTransferBalanceForm';
 import { PoolType, TransactionType } from '../../types/transfer';
+import useBalance from '../../hooks/useBalance';
+import Select from '../../components/Select/Select';
+import Input from '../../components/Input/Input';
+import Button from '../../components/Button/Button';
+import { zatsToZec } from '../../utils';
 
 const TransactionTypeSelectOptions = [
   { value: TransactionType.SHIELDED, label: 'Shielded' },
   { value: TransactionType.TRANSPARENT, label: 'Transparent' },
-];
-const PoolSelectOptions = [
-  { value: PoolType.ORCHARD, label: 'Orchard' },
-  { value: PoolType.SAPLING, label: 'Sapling' },
 ];
 
 interface Step1Props {
@@ -30,6 +27,12 @@ function Step1({
   handleChange,
 }: Step1Props): React.JSX.Element {
   const { orchardBalance, saplingBalance } = useBalance();
+
+  const PoolSelectOptions = [
+    { value: PoolType.ORCHARD, label: 'Orchard', balance: orchardBalance },
+    { value: PoolType.SAPLING, label: 'Sapling', balance: saplingBalance },
+  ];
+
   const [errors, setErrors] = useState({
     recipient: '',
     transactionType: '',
@@ -75,7 +78,7 @@ function Step1({
     return (
       <div className="h-[25px] px-4 py-0.5 bg-neutral-200 rounded-3xl justify-center items-center gap-2.5 inline-flex">
         <div className="text-[#434343] text-sm font-medium font-['Roboto'] leading-[21px]">
-          {balance} ZEC
+          {zatsToZec(balance)} ZEC
         </div>
       </div>
     );
@@ -103,10 +106,9 @@ function Step1({
                   id="tx-type"
                   value={transactionType}
                   error={errors.transactionType}
-                  handleChange={(value) => {
-                    console.log('handleChange', value);
-                    handleChange('transactionType')(value);
-                  }}
+                  handleChange={(value) =>
+                    handleChange('transactionType')(value)
+                  }
                   options={TransactionTypeSelectOptions}
                 />
               </div>
@@ -129,11 +131,21 @@ function Step1({
                 label="Pools:"
                 id="pools"
                 value={pool}
-                suffix={
+                selectedSuffix={
                   pool === PoolType.ORCHARD
                     ? renderBalanceLabel(orchardBalance)
                     : renderBalanceLabel(saplingBalance)
                 }
+                suffixOptions={[
+                  {
+                    label: PoolType.ORCHARD,
+                    value: renderBalanceLabel(orchardBalance),
+                  },
+                  {
+                    label: PoolType.SAPLING,
+                    value: renderBalanceLabel(saplingBalance),
+                  },
+                ]}
                 handleChange={(value) => handleChange('pool')(value)}
                 options={PoolSelectOptions}
                 defaultOption={PoolSelectOptions[0]}
@@ -155,7 +167,7 @@ function Step1({
           </div>
         )}
         <div className="justify-start items-start inline-flex">
-          <Button onClick={() => handleContinue()} label="Continue" />
+          <Button classNames='cursor-pointer' onClick={() => handleContinue()} label="Continue" />
         </div>
       </div>
     </div>

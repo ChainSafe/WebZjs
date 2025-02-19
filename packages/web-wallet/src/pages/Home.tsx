@@ -1,18 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { MetaMaskLogoSvg, ZcashYellowSvg, FormTransferSvg } from '../assets';
-import { useMetaMask } from '@hooks/snaps/useMetaMask.ts';
-import { useRequestSnap } from '@hooks/snaps/useRequestSnap.ts';
+import { ZcashYellowPNG, FormTransferSvg, MetaMaskLogoPNG } from '../assets';
 import { useNavigate } from 'react-router-dom';
-import { useInvokeSnap } from '@hooks/snaps/useInvokeSnap.ts';
-import { useWebZjsActions } from '@hooks/useWebzjsActions.ts';
+import { useWebZjsContext } from '../context/WebzjsContext';
+import {
+  useInvokeSnap,
+  useRequestSnap,
+  useMetaMask,
+  useWebZjsActions,
+} from '../hooks';
 
 const Home: React.FC = () => {
   const [birthdayHeight, setBirthdayHeight] = useState(0);
   const navigate = useNavigate();
+  const { state } = useWebZjsContext();
   const { flushDbToStore, addNewAccountFromUfvk } = useWebZjsActions();
   const invokeSnap = useInvokeSnap();
   const { installedSnap, isFlask } = useMetaMask();
   const requestSnap = useRequestSnap();
+
+  useEffect(() => {
+    const fetchBirthday = async () => {
+      const birthday = await state.webWallet?.get_latest_block();
+      setBirthdayHeight(Number(birthday) || 0);
+    };
+    fetchBirthday();
+  }, [state]);
 
   const handleRequestSnapAndGetViewingKey: React.MouseEventHandler<
     HTMLButtonElement
@@ -40,23 +52,27 @@ const Home: React.FC = () => {
           <FormTransferSvg />
         </div>
         <div className="flex flex-col items-start space-y-8">
-          <ZcashYellowSvg />
+          <img src={ZcashYellowPNG} className="w-10 h-10" alt="Zcash Logo" />
           <h1 className="font-inter font-semibold text-[5rem] leading-[5rem] we">
             Zcash <br />
             Web Wallet
           </h1>
           <p className="font-inter">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Access the Zcash network from your web browser with the Zcash
+            MetaMask Snap
           </p>
           <button
             disabled={!isFlask}
             onClick={handleRequestSnapAndGetViewingKey}
-            className="flex items-center bg-buttonBlackGradient hover:bg-buttonBlackGradientHover text-white px-6 py-3 rounded-[2rem]"
+            className="flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] cursor-pointer"
           >
             <span>Connect MetaMask Snap</span>
             <div className="ml-3">
-              <MetaMaskLogoSvg />
+              <img
+                src={MetaMaskLogoPNG}
+                className="w-[22px] h-[20px]"
+                alt="MetaMask Logo"
+              />
             </div>
           </button>
           <div className="text-sm">

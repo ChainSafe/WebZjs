@@ -7,17 +7,65 @@ interface Option {
   label: string;
 }
 
+interface OptionWithBalance extends Option {
+  balance: number;
+}
+
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
-  options: Option[];
+  options: Option[] | OptionWithBalance[];
   containerClassName?: string;
   labelClassName?: string;
   dropdownClassName?: string;
-  defaultOption?: Option;
+  defaultOption?: Option | OptionWithBalance;
   handleChange: (option: string) => void;
-  suffix?: string | React.ReactNode;
+  selectedSuffix?: string | React.ReactNode;
+  suffixOptions?: { label: string; value: string | React.JSX.Element }[];
 }
+
+interface DropdownOptionProps {
+  option: Option;
+  handleSelectOption: (option: Option) => void;
+  suffixOptions?: { label: string; value: string | React.JSX.Element }[];
+}
+
+const useOutsideClick = (
+  ref: React.RefObject<HTMLDivElement | null>,
+  callback: () => void,
+) => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref && ref.current && !ref.current.contains(event.target as Node)) {
+        callback();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [ref, callback]);
+};
+
+const DropdownOption: React.FC<DropdownOptionProps> = ({
+  option,
+  handleSelectOption,
+  suffixOptions,
+}) => (
+  <div
+    className="px-6 mr-1 py-3 hover:bg-neutral-100 cursor-pointer flex justify-between items-center"
+    onClick={() => handleSelectOption(option)}
+  >
+    <span className="text-[#0e0e0e] text-base font-normal font-['Roboto']">
+      {option.label}
+    </span>
+    {suffixOptions && (
+      <div className="ml-2">
+        {suffixOptions.map(({ label, value }) => {
+          if (label === option.value) return <div key={label}>{value}</div>;
+        })}
+      </div>
+    )}
+  </div>
+);
 
 const Select: React.FC<SelectProps> = ({
   label,
@@ -27,7 +75,8 @@ const Select: React.FC<SelectProps> = ({
   containerClassName = '',
   labelClassName = '',
   dropdownClassName = '',
-  suffix = '',
+  selectedSuffix = '',
+  suffixOptions,
   handleChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,20 +85,7 @@ const Select: React.FC<SelectProps> = ({
   );
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useOutsideClick(containerRef, () => setIsOpen(false));
 
   const handleSelectOption = (option: Option) => {
     handleChange(option.value);
@@ -73,7 +109,7 @@ const Select: React.FC<SelectProps> = ({
         className="relative h-full flex items-center bg-neutral-50 rounded-xl border border-[#afafaf] p-3 cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="flex-grow bg-transparent focus:outline-none text-[#0e0e0e] text-base font-semibold font-inter">
+        <span className="grow bg-transparent focus:outline-hidden text-[#0e0e0e] text-base font-semibold font-inter">
           {selected ? (
             selected.label
           ) : (
@@ -84,25 +120,21 @@ const Select: React.FC<SelectProps> = ({
         </span>
 
         <div className="ml-2 flex items-center justify-center">
-          {suffix && <div className="mr-1">{suffix}</div>}
+          {selectedSuffix && <div className="mr-1">{selectedSuffix}</div>}
           <ChevronSVG className="w-4 h-4 text-[#a9aaab]" />
         </div>
 
         {isOpen && (
           <div
-            className={`absolute top-full botto left-0 right-0 bg-white border border-[#afafaf] rounded-xl overflow-hidden z-10 ${dropdownClassName}`}
+            className={`absolute top-full left-0 right-0 bg-white border border-[#afafaf] rounded-xl overflow-hidden z-10 ${dropdownClassName}`}
           >
             {options.map((option) => (
-              <div
+              <DropdownOption
                 key={option.value}
-                className="px-6 mr-1 py-3 hover:bg-neutral-100 cursor-pointer flex justify-between items-center"
-                onClick={() => handleSelectOption(option)}
-              >
-                <span className="text-[#0e0e0e] text-base font-normal font-['Roboto']">
-                  {option.label}
-                </span>
-                {suffix && <div className="ml-2">{suffix}</div>}
-              </div>
+                option={option}
+                handleSelectOption={handleSelectOption}
+                suffixOptions={suffixOptions}
+              />
             ))}
           </div>
         )}

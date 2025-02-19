@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { useMetaMaskContext } from '../../context/MetamaskContext.tsx';
+import { useMetaMaskContext } from '../../context/MetamaskContext';
 import { useRequest } from './useRequest.ts';
 import { GetSnapsResponse } from '../../types';
 import { defaultSnapOrigin } from '../../config';
@@ -49,7 +49,7 @@ export const useMetaMask = () => {
     };
 
     detect().catch(console.error);
-  }, [detectFlask, getSnap, provider]);
+  }, [provider]);
 
   return { isFlask, snapsDetected, installedSnap, getSnap };
 };
