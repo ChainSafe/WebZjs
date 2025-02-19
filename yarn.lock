@@ -5331,6 +5331,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:^19.0.4":
+  version: 19.0.4
+  resolution: "@types/react-dom@npm:19.0.4"
+  peerDependencies:
+    "@types/react": ^19.0.0
+  checksum: 10c0/4e71853919b94df9e746a4bd73f8180e9ae13016333ce9c543dcba9f4f4c8fe6e28b038ca6ee61c24e291af8e03ca3bc5ded17c46dee938fcb32d71186fda7a3
+  languageName: node
+  linkType: hard
+
 "@types/react-transition-group@npm:^4.4.6":
   version: 4.4.12
   resolution: "@types/react-transition-group@npm:4.4.12"
@@ -5357,6 +5366,15 @@ __metadata:
     "@types/scheduler": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10c0/53bfc9e675863f63f37146732518258c49d430be2b5f03ebbd65a4e0a5762933fb62d68d477c194b0d8364ddaaea01378b93b562072d9f173e500b25242f66f3
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^19.0.10":
+  version: 19.0.10
+  resolution: "@types/react@npm:19.0.10"
+  dependencies:
+    csstype: "npm:^3.0.2"
+  checksum: 10c0/41884cca21850c8b2d6578b172ca0ca4fff6021251a68532b19f2031ac23dc5a9222470208065f8d9985d367376047df2f49ece8d927f7d04cdc94922b1eb34b
   languageName: node
   linkType: hard
 
@@ -6088,9 +6106,12 @@ __metadata:
     "@metamask/snaps-sdk": "npm:^6.17.1"
     "@types/react": "npm:18.2.4"
     "@types/react-dom ": "npm:18.2.4"
+    "@types/react": "npm:^19.0.10"
+    "@types/react-dom": "npm:^19.0.4"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
     "@typescript-eslint/parser": "npm:^5.42.1"
     "@webzjs/webz-keys": "workspace:^"
+    "@webzjs/webz-wallet": "workspace:^"
     buffer: "npm:^6.0.3"
     eslint: "npm:^9.14.0"
     eslint-config-prettier: "npm:^9.1.0"

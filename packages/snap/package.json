@@ -28,6 +28,8 @@
   },
   "dependencies": {
     "@metamask/snaps-sdk": "^6.17.1",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
     "@webzjs/webz-keys": "workspace:^",
     "@webzjs/webz-wallet": "workspace:^",
     "buffer": "^6.0.3",
