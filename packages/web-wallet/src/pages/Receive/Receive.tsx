@@ -20,25 +20,18 @@ function Receive(): React.JSX.Element {
     unifiedAddress: '',
     transparentAddress: '',
   });
-  const [error, setError] = useState<string | null>(null);
   const { getAccountData } = useWebZjsActions();
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const data = await getAccountData();
-        if (data)
-          setAddresses({
-            unifiedAddress: data.unifiedAddress,
-            transparentAddress: data.transparentAddress,
-          });
-      } catch (err) {
-        setError('Failed to fetch account data');
-      } finally {
-        setLoading(false);
-      }
+      const data = await getAccountData();
+      if (data)
+        setAddresses({
+          unifiedAddress: data.unifiedAddress,
+          transparentAddress: data.transparentAddress,
+        });
+      setLoading(false);
     };
-
     fetchData();
   }, [getAccountData]);
 
@@ -78,7 +71,6 @@ function Receive(): React.JSX.Element {
             )}
           </>
         )}
-        {error && <div className="text-red-500">{error}</div>}
       </div>
     </>
   );
