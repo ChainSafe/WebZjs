@@ -57,7 +57,7 @@ export async function addNewAccount(
 ) {
   let account_id =
     (await state.webWallet?.create_account(
-      '0',
+      'account-0',
       seedPhrase,
       0,
       birthdayHeight,
@@ -162,7 +162,6 @@ export async function triggerTransfer(
     toAddress,
     amount,
   );
-  // console.log(JSON.stringify(proposal.describe(), null, 2));
 
   let txids = await state.webWallet.create_proposed_transactions(
     proposal,

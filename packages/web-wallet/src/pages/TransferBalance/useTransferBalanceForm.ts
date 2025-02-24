@@ -55,7 +55,7 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
 
   const submitForm = () => {
     const { amount, recipient } = formData;
-    handlePcztTransaction(0, recipient, BigInt(amount));
+    handlePcztTransaction(0, recipient, amount);
   };
 
   const resetForm = () => {
