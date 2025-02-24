@@ -2810,7 +2810,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/snaps-cli@npm:^6.5.2":
+"@metamask/snaps-cli@npm:^6.7.0":
   version: 6.7.0
   resolution: "@metamask/snaps-cli@npm:6.7.0"
   dependencies:
@@ -5313,7 +5313,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.3.0":
+"@types/react-dom@npm:^18.3.0, @types/react-dom@npm:^18.3.5":
   version: 18.3.5
   resolution: "@types/react-dom@npm:18.3.5"
   peerDependencies:
@@ -5328,15 +5328,6 @@ __metadata:
   peerDependencies:
     "@types/react": ^19.0.0
   checksum: 10c0/3867427b333cbe8cbba496d7cc20ec9676d32c25ae44f4d1263a4129d42e57cf4adf0039ad263432f1215b88075c27d326e7eb4ed646128235d01a76e661d48f
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:^19.0.4":
-  version: 19.0.4
-  resolution: "@types/react-dom@npm:19.0.4"
-  peerDependencies:
-    "@types/react": ^19.0.0
-  checksum: 10c0/4e71853919b94df9e746a4bd73f8180e9ae13016333ce9c543dcba9f4f4c8fe6e28b038ca6ee61c24e291af8e03ca3bc5ded17c46dee938fcb32d71186fda7a3
   languageName: node
   linkType: hard
 
@@ -5366,15 +5357,6 @@ __metadata:
     "@types/scheduler": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10c0/53bfc9e675863f63f37146732518258c49d430be2b5f03ebbd65a4e0a5762933fb62d68d477c194b0d8364ddaaea01378b93b562072d9f173e500b25242f66f3
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:^19.0.10":
-  version: 19.0.10
-  resolution: "@types/react@npm:19.0.10"
-  dependencies:
-    csstype: "npm:^3.0.2"
-  checksum: 10c0/41884cca21850c8b2d6578b172ca0ca4fff6021251a68532b19f2031ac23dc5a9222470208065f8d9985d367376047df2f49ece8d927f7d04cdc94922b1eb34b
   languageName: node
   linkType: hard
 
@@ -6045,6 +6027,8 @@ __metadata:
     "@webzjs/webz-wallet": "workspace:^"
     classnames: "npm:^2.5.1"
     connect-history-api-fallback: "npm:^2.0.0"
+    decimal: "npm:^0.0.2"
+    decimal.js: "npm:^10.5.0"
     dotenv: "npm:^16.4.7"
     eslint: "npm:^9.18.0"
     eslint-config-react-app: "npm:^7.0.1"
@@ -6059,6 +6043,7 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-qr-code: "npm:^2.0.15"
     react-router-dom: "npm:^6.27.0"
+    superstruct: "npm:^2.0.2"
     svgo: "npm:^3"
     tailwindcss: "npm:^4.0.0"
     typescript: "npm:^5.7.3"
@@ -6101,18 +6086,18 @@ __metadata:
     "@metamask/eslint-config-jest": "npm:^14.0.0"
     "@metamask/eslint-config-nodejs": "npm:^14.0.0"
     "@metamask/eslint-config-typescript": "npm:^14.0.0"
-    "@metamask/snaps-cli": "npm:^6.5.2"
+    "@metamask/snaps-cli": "npm:^6.7.0"
     "@metamask/snaps-jest": "npm:^8.8.1"
     "@metamask/snaps-sdk": "npm:^6.17.1"
     "@types/react": "npm:18.2.4"
+    "@types/react-dom": "npm:^18.3.5"
     "@types/react-dom ": "npm:18.2.4"
-    "@types/react": "npm:^19.0.10"
-    "@types/react-dom": "npm:^19.0.4"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
     "@typescript-eslint/parser": "npm:^5.42.1"
     "@webzjs/webz-keys": "workspace:^"
     "@webzjs/webz-wallet": "workspace:^"
     buffer: "npm:^6.0.3"
+    dotenv: "npm:^16.4.7"
     eslint: "npm:^9.14.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-import: "npm:~2.31.0"
@@ -8118,6 +8103,20 @@ __metadata:
   dependencies:
     ms: "npm:^2.1.1"
   checksum: 10c0/37d96ae42cbc71c14844d2ae3ba55adf462ec89fd3a999459dec3833944cd999af6007ff29c780f1c61153bcaaf2c842d1e4ce1ec621e4fc4923244942e4a02a
+  languageName: node
+  linkType: hard
+
+"decimal.js@npm:^10.5.0":
+  version: 10.5.0
+  resolution: "decimal.js@npm:10.5.0"
+  checksum: 10c0/785c35279df32762143914668df35948920b6c1c259b933e0519a69b7003fc0a5ed2a766b1e1dda02574450c566b21738a45f15e274b47c2ac02072c0d1f3ac3
+  languageName: node
+  linkType: hard
+
+"decimal@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "decimal@npm:0.0.2"
+  checksum: 10c0/49e3db7c49bca4199c738acfda6480f0c68aaf99c509ebae3a0af2830a6eb812ea30e053755cf99a3dde307dab6d497b8cbefbe6a5e43e95a0b3f38dcf0d058c
   languageName: node
   linkType: hard
 
@@ -14994,6 +14993,13 @@ __metadata:
   dependencies:
     minimist: "npm:^1.1.0"
   checksum: 10c0/8ecdfa682e50b98272b283f1094ae2f82e5c84b258fd3ac6e47a69149059bd786ef6586305243a5b60746ce23e3e738de7ed8277c76f3363fa351bbfe9c71f37
+  languageName: node
+  linkType: hard
+
+"superstruct@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "superstruct@npm:2.0.2"
+  checksum: 10c0/c6853db5240b4920f47b3c864dd1e23ede6819ea399ad29a65387d746374f6958c5f1c5b7e5bb152d9db117a74973e5005056d9bb83c24e26f18ec6bfae4a718
   languageName: node
   linkType: hard
 

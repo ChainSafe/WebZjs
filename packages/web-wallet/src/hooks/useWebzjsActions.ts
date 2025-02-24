@@ -114,6 +114,7 @@ export function useWebZjsActions(): WebzjsActions {
       }
 
       const account_id = await state.webWallet.create_account_ufvk(
+        'account-0',
         viewingKey,
         creationBlockHeight,
       );

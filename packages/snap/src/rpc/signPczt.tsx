@@ -6,6 +6,7 @@ import {
   Pczt,
 } from '@webzjs/webz-keys';
 import { getSeed } from '../utils/getSeed';
+import { NETWORK } from '../utils/getNetwork';
 
 export async function signPczt(pczt: Pczt): Promise<Pczt> {
   let signedPczt: Pczt;
@@ -17,7 +18,7 @@ export async function signPczt(pczt: Pczt): Promise<Pczt> {
       content: (
         <Box>
           <Heading>Are you sure you want to sign this PCZT?</Heading>
-          <Text>{pczt.describe().toString()}</Text>
+          <Text>{JSON.stringify(pczt.describe())}</Text>
         </Box>
       ),
     },
@@ -30,9 +31,9 @@ export async function signPczt(pczt: Pczt): Promise<Pczt> {
   const seed = await getSeed();
 
   // Generate the UnifiedSpendingKey and obtain the Viewing Key
-  const spendingKey = new UnifiedSpendingKey('main', seed, 0);
+  const spendingKey = new UnifiedSpendingKey(NETWORK, seed, 0);
   const seedFp = new SeedFingerprint(seed);
-  signedPczt = await pczt_sign('main', pczt, spendingKey, seedFp);
+  signedPczt = await pczt_sign(NETWORK, pczt, spendingKey, seedFp);
 
   console.log(signedPczt);
 

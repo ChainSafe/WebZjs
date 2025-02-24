@@ -28,7 +28,7 @@ const useBalance = () => {
     return state.summary?.account_balances.find(
       ([accountId]: [number]) => accountId === state.activeAccount,
     );
-  }, [state.activeAccount, state.chainHeight, state.summary?.account_balances]);
+  }, [state.activeAccount, state.summary?.account_balances]);
 
   // Compute shielded, unshielded, and total balances
   const {

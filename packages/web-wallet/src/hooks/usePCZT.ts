@@ -1,12 +1,13 @@
 import { useWebZjsContext } from '../context/WebzjsContext';
 import { Pczt } from '@webzjs/webz-wallet';
 import { useInvokeSnap } from './snaps/useInvokeSnap';
+import { zecToZats } from '../utils';
 
 interface PcztActions {
   handlePcztTransaction: (
     accountId: number,
     toAddress: string,
-    value: bigint,
+    value: string,
   ) => void;
 }
 
@@ -55,11 +56,13 @@ export const usePczt = (): PcztActions => {
   const handlePcztTransaction = async (
     accountId: number,
     toAddress: string,
-    value: bigint,
+    value: string,
   ) => {
     checkWebWallet();
-    debugger;
-    const pczt = await createPCZT(accountId, toAddress, value);
+
+    const valueinZats = zecToZats(value);
+    const pczt = await createPCZT(accountId, toAddress, valueinZats);
+
     if (pczt) {
       const provedPczt = await provePczt(pczt);
       const signedPczt = await signPczt(provedPczt);

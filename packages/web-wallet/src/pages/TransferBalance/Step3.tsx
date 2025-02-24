@@ -20,8 +20,8 @@ function Step3({
     <>
       {error ? (
         <TransactionStatusCard
-          headText="Transfer complete"
-          statusMessage="Your transaction has been sent."
+          headText="Transfer incomplete"
+          statusMessage="Your transaction has not been sent."
           icon={<WarningSVG />}
         >
           <Button

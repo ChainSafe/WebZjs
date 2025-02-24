@@ -30,14 +30,14 @@ function Step2({
   };
 
   return (
-    <div className="h-[461px] px-12 py-6 bg-white rounded-3xl border border-[#afafaf] flex-col justify-start items-center gap-6 inline-flex">
+    <div className="min-h-[460px] px-12 py-6 bg-white rounded-3xl border border-[#afafaf] flex-col justify-start items-center gap-6 inline-flex">
       <div className="self-stretch h-[413px] flex-col justify-center items-center gap-3 flex">
         <div className="self-stretch justify-start items-center gap-2 inline-flex">
           <div className="grow shrink basis-0 text-black text-base font-medium font-['Roboto'] leading-normal">
             To:
           </div>
           <div className="p-3 rounded-xl justify-start items-center gap-2 flex">
-            <div className="text-[#4f4f4f] text-base font-normal font-['Roboto'] leading-normal">
+            <div className="text-[#4f4f4f] text-base font-normal font-['Roboto'] break-all leading-normal">
               {recipient}
             </div>
           </div>
@@ -86,7 +86,10 @@ function Step2({
         )}
         <div className="self-stretch pt-6 flex-col justify-center items-center gap-3 flex">
           <div className="justify-start items-start inline-flex">
-            <Button onClick={handleNextStep} label={'Complete transfer'} />
+            <Button
+              onClick={() => handleNextStep()}
+              label={'Complete transfer'}
+            />
           </div>
         </div>
       </div>

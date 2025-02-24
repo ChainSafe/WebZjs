@@ -1,9 +1,19 @@
 import { getViewingKey } from './rpc/getViewingKey';
 import { initialiseWasm } from './utils/initialiseWasm';
-import { OnRpcRequestHandler, OnUserInputHandler, UserInputEventType } from '@metamask/snaps-sdk';
-import { setBirthdayBlock, SetBirthdayBlockParams } from './rpc/setBirthdayBlock';
+import {
+  OnRpcRequestHandler,
+  OnUserInputHandler,
+  UserInputEventType,
+} from '@metamask/snaps-sdk';
+import {
+  setBirthdayBlock,
+  SetBirthdayBlockParams,
+} from './rpc/setBirthdayBlock';
 import { signPczt } from './rpc/signPczt';
-import { InitOutput } from '@webzjs/webz-keys';
+import { InitOutput, Pczt } from '@webzjs/webz-keys';
+
+import { assert, object, number, optional, instance } from 'superstruct';
+import { NETWORK } from './utils/getNetwork';
 
 let wasm: InitOutput;
 
@@ -25,29 +35,32 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
     case 'getViewingKey':
       return await getViewingKey();
     case 'signPczt':
+      assert(request.params, object({ pczt: instance(Pczt) }));
+      console.log('verified', request.params.pczt);
       return await signPczt(request.params.pczt);
     case 'setBirthdayBlock':
-      const params = request.params as SetBirthdayBlockParams;
-      return await setBirthdayBlock(params);
+      assert(request.params, object({ latestBlock: optional(number()) }));
+      return await setBirthdayBlock(request.params as SetBirthdayBlockParams);
     default:
       throw new Error('Method not found.');
   }
 };
 
-export const onUserInput: OnUserInputHandler = async ({ id, event, context }) => {
+export const onUserInput: OnUserInputHandler = async ({
+  id,
+  event,
+  context,
+}) => {
   if (event.type === UserInputEventType.FormSubmitEvent) {
     switch (event.name) {
-      case "birthday-block-form":
+      case 'birthday-block-form':
         await snap.request({
-          method: "snap_resolveInterface",
+          method: 'snap_resolveInterface',
           params: {
             id,
-            value: event.value
-          }
-        })
-
-      default:
-        break;
+            value: event.value,
+          },
+        });
     }
   }
 };
