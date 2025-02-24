@@ -13,7 +13,6 @@ import { signPczt } from './rpc/signPczt';
 import { InitOutput, Pczt } from '@webzjs/webz-keys';
 
 import { assert, object, number, optional, instance } from 'superstruct';
-import { NETWORK } from './utils/getNetwork';
 
 let wasm: InitOutput;
 
