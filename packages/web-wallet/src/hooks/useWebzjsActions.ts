@@ -88,7 +88,15 @@ export function useWebZjsActions(): WebzjsActions {
     try {
       await requestSnap();
 
-      const latestBlockBigInt = await state.webWallet?.get_latest_block();
+      if (state.webWallet === null) {
+        dispatch({
+          type: 'set-error',
+          payload: new Error('Wallet not initialized'),
+        });
+        return;
+      }
+
+      const latestBlockBigInt = await state.webWallet.get_latest_block();
       const latestBlock = Number(latestBlockBigInt);
 
       const customBirthdayBlock = (await invokeSnap({
@@ -103,14 +111,6 @@ export function useWebZjsActions(): WebzjsActions {
       const creationBlockHeight = Number(
         customBirthdayBlock !== null ? customBirthdayBlock : latestBlock,
       );
-
-      if (state.webWallet === null) {
-        dispatch({
-          type: 'set-error',
-          payload: new Error('Wallet not initialized'),
-        });
-        return;
-      }
 
       const account_id = await state.webWallet.create_account_ufvk(
         viewingKey,

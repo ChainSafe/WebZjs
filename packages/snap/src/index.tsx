@@ -1,8 +1,14 @@
 import { getViewingKey } from './rpc/getViewingKey';
 import { InitOutput } from '@webzjs/webz-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
-import { OnRpcRequestHandler, OnUserInputHandler, UserInputEventType } from '@metamask/snaps-sdk';
-import { setBirthdayBlock, SetBirthdayBlockParams } from './rpc/setBirthdayBlock';
+import {
+  OnRpcRequestHandler,
+  OnUserInputHandler,
+  UserInputEventType,
+} from '@metamask/snaps-sdk';
+import { setBirthdayBlock } from './rpc/setBirthdayBlock';
+import { getSnapState } from './rpc/getSnapState';
+import { SetBirthdayBlockParams } from './types';
 
 let wasm: InitOutput;
 
@@ -26,22 +32,24 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
     case 'setBirthdayBlock':
       const params = request.params as SetBirthdayBlockParams;
       return await setBirthdayBlock(params);
+    case 'getSnapStete':
+      return await getSnapState();
     default:
       throw new Error('Method not found.');
   }
 };
 
-export const onUserInput: OnUserInputHandler = async ({ id, event, context }) => {
+export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
   if (event.type === UserInputEventType.FormSubmitEvent) {
     switch (event.name) {
-      case "birthday-block-form":
+      case 'birthday-block-form':
         await snap.request({
-          method: "snap_resolveInterface",
+          method: 'snap_resolveInterface',
           params: {
             id,
-            value: event.value
-          }
-        })
+            value: event.value,
+          },
+        });
 
       default:
         break;
