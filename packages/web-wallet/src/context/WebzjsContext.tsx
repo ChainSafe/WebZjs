@@ -15,6 +15,7 @@ import initWebzWallet, {
 import initWebzKeys from '@webzjs/webz-keys';
 import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
 import { Snap } from '../types';
+import toast, { Toaster } from 'react-hot-toast';
 
 export interface WebZjsState {
   webWallet: WebWallet | null;
@@ -146,11 +147,7 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (state.error) {
-      const timeout = setTimeout(() => {
-        dispatch({ type: 'set-error', payload: null });
-      }, 10000);
-
-      return () => clearTimeout(timeout);
+      toast.error(state.error.toString());
     }
   }, [state.error, dispatch]);
 
@@ -172,6 +169,7 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <WebZjsContext.Provider value={{ state, dispatch }}>
+      <Toaster />
       {children}
     </WebZjsContext.Provider>
   );
