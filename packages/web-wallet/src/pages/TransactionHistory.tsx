@@ -2,7 +2,7 @@ import React from 'react';
 import PageHeading from '../components/PageHeading/PageHeading';
 import Table from '../components/Table/Table';
 
-const data = [
+const mockData = [
   {
     recipient: 'Shielded Recipient',
     amount: '+0.008',
@@ -83,7 +83,7 @@ function TransactionHistory(): React.JSX.Element {
   return (
     <>
       <PageHeading title="Transaction history" />
-      <Table columns={columns} data={data} />
+      <Table columns={columns} data={mockData} />
     </>
   );
 }

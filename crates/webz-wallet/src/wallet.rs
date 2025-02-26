@@ -1,4 +1,6 @@
-use std::num::NonZeroU32;
+use std::collections::BTreeMap;
+use std::convert::Infallible;
+use std::num::{NonZeroU32, NonZeroUsize};
 
 use bip0039::{English, Mnemonic};
 use nonempty::NonEmpty;
@@ -12,7 +14,14 @@ use crate::error::Error;
 use crate::BlockRange;
 use webz_common::Network;
 
-use serde::{Serialize, Serializer};
+use pczt::roles::prover::Prover;
+use pczt::roles::signer::Signer;
+use pczt::roles::updater::Updater;
+use pczt::roles::verifier::Verifier;
+use pczt::Pczt;
+use sapling::ProofGenerationKey;
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize, Serializer};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -20,13 +29,17 @@ use subtle::ConditionallySelectable;
 use tokio::sync::RwLock;
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
-    create_proposed_transactions, input_selection::GreedyInputSelector, propose_transfer,
+    create_pczt_from_proposal, create_proposed_transactions,
+    extract_and_store_transaction_from_pczt, input_selection::GreedyInputSelector,
+    propose_transfer,
 };
 use zcash_client_backend::data_api::WalletCommitmentTrees;
 use zcash_client_backend::data_api::{
     Account, AccountBirthday, AccountPurpose, InputSource, WalletRead, WalletSummary, WalletWrite,
 };
+use zcash_client_backend::fees::standard::MultiOutputChangeStrategy;
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
+use zcash_client_backend::fees::{DustOutputPolicy, SplitPolicy, StandardFeeRule};
 use zcash_client_backend::proposal::Proposal;
 use zcash_client_backend::proto::service::{
     self, compact_tx_streamer_client::CompactTxStreamerClient,
@@ -37,11 +50,18 @@ use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
 use zcash_primitives::transaction::components::amount::NonNegativeAmount;
-use zcash_primitives::transaction::fees::zip317::FeeRule;
+use zcash_primitives::transaction::fees::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
+use crate::error::Error::PcztCreate;
 use zcash_client_backend::sync::run;
+use zcash_primitives::legacy::keys::{NonHardenedChildIndex, TransparentKeyScope};
+use zcash_primitives::zip32;
+use zcash_primitives::zip32::fingerprint::SeedFingerprint;
+use zcash_protocol::consensus::{NetworkConstants, Parameters};
+use zcash_protocol::value::Zatoshis;
+
 const BATCH_SIZE: u32 = 10000;
 
 /// # A Zcash wallet
@@ -70,6 +90,10 @@ pub struct Wallet<W, T> {
     pub(crate) client: CompactTxStreamerClient<T>,
     pub(crate) network: Network,
     pub(crate) min_confirmations: NonZeroU32,
+    /// Note management: the number of notes to maintain in the wallet
+    pub(crate) target_note_count: usize,
+    /// Note management: the minimum allowed value for split change amounts
+    pub(crate) min_split_output_value: u64,
 }
 
 impl<W, T: Clone> Clone for Wallet<W, T> {
@@ -79,7 +103,18 @@ impl<W, T: Clone> Clone for Wallet<W, T> {
             client: self.client.clone(),
             network: self.network,
             min_confirmations: self.min_confirmations,
+            target_note_count: self.target_note_count,
+            min_split_output_value: self.min_split_output_value,
         }
+    }
+}
+
+impl<P: Parameters, T> Wallet<MemoryWalletDb<P>, T> {
+    // Encodes the MemoryWallet into protobuf bytes
+    pub async fn db_to_bytes(&self) -> Result<Vec<u8>, Error> {
+        let mut memory_wallet_bytes = Vec::new();
+        self.db.read().await.encode(&mut memory_wallet_bytes)?;
+        Ok(memory_wallet_bytes)
     }
 }
 
@@ -93,7 +128,16 @@ where
             NoteRef = NoteRef,
         > + WalletCommitmentTrees,
 
-    AccountId: Copy + Debug + Eq + Hash + Default + Send + ConditionallySelectable + 'static,
+    AccountId: Copy
+        + Debug
+        + Eq
+        + Hash
+        + Default
+        + Send
+        + ConditionallySelectable
+        + Serialize
+        + DeserializeOwned
+        + 'static,
     NoteRef: Copy + Eq + Ord + Debug,
     Error: From<<W as WalletRead>::Error>,
 
@@ -118,22 +162,9 @@ where
             client: CompactTxStreamerClient::new(client),
             network,
             min_confirmations,
+            target_note_count: 4,
+            min_split_output_value: 10000000,
         })
-    }
-
-    pub async fn serialize_db<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        W: Serialize,
-        S: Serializer,
-    {
-        self.db.read().await.serialize(serializer)
-    }
-
-    pub async fn db_to_bytes(&self) -> Result<Vec<u8>, Error>
-    where
-        W: Serialize,
-    {
-        Ok(postcard::to_allocvec(&*self.db.read().await)?)
     }
 
     /// Add a new account to the wallet
@@ -145,9 +176,11 @@ where
     ///
     pub async fn create_account(
         &self,
+        account_name: &str,
         seed_phrase: &str,
         account_hd_index: u32,
         birthday_height: Option<u32>,
+        key_source: Option<&str>,
     ) -> Result<AccountId, Error> {
         // decode the mnemonic and derive the first account
         let usk = usk_from_seed_str(seed_phrase, account_hd_index, &self.network)?;
@@ -155,25 +188,41 @@ where
 
         tracing::info!("Key successfully decoded. Importing into wallet");
 
-        self.import_account_ufvk(&ufvk, birthday_height, AccountPurpose::Spending)
-            .await
+        self.import_account_ufvk(
+            account_name,
+            &ufvk,
+            birthday_height,
+            AccountPurpose::Spending { derivation: None },
+            key_source,
+        )
+        .await
     }
 
     pub async fn import_ufvk(
         &self,
+        account_name: &str,
         ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
+        key_source: Option<&str>,
     ) -> Result<AccountId, Error> {
-        self.import_account_ufvk(ufvk, birthday_height, AccountPurpose::ViewOnly)
-            .await
+        self.import_account_ufvk(
+            account_name,
+            ufvk,
+            birthday_height,
+            AccountPurpose::ViewOnly,
+            key_source,
+        )
+        .await
     }
 
     /// Helper method for importing an account directly from a Ufvk or from seed.
     async fn import_account_ufvk(
         &self,
+        account_name: &str,
         ufvk: &UnifiedFullViewingKey,
         birthday_height: Option<u32>,
         purpose: AccountPurpose,
+        key_source: Option<&str>,
     ) -> Result<AccountId, Error> {
         tracing::info!("Importing account with Ufvk: {:?}", ufvk);
         let mut client = self.client.clone();
@@ -206,7 +255,7 @@ where
             .db
             .write()
             .await
-            .import_account_ufvk(ufvk, &birthday, purpose)?
+            .import_account_ufvk(account_name, ufvk, &birthday, purpose, key_source)?
             .id())
     }
 
@@ -257,12 +306,20 @@ where
         account_id: AccountId,
         to_address: ZcashAddress,
         value: u64,
-    ) -> Result<Proposal<FeeRule, NoteRef>, Error> {
-        let input_selector = GreedyInputSelector::new(
-            SingleOutputChangeStrategy::new(FeeRule::standard(), None, ShieldedProtocol::Orchard),
-            Default::default(),
-        );
+    ) -> Result<Proposal<StandardFeeRule, NoteRef>, Error> {
+        let input_selector = GreedyInputSelector::new();
 
+        let change_strategy = MultiOutputChangeStrategy::new(
+            StandardFeeRule::Zip317,
+            None,
+            ShieldedProtocol::Orchard,
+            DustOutputPolicy::default(),
+            SplitPolicy::with_min_output_value(
+                NonZeroUsize::new(self.target_note_count)
+                    .ok_or(Error::FailedToCreateTransaction)?,
+                Zatoshis::from_u64(self.min_split_output_value)?,
+            ),
+        );
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
             NonNegativeAmount::from_u64(value)?,
@@ -277,11 +334,12 @@ where
                 .get_target_and_anchor_heights(self.min_confirmations)?
         );
         let mut db = self.db.write().await;
-        let proposal = propose_transfer::<_, _, _, <W as WalletCommitmentTrees>::Error>(
+        let proposal = propose_transfer::<_, _, _,_, <W as WalletCommitmentTrees>::Error>(
             &mut *db,
             &self.network,
             account_id,
             &input_selector,
+            &change_strategy,
             request,
             self.min_confirmations,
         )
@@ -298,7 +356,7 @@ where
     ///
     pub async fn create_proposed_transactions(
         &self,
-        proposal: Proposal<FeeRule, NoteRef>,
+        proposal: Proposal<StandardFeeRule, NoteRef>,
         usk: &UnifiedSpendingKey,
     ) -> Result<NonEmpty<TxId>, Error> {
         let prover = LocalTxProver::bundled();
@@ -308,6 +366,7 @@ where
             _,
             <MemoryWalletDb<Network> as InputSource>::Error,
             _,
+            <StandardFeeRule as FeeRule>::Error,
             _,
         >(
             &mut *db,
@@ -319,7 +378,6 @@ where
             &proposal,
         )
         .map_err(|_| Error::FailedToCreateTransaction)?;
-
         Ok(transactions)
     }
 
@@ -353,7 +411,7 @@ where
     }
 
     ///
-    /// A helper function that creates a proposal, creates a transation from the proposal and then submits it
+    /// A helper function that creates a proposal, creates a transaction from the proposal and then submits it
     ///
     pub async fn transfer(
         &self,
@@ -372,6 +430,145 @@ where
         // send the transactions to the network!!
         tracing::info!("Sending transactions");
         self.send_authorized_transactions(&txids).await
+    }
+
+    ///
+    /// Create a PCZT
+    ///
+    pub async fn pczt_create(
+        &self,
+        account_id: AccountId,
+        to_address: ZcashAddress,
+        value: u64,
+    ) -> Result<Pczt, Error> {
+        // Create the PCZT.
+        let change_strategy = MultiOutputChangeStrategy::new(
+            StandardFeeRule::Zip317,
+            None,
+            ShieldedProtocol::Orchard,
+            DustOutputPolicy::default(),
+            SplitPolicy::with_min_output_value(
+                NonZeroUsize::new(self.target_note_count)
+                    .ok_or(Error::FailedToCreateTransaction)?,
+                Zatoshis::from_u64(self.min_split_output_value)?,
+            ),
+        );
+        let input_selector = GreedyInputSelector::new();
+        let request = TransactionRequest::new(vec![Payment::without_memo(
+            to_address,
+            NonNegativeAmount::from_u64(value)?,
+        )])?;
+        let mut db = self.db.write().await;
+        let proposal = propose_transfer::<_, _, _,_, <W as WalletCommitmentTrees>::Error>(
+            &mut *db,
+            &self.network,
+            account_id,
+            &input_selector,
+            &change_strategy,
+            request,
+            self.min_confirmations,
+        )
+            .map_err(|_e| Error::Generic("something bad happened when calling propose transfer. Possibly insufficient balance..".to_string()))?;
+        tracing::info!("Proposal: {:#?}", proposal);
+        let pczt = create_pczt_from_proposal::<
+            _,
+            _,
+            <MemoryWalletDb<Network> as InputSource>::Error,
+            _,
+            <StandardFeeRule as FeeRule>::Error,
+            _,
+        >(
+            &mut *db,
+            &self.network,
+            account_id,
+            OvkPolicy::Sender,
+            &proposal,
+        )
+        .map_err(|_| Error::PcztCreate)?;
+        Ok(pczt)
+    }
+
+    ///
+    /// Prove a PCZT
+    ///
+    pub async fn pczt_prove(
+        &self,
+        pczt: Pczt,
+        sapling_proof_gen_key: Option<ProofGenerationKey>,
+    ) -> Result<Pczt, Error> {
+        // Add Sapling proof generation key.
+        // TODO: Check to see if there is any sapling in here in the first place
+        let pczt = if let Some(sapling_proof_gen_key) = sapling_proof_gen_key {
+            Updater::new(pczt)
+                .update_sapling_with(|mut updater| {
+                    let non_dummy_spends = updater
+                        .bundle()
+                        .spends()
+                        .iter()
+                        .enumerate()
+                        // Dummy spends will already have a proof generation key.
+                        .filter(|(_, spend)| spend.proof_generation_key().is_none())
+                        .map(|(index, spend)| {
+                            (
+                                index,
+                                spend
+                                    .zip32_derivation()
+                                    .as_ref()
+                                    .map(|d| (*d.seed_fingerprint(), d.derivation_path().clone())),
+                            )
+                        })
+                        .collect::<Vec<_>>();
+
+                    // Assume all non-dummy spent notes are from the same account.
+                    for (index, derivation) in non_dummy_spends {
+                        updater.update_spend_with(index, |mut spend_updater| {
+                            spend_updater.set_proof_generation_key(sapling_proof_gen_key.clone())
+                        })?;
+                    }
+
+                    Ok(())
+                })
+                .map_err(|e| {
+                    Error::PcztProve(format!(
+                        "Failed to add Sapling proof generation key: {:?}",
+                        e
+                    ))
+                })?
+                .finish()
+        } else {
+            pczt
+        };
+
+        let prover = LocalTxProver::bundled();
+        let pczt = Prover::new(pczt)
+            .create_orchard_proof(&orchard::circuit::ProvingKey::build())
+            .map_err(|e| Error::PcztProve(format!("Failed to create Orchard proof: {:?}", e)))?
+            .create_sapling_proofs(&prover, &prover)
+            .map_err(|e| Error::PcztProve(format!("Failed to create Sapling proofs: {:?}", e)))?
+            .finish();
+        Ok(pczt)
+    }
+
+    pub async fn pczt_send(&self, pczt: Pczt) -> Result<(), Error> {
+        let prover = LocalTxProver::bundled();
+        let (spend_vk, output_vk) = prover.verifying_keys();
+        let mut db = self.db.write().await;
+        let txid = extract_and_store_transaction_from_pczt::<_, ()>(
+            &mut *db,
+            pczt,
+            &spend_vk,
+            &output_vk,
+            &orchard::circuit::VerifyingKey::build(),
+        )
+        .map_err(|e| {
+            Error::PcztSend(format!(
+                "Failed to extract and store transaction from PCZT: {:?}",
+                e
+            ))
+        })?;
+        drop(db);
+        self.send_authorized_transactions(&NonEmpty::new(txid))
+            .await
     }
 }
 

@@ -15,6 +15,7 @@ export const useRequest = () => {
   /**
    * `provider.request` wrapper.
    *
+   * @param method
    * @param params - The request params.
    * @param params.method - The method to call.
    * @param params.params - The method params.
@@ -22,16 +23,14 @@ export const useRequest = () => {
    */
   const request: Request = async ({ method, params }) => {
     try {
-      const data =
+      return (
         (await provider?.request({
           method,
           params,
-        } as RequestArguments)) ?? null;
-
-      return data;
+        } as RequestArguments)) ?? null
+      );
     } catch (requestError: any) {
       setError(requestError);
-
       return null;
     }
   };

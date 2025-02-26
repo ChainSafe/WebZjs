@@ -1,2 +1,2 @@
 export * from './metamask';
-export * from './zatsToZec';
+export * from './balance';

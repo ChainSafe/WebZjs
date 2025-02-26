@@ -1,7 +1,12 @@
 import type { SnapConfig } from '@metamask/snaps-cli';
 import { resolve } from 'path';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const config: SnapConfig = {
+  environment: {
+    SNAP_ENV: process.env.SNAP_ENV,
+  },
   bundler: 'webpack',
   customizeWebpackConfig: (config) => {
     config.module?.rules?.push({

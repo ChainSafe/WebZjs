@@ -1,5 +1,5 @@
 import ChainsafePNG from './chainsafe.png';
-import FormTransferSvg from './form-transfer.svg';
+import FormTransferPng from './form-transfer.png';
 import MetaMaskLogoPNG from './metaMask-logo.png';
 import MetaMaskSnapsLogoPNG from './metamask-snaps-logo.png';
 import ZcashPNG from './zcash.png';
@@ -27,7 +27,7 @@ export {
   MetaMaskSnapsLogoPNG,
   ZcashPNG,
   ZcashYellowPNG,
-  FormTransferSvg,
+  FormTransferPng,
   ArrowReceiveSvg,
   ArrowTransferSvg,
   ClockSvg,

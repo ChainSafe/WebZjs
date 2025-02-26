@@ -6,7 +6,7 @@ import {
   Button,
   Text,
   Bold,
-  Divider
+  Divider,
 } from '@metamask/snaps-sdk/jsx';
 
 type BirthdayBlockForm = { customBirthdayBlock: string | null };
@@ -16,7 +16,6 @@ export type SetBirthdayBlockParams = { latestBlock?: number };
 export async function setBirthdayBlock({
   latestBlock,
 }: SetBirthdayBlockParams): Promise<string | null> {
-
   const interfaceId = await snap.request({
     method: 'snap_createInterface',
     params: {
@@ -29,12 +28,13 @@ export async function setBirthdayBlock({
               seed you can enter optional birthday block of that Wallet.
             </Text>
             <Divider />
-            <Text>
-              Syncing
-              proccess will start from that block.
-            </Text>
+            <Text>Syncing proccess will start from that block.</Text>
             <Divider />
-            {!!latestBlock && <Text>Latest block: <Bold>{latestBlock.toString()}</Bold></Text>}
+            {!!latestBlock && (
+              <Text>
+                Latest block: <Bold>{latestBlock.toString()}</Bold>
+              </Text>
+            )}
             <Input
               min={0}
               step={1}
@@ -57,7 +57,6 @@ export async function setBirthdayBlock({
       id: interfaceId,
     },
   })) as BirthdayBlockForm;
-
 
   return customBirthdayBlock;
 }
