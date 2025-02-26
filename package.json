@@ -9,12 +9,12 @@
     "node": ">=18.18.0"
   },
   "devDependencies": {
-    "prettier": "^3.3.3",
+    "prettier": "^3.5.2",
     "prettier-plugin-packagejson": "^2.5.3"
   },
   "packageManager": "yarn@4.5.1",
   "scripts": {
-    "dev": "yarn workspace @webzjs/web-wallet run dev & yarn run snap:start",
+    "dev": "yarn workspace @webzjs/web-wallet run dev & yarn run snap:start & yarn workspace @webzjs/demo-wallet run dev",
     "demo-wallet:serve": "yarn workspace @webzjs/demo-wallet run serve",
     "demo-wallet:dev": "yarn run just:build-keys && yarn run snap:start & yarn workspace @webzjs/demo-wallet run dev",
     "demo-wallet:build": "yarn workspace @webzjs/demo-wallet run build",

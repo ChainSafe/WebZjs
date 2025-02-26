@@ -6,20 +6,21 @@ function zatsToZec(zats: number): number {
   return zats / ZATS_PER_ZEC;
 }
 
-function zecToZats(zecString: string): bigint {
-  if (!zecString || isNaN(Number(zecString))) {
-    throw new Error('Invalid ZEC amount provided.');
+function zecToZats(zecAmount: string): bigint {
+  console.log(zecAmount);
+  if (!/^\d+(\.\d+)?$/.test(zecAmount)) {
+    throw new Error('Invalid ZEC format: must be positive number');
   }
 
-  const zecDecimal = new Decimal(zecString);
-  const zatsDecimal = zecDecimal.times(ZATS_PER_ZEC);
+  const amount = new Decimal(zecAmount);
 
-  // Ensure the result is an integer
-  if (!zatsDecimal.isInteger()) {
-    throw new Error('Resulting zats value is not an integer.');
+  if (amount.decimalPlaces() > 8) {
+    throw new Error('Maximum 8 decimal places allowed');
   }
 
-  return BigInt(zatsDecimal.toFixed(0));
+  const zats = amount.mul(100_000_000).toDecimalPlaces(0, Decimal.ROUND_DOWN);
+  console.log(zats.toFixed());
+  return BigInt(zats.toFixed());
 }
 
 export { zatsToZec, zecToZats };

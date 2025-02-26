@@ -23,17 +23,16 @@
     "lint:misc": "prettier '**/*.json' '**/*.md' '!CHANGELOG.md' --ignore-path .gitignore",
     "prepublishOnly": "mm-snap manifest",
     "serve": "mm-snap serve",
-    "start": "SNAP_ENV=dev && mm-snap watch",
+    "start": "mm-snap watch",
     "test": "jest"
   },
   "dependencies": {
     "@metamask/snaps-sdk": "^6.17.1",
-    "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.5",
     "@webzjs/webz-keys": "workspace:^",
     "@webzjs/webz-wallet": "workspace:^",
     "buffer": "^6.0.3",
-    "fork-ts-checker-webpack-plugin": "^9.0.2"
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
+    "superstruct": "^2.0.2"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",

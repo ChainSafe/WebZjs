@@ -5,7 +5,7 @@ import { Parcel } from '@parcel/core';
 import history from 'connect-history-api-fallback';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '.env.development' });
+dotenv.config({ path: '.env' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

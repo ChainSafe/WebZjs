@@ -64,9 +64,9 @@ export const usePczt = (): PcztActions => {
     const pczt = await createPCZT(accountId, toAddress, valueinZats);
 
     if (pczt) {
-      const provedPczt = await provePczt(pczt);
-      const signedPczt = await signPczt(provedPczt);
-      await sendPczt(signedPczt);
+      const signedPczt = await signPczt(pczt);
+      const provedPczt = await provePczt(signedPczt);
+      await sendPczt(provedPczt);
     }
   };
 

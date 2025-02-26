@@ -5313,7 +5313,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.3.0, @types/react-dom@npm:^18.3.5":
+"@types/react-dom@npm:^18.3.0":
   version: 18.3.5
   resolution: "@types/react-dom@npm:18.3.5"
   peerDependencies:
@@ -6027,7 +6027,6 @@ __metadata:
     "@webzjs/webz-wallet": "workspace:^"
     classnames: "npm:^2.5.1"
     connect-history-api-fallback: "npm:^2.0.0"
-    decimal: "npm:^0.0.2"
     decimal.js: "npm:^10.5.0"
     dotenv: "npm:^16.4.7"
     eslint: "npm:^9.18.0"
@@ -6043,7 +6042,6 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-qr-code: "npm:^2.0.15"
     react-router-dom: "npm:^6.27.0"
-    superstruct: "npm:^2.0.2"
     svgo: "npm:^3"
     tailwindcss: "npm:^4.0.0"
     typescript: "npm:^5.7.3"
@@ -6090,7 +6088,6 @@ __metadata:
     "@metamask/snaps-jest": "npm:^8.8.1"
     "@metamask/snaps-sdk": "npm:^6.17.1"
     "@types/react": "npm:18.2.4"
-    "@types/react-dom": "npm:^18.3.5"
     "@types/react-dom ": "npm:18.2.4"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
     "@typescript-eslint/parser": "npm:^5.42.1"
@@ -6111,6 +6108,7 @@ __metadata:
     prettier: "npm:^3.3.3"
     prettier-plugin-packagejson: "npm:^2.5.3"
     rimraf: "npm:^3.0.2"
+    superstruct: "npm:^2.0.2"
     ts-jest: "npm:^29.1.0"
     typescript: "npm:^4.7.4"
   languageName: unknown
@@ -8110,13 +8108,6 @@ __metadata:
   version: 10.5.0
   resolution: "decimal.js@npm:10.5.0"
   checksum: 10c0/785c35279df32762143914668df35948920b6c1c259b933e0519a69b7003fc0a5ed2a766b1e1dda02574450c566b21738a45f15e274b47c2ac02072c0d1f3ac3
-  languageName: node
-  linkType: hard
-
-"decimal@npm:^0.0.2":
-  version: 0.0.2
-  resolution: "decimal@npm:0.0.2"
-  checksum: 10c0/49e3db7c49bca4199c738acfda6480f0c68aaf99c509ebae3a0af2830a6eb812ea30e053755cf99a3dde307dab6d497b8cbefbe6a5e43e95a0b3f38dcf0d058c
   languageName: node
   linkType: hard
 
@@ -13283,6 +13274,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier@npm:^3.5.2":
+  version: 3.5.2
+  resolution: "prettier@npm:3.5.2"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10c0/d7b597ed33f39c32ace675896ad187f06a3e48dc8a1e80051b5c5f0dae3586d53981704b8fda5ac3b080e6c2e0e197d239131b953702674f044351621ca5e1ac
+  languageName: node
+  linkType: hard
+
 "pretty-format@npm:^29.7.0":
   version: 29.7.0
   resolution: "pretty-format@npm:29.7.0"
@@ -14140,7 +14140,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root@workspace:."
   dependencies:
-    prettier: "npm:^3.3.3"
+    prettier: "npm:^3.5.2"
     prettier-plugin-packagejson: "npm:^2.5.3"
   languageName: unknown
   linkType: soft
