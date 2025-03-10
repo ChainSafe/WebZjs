@@ -30,12 +30,7 @@ const navItems: NavItem[] = [
     to: 'receive',
     label: 'Receive',
     icon: <ArrowReceiveSvg />,
-  },
-  {
-    to: 'transaction-history',
-    label: 'Transaction History',
-    icon: <ClockSvg />,
-  },
+  }
 ];
 
 function NavBar() {

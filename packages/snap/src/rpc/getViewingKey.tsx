@@ -12,10 +12,10 @@ export async function getViewingKey(
     const seed = await getSeed();
 
     // Generate the UnifiedSpendingKey and obtain the Viewing Key
-    let spendingKey = new UnifiedSpendingKey(network, seed, accountIndex);
-    let viewingKey = spendingKey.to_unified_full_viewing_key();
+    const spendingKey = new UnifiedSpendingKey(network, seed, accountIndex);
+    const viewingKey = spendingKey.to_unified_full_viewing_key().encode(network);
 
-    return viewingKey.encode(network);
+    return viewingKey
   } catch (error) {
     console.error('Error generating Viewing Key:', error);
     throw new Error('Failed to generate Viewing Key');

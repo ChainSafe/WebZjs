@@ -1,22 +1,25 @@
 import { set } from 'idb-keyval';
 import { useCallback } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
+import { useMetaMask } from './snaps/useMetaMask';
+import { useInvokeSnap } from './snaps/useInvokeSnap';
+import { useRequestSnap } from './snaps/useRequestSnap';
 
 interface WebzjsActions {
-  addNewAccountFromUfvk: (
-    ufvk: string,
-    birthdayHeight: number,
-  ) => Promise<void>;
   getAccountData: () => Promise<
     { unifiedAddress: string; transparentAddress: string } | undefined
   >;
   triggerRescan: () => Promise<void>;
   flushDbToStore: () => Promise<void>;
   syncStateWithWallet: () => Promise<void>;
+  connectWebZjsSnap: () => Promise<void>;
 }
 
 export function useWebZjsActions(): WebzjsActions {
   const { state, dispatch } = useWebZjsContext();
+  const { installedSnap } = useMetaMask();
+  const invokeSnap = useInvokeSnap();
+  const requestSnap = useRequestSnap();
 
   const getAccountData = useCallback(async () => {
     try {
@@ -81,23 +84,70 @@ export function useWebZjsActions(): WebzjsActions {
     }
   }, [state.webWallet, dispatch]);
 
-  const addNewAccountFromUfvk = useCallback(
-    async (ufvk: string, birthdayHeight: number) => {
-      const account_id =
-        (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
-      dispatch({ type: 'set-active-account', payload: account_id });
+  const connectWebZjsSnap = useCallback(async () => {
+    try {
+      await requestSnap();
 
+      const latestBlockBigInt = await state.webWallet?.get_latest_block();
+      const latestBlock = Number(latestBlockBigInt);
+
+      const customBirthdayBlock = (await invokeSnap({
+        method: 'setBirthdayBlock',
+        params: { latestBlock },
+      })) as string | null;
+
+      const viewingKey = (await invokeSnap({
+        method: 'getViewingKey',
+      })) as string;
+
+      const creationBlockHeight = Number(
+        customBirthdayBlock !== null ? customBirthdayBlock : latestBlock,
+      );
+
+      if (state.webWallet === null) {
+        dispatch({
+          type: 'set-error',
+          payload: new Error('Wallet not initialized'),
+        });
+        return;
+      }
+
+      const account_id = await state.webWallet.create_account_ufvk(
+        viewingKey,
+        creationBlockHeight,
+      );
+
+      dispatch({ type: 'set-active-account', payload: account_id });
       if (state.webWallet) {
         const summary = await state.webWallet.get_wallet_summary();
         console.log('account_balances', summary?.account_balances.length);
       }
       await syncStateWithWallet();
+
       await flushDbToStore();
-    },
-    [dispatch, flushDbToStore, state.webWallet, syncStateWithWallet],
-  );
+    } catch (error) {
+      console.error(error);
+      dispatch({
+        type: 'set-error',
+        payload: new Error(
+          'Failed to connect to MetaMask Snap and create account',
+        ),
+      });
+      throw error;
+    }
+  }, [
+    state.webWallet,
+    invokeSnap,
+    dispatch,
+    syncStateWithWallet,
+    flushDbToStore,
+  ]);
 
   const triggerRescan = useCallback(async () => {
+    if (!installedSnap) {
+      return;
+    }
+
     if (state.loading) {
       dispatch({ type: 'set-error', payload: new Error('App not yet loaded') });
       return;
@@ -145,9 +195,9 @@ export function useWebZjsActions(): WebzjsActions {
 
   return {
     getAccountData,
-    addNewAccountFromUfvk,
     triggerRescan,
     flushDbToStore,
     syncStateWithWallet,
+    connectWebZjsSnap,
   };
 }
