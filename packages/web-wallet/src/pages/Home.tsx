@@ -65,12 +65,6 @@ const Home: React.FC = () => {
               />
             </div>
           </button>
-          <div className="text-sm">
-            <span>Already have an account?</span>{' '}
-            <a href="#" className="underline">
-              Restore account
-            </a>
-          </div>
         </div>
       </div>
     </div>
