@@ -25,15 +25,20 @@ export function useWebZjsActions(): WebzjsActions {
     try {
       const accountIndex = state.activeAccount ?? 0;
 
+      if(!state.webWallet) return
+
       const unifiedAddress =
-        await state.webWallet!.get_current_address(accountIndex);
+        await state.webWallet.get_current_address(accountIndex);
+
       const transparentAddress =
-        await state.webWallet!.get_current_address_transparent(accountIndex);
+        await state.webWallet.get_current_address_transparent(accountIndex);
 
       return {
         unifiedAddress,
         transparentAddress,
       };
+      
+      
     } catch (error) {
       dispatch({
         type: 'set-error',
@@ -88,22 +93,6 @@ export function useWebZjsActions(): WebzjsActions {
     try {
       await requestSnap();
 
-      const latestBlockBigInt = await state.webWallet?.get_latest_block();
-      const latestBlock = Number(latestBlockBigInt);
-
-      const customBirthdayBlock = (await invokeSnap({
-        method: 'setBirthdayBlock',
-        params: { latestBlock },
-      })) as string | null;
-
-      const viewingKey = (await invokeSnap({
-        method: 'getViewingKey',
-      })) as string;
-
-      const creationBlockHeight = Number(
-        customBirthdayBlock !== null ? customBirthdayBlock : latestBlock,
-      );
-
       if (state.webWallet === null) {
         dispatch({
           type: 'set-error',
@@ -112,9 +101,31 @@ export function useWebZjsActions(): WebzjsActions {
         return;
       }
 
+      const latestBlockBigInt = await state.webWallet.get_latest_block();
+      const latestBlock = Number(latestBlockBigInt);
+
+      let birthdayBlock = (await invokeSnap({
+        method: 'setBirthdayBlock',
+        params: { latestBlock },
+      })) as number | null;
+
+
+      // in case user pressed "Close" instead of "Continue to wallet" on prompt, still allow account creation with latest block
+      if(birthdayBlock === null) {
+        await invokeSnap({
+          method: 'setSnapStete',
+          params: { webWalletSyncStartBlock: latestBlock },
+        });
+        birthdayBlock = latestBlock
+      }
+
+      const viewingKey = (await invokeSnap({
+        method: 'getViewingKey',
+      })) as string;
+
       const account_id = await state.webWallet.create_account_ufvk(
         viewingKey,
-        creationBlockHeight,
+        birthdayBlock,
       );
 
       dispatch({ type: 'set-active-account', payload: account_id });
@@ -164,10 +175,7 @@ export function useWebZjsActions(): WebzjsActions {
       return;
     }
     if (state.syncInProgress) {
-      dispatch({
-        type: 'set-error',
-        payload: new Error('Sync already in progress'),
-      });
+
       return;
     }
 

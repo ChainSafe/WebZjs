@@ -13546,15 +13546,15 @@ __metadata:
   linkType: hard
 
 "react-hot-toast@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "react-hot-toast@npm:2.5.1"
+  version: 2.5.2
+  resolution: "react-hot-toast@npm:2.5.2"
   dependencies:
     csstype: "npm:^3.1.3"
     goober: "npm:^2.1.16"
   peerDependencies:
     react: ">=16"
     react-dom: ">=16"
-  checksum: 10c0/179efb089276fd20d246fa17e8282437f28e838561e83765d33ed8c03bc0ecff642243003aa08ccdf839616f9c00b3fad2e617de995ea2cd6bd6219325791fc5
+  checksum: 10c0/2db00b491bd1d2ec3ed04754a32b640272cdb32985f95e32ef033fcc996588a93e67d9764b005f9f391ee2bad5d0f9f343ba290dca82fcd439e08e708a161d76
   languageName: node
   linkType: hard
 

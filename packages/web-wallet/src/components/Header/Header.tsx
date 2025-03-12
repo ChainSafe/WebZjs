@@ -7,7 +7,7 @@ const Header = (): React.JSX.Element => {
   const isHomePage = location.pathname === '/';
 
   return (
-    <header className="font-inter h-[60px] fixed top-0 left-0 w-full px-16 flex grow items-center justify-between bg-transparent py-3 border-b border-neutral-200">
+    <header className="font-inter h-[60px] w-full px-16 flex items-center justify-between bg-transparent py-3 border-b border-neutral-200">
       <Link to={'/'}>
         <div className="flex items-center">
           <img

@@ -46,7 +46,7 @@ export function AddAccount() {
   const handleMetamaskImport = async (e: FormEvent) => {
     e.preventDefault();
     const viewKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
-    console.log(viewKey);
+
     await addNewAccountFromUfvk(state, dispatch, viewKey, birthdayHeight);
     toast.success('Account imported successfully', {
       position: 'top-center',
