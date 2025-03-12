@@ -32,8 +32,8 @@ const Home: React.FC = () => {
         if (accountData?.unifiedAddress) navigate('/dashboard/account-summary');
       };
       homeReload();
-    }
-  }, [installedSnap, navigate, getAccountData, state.activeAccount]);
+    };
+  }, [navigate, getAccountData, state.activeAccount]);
 
   return (
     <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">

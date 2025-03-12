@@ -8,7 +8,8 @@ import {
 } from '@metamask/snaps-sdk';
 import { setBirthdayBlock } from './rpc/setBirthdayBlock';
 import { getSnapState } from './rpc/getSnapState';
-import { SetBirthdayBlockParams } from './types';
+import { SetBirthdayBlockParams, SnapState } from './types';
+import { setSnapState } from './rpc/setSnapState';
 
 let wasm: InitOutput;
 
@@ -30,10 +31,13 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
     case 'getViewingKey':
       return await getViewingKey();
     case 'setBirthdayBlock':
-      const params = request.params as SetBirthdayBlockParams;
-      return await setBirthdayBlock(params);
+      const setBirthdayBlockParams = request.params as SetBirthdayBlockParams;
+      return await setBirthdayBlock(setBirthdayBlockParams);
     case 'getSnapStete':
       return await getSnapState();
+    case 'setSnapStete':
+      const setSnapStateParams = request.params as unknown as SnapState;
+      return await setSnapState(setSnapStateParams);
     default:
       throw new Error('Method not found.');
   }

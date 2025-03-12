@@ -55,7 +55,7 @@ export const BlockHeightCard: FC<{
       {syncedFrom && (
         <>
           <div className="self-stretch text-[#595959] text-sm font-semibold font-inter leading-[21px]">
-            Synced From
+            Sync Start Block
           </div>
           <div className="self-stretch justify-start items-center gap-2 inline-flex">
             <div className="text-black text-2xl font-medium font-['Inter'] leading-9">

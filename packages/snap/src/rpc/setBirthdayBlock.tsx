@@ -9,6 +9,7 @@ import {
   Bold,
   Divider,
 } from '@metamask/snaps-sdk/jsx';
+import { setSyncBlockHeight } from '../utils/setSyncBlockHeight';
 
 type BirthdayBlockForm = { customBirthdayBlock: string | null };
 
@@ -16,7 +17,7 @@ type SetBirthdayBlockParams = { latestBlock: number };
 
 export async function setBirthdayBlock({
   latestBlock,
-}: SetBirthdayBlockParams): Promise<string | null> {
+}: SetBirthdayBlockParams): Promise<number | null> {
   const interfaceId = await snap.request({
     method: 'snap_createInterface',
     params: {
@@ -59,8 +60,7 @@ export async function setBirthdayBlock({
     },
   })) as BirthdayBlockForm;
 
-  const webWalletSyncStartBlock =
-    customBirthdayBlock === null ? latestBlock.toString() : customBirthdayBlock;
+  const webWalletSyncStartBlock = setSyncBlockHeight(customBirthdayBlock, latestBlock);
 
   await snap.request({
     method: 'snap_manageState',
@@ -70,5 +70,5 @@ export async function setBirthdayBlock({
     },
   });
 
-  return customBirthdayBlock;
+  return webWalletSyncStartBlock;
 }
