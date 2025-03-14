@@ -2810,7 +2810,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/snaps-cli@npm:^6.5.2":
+"@metamask/snaps-cli@npm:^6.7.0":
   version: 6.7.0
   resolution: "@metamask/snaps-cli@npm:6.7.0"
   dependencies:
@@ -6027,6 +6027,7 @@ __metadata:
     "@webzjs/webz-wallet": "workspace:^"
     classnames: "npm:^2.5.1"
     connect-history-api-fallback: "npm:^2.0.0"
+    decimal.js: "npm:^10.5.0"
     dotenv: "npm:^16.4.7"
     eslint: "npm:^9.18.0"
     eslint-config-react-app: "npm:^7.0.1"
@@ -6084,7 +6085,7 @@ __metadata:
     "@metamask/eslint-config-jest": "npm:^14.0.0"
     "@metamask/eslint-config-nodejs": "npm:^14.0.0"
     "@metamask/eslint-config-typescript": "npm:^14.0.0"
-    "@metamask/snaps-cli": "npm:^6.5.2"
+    "@metamask/snaps-cli": "npm:^6.7.0"
     "@metamask/snaps-jest": "npm:^8.8.1"
     "@metamask/snaps-sdk": "npm:^6.17.1"
     "@types/react": "npm:18.2.4"
@@ -6092,7 +6093,9 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
     "@typescript-eslint/parser": "npm:^5.42.1"
     "@webzjs/webz-keys": "workspace:^"
+    "@webzjs/webz-wallet": "workspace:^"
     buffer: "npm:^6.0.3"
+    dotenv: "npm:^16.4.7"
     eslint: "npm:^9.14.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-import: "npm:~2.31.0"
@@ -6106,6 +6109,7 @@ __metadata:
     prettier: "npm:^3.3.3"
     prettier-plugin-packagejson: "npm:^2.5.3"
     rimraf: "npm:^3.0.2"
+    superstruct: "npm:^2.0.2"
     ts-jest: "npm:^29.1.0"
     typescript: "npm:^4.7.4"
   languageName: unknown
@@ -8098,6 +8102,13 @@ __metadata:
   dependencies:
     ms: "npm:^2.1.1"
   checksum: 10c0/37d96ae42cbc71c14844d2ae3ba55adf462ec89fd3a999459dec3833944cd999af6007ff29c780f1c61153bcaaf2c842d1e4ce1ec621e4fc4923244942e4a02a
+  languageName: node
+  linkType: hard
+
+"decimal.js@npm:^10.5.0":
+  version: 10.5.0
+  resolution: "decimal.js@npm:10.5.0"
+  checksum: 10c0/785c35279df32762143914668df35948920b6c1c259b933e0519a69b7003fc0a5ed2a766b1e1dda02574450c566b21738a45f15e274b47c2ac02072c0d1f3ac3
   languageName: node
   linkType: hard
 
@@ -13273,6 +13284,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier@npm:^3.5.2":
+  version: 3.5.2
+  resolution: "prettier@npm:3.5.2"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10c0/d7b597ed33f39c32ace675896ad187f06a3e48dc8a1e80051b5c5f0dae3586d53981704b8fda5ac3b080e6c2e0e197d239131b953702674f044351621ca5e1ac
+  languageName: node
+  linkType: hard
+
 "pretty-format@npm:^29.7.0":
   version: 29.7.0
   resolution: "pretty-format@npm:29.7.0"
@@ -14143,7 +14163,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root@workspace:."
   dependencies:
-    prettier: "npm:^3.3.3"
+    prettier: "npm:^3.5.2"
     prettier-plugin-packagejson: "npm:^2.5.3"
   languageName: unknown
   linkType: soft
@@ -14996,6 +15016,13 @@ __metadata:
   dependencies:
     minimist: "npm:^1.1.0"
   checksum: 10c0/8ecdfa682e50b98272b283f1094ae2f82e5c84b258fd3ac6e47a69149059bd786ef6586305243a5b60746ce23e3e738de7ed8277c76f3363fa351bbfe9c71f37
+  languageName: node
+  linkType: hard
+
+"superstruct@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "superstruct@npm:2.0.2"
+  checksum: 10c0/c6853db5240b4920f47b3c864dd1e23ede6819ea399ad29a65387d746374f6958c5f1c5b7e5bb152d9db117a74973e5005056d9bb83c24e26f18ec6bfae4a718
   languageName: node
   linkType: hard
 

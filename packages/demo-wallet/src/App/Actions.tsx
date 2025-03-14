@@ -56,7 +56,12 @@ export async function addNewAccount(
   birthdayHeight: number,
 ) {
   let account_id =
-    (await state.webWallet?.create_account(seedPhrase, 0, birthdayHeight)) || 0;
+    (await state.webWallet?.create_account(
+      'account-0',
+      seedPhrase,
+      0,
+      birthdayHeight,
+    )) || 0;
   dispatch({ type: 'add-account-seed', payload: [account_id, seedPhrase] });
   dispatch({ type: 'set-active-account', payload: account_id });
   await syncStateWithWallet(state, dispatch);
@@ -69,7 +74,11 @@ export async function addNewAccountFromUfvk(
   birthdayHeight: number,
 ) {
   let account_id =
-    (await state.webWallet?.create_account_ufvk(ufvk, birthdayHeight)) || 0;
+    (await state.webWallet?.create_account_ufvk(
+      'account-0',
+      ufvk,
+      birthdayHeight,
+    )) || 0;
   dispatch({ type: 'set-active-account', payload: account_id });
 
   let summary = await state.webWallet.get_wallet_summary();
@@ -153,7 +162,6 @@ export async function triggerTransfer(
     toAddress,
     amount,
   );
-  console.log(JSON.stringify(proposal.describe(), null, 2));
 
   let txids = await state.webWallet.create_proposed_transactions(
     proposal,

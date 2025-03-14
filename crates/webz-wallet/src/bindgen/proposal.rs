@@ -1,7 +1,6 @@
-use wasm_bindgen::prelude::*;
-
 use super::wallet::NoteRef;
-use zcash_primitives::transaction::fees::zip317::FeeRule;
+use wasm_bindgen::prelude::*;
+use zcash_client_backend::fees::StandardFeeRule;
 
 /// A handler to an immutable proposal. This can be passed to `create_proposed_transactions` to prove/authorize the transactions
 /// before they are sent to the network.
@@ -9,25 +8,17 @@ use zcash_primitives::transaction::fees::zip317::FeeRule;
 /// The proposal can be reviewed by calling `describe` which will return a JSON object with the details of the proposal.
 #[wasm_bindgen]
 pub struct Proposal {
-    inner: zcash_client_backend::proposal::Proposal<FeeRule, NoteRef>,
+    inner: zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef>,
 }
 
-impl From<zcash_client_backend::proposal::Proposal<FeeRule, NoteRef>> for Proposal {
-    fn from(inner: zcash_client_backend::proposal::Proposal<FeeRule, NoteRef>) -> Self {
+impl From<zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef>> for Proposal {
+    fn from(inner: zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef>) -> Self {
         Self { inner }
     }
 }
 
-impl From<Proposal> for zcash_client_backend::proposal::Proposal<FeeRule, NoteRef> {
+impl From<Proposal> for zcash_client_backend::proposal::Proposal<StandardFeeRule, NoteRef> {
     fn from(proposal: Proposal) -> Self {
         proposal.inner
-    }
-}
-
-#[wasm_bindgen]
-impl Proposal {
-    /// Returns a JSON object with the details of the proposal.
-    pub fn describe(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.inner).unwrap()
     }
 }

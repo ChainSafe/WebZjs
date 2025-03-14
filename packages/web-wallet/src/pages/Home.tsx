@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ZcashYellowPNG, FormTransferSvg, MetaMaskLogoPNG } from '../assets';
+import { ZcashYellowPNG, MetaMaskLogoPNG, FormTransferPng } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { useWebZjsContext } from '../context/WebzjsContext';
 import { useMetaMask, useWebZjsActions } from '../hooks';
@@ -39,7 +39,11 @@ const Home: React.FC = () => {
     <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">
       <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-14">
         <div className="hidden md:flex items-end justify-end">
-          <FormTransferSvg />
+          <img
+            className="max-w-[378px]"
+            src={FormTransferPng}
+            alt="Form Transfer image"
+          />
         </div>
         <div className="flex flex-col items-start space-y-8">
           <img src={ZcashYellowPNG} className="w-10 h-10" alt="Zcash Logo" />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PoolType, TransactionType } from '../../types/transfer';
+import { usePczt } from '../../hooks/usePCZT';
 
 export interface TransferBalanceFormData {
   amount: string;
@@ -7,6 +8,7 @@ export interface TransferBalanceFormData {
   transactionType?: TransactionType;
   pool: PoolType;
   memo?: string;
+  error: string;
 }
 
 export type TransferBalanceFormHandleChange = (
@@ -25,16 +27,19 @@ export interface TransferBalanceFormType {
   nextStep: () => void;
   prevStep: () => void;
   handleChange: TransferBalanceFormHandleChange;
+  submitForm: () => void;
   resetForm: () => void;
 }
 
 const useTransferBalanceForm = (): TransferBalanceFormType => {
+  const { handlePcztTransaction } = usePczt();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [formData, setFormData] = useState<TransferBalanceFormData>({
     amount: '',
     recipient: '',
     transactionType: undefined,
     pool: PoolType.ORCHARD,
+    error: '',
   });
 
   const nextStep = () => setCurrentStep((prev) => prev + 1);
@@ -48,6 +53,11 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
     }
   };
 
+  const submitForm = () => {
+    const { amount, recipient } = formData;
+    handlePcztTransaction(0, recipient, amount);
+  };
+
   const resetForm = () => {
     setFormData({
       amount: '',
@@ -55,6 +65,7 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
       transactionType: undefined,
       pool: PoolType.ORCHARD,
       memo: '',
+      error: '',
     });
     setCurrentStep(1);
   };
@@ -65,6 +76,7 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
     nextStep,
     prevStep,
     handleChange,
+    submitForm,
     resetForm,
   };
 };

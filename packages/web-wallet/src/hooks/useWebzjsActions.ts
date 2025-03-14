@@ -55,6 +55,7 @@ export function useWebZjsActions(): WebzjsActions {
       });
       return;
     }
+
     try {
       const summary = await state.webWallet.get_wallet_summary();
       if (summary) {
@@ -124,6 +125,7 @@ export function useWebZjsActions(): WebzjsActions {
       })) as string;
 
       const account_id = await state.webWallet.create_account_ufvk(
+        'account-0',
         viewingKey,
         birthdayBlock,
       );

@@ -13,7 +13,8 @@ import initWebzWallet, {
   WebWallet,
 } from '@webzjs/webz-wallet';
 import initWebzKeys from '@webzjs/webz-keys';
-import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
+
+import { LIGHTWALLET_PROXY, WALLET_NETWORK } from '../config/constants';
 import { Snap } from '../types';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -106,12 +107,15 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
       const bytes = await get('wallet');
       let wallet: WebWallet;
 
+      console.log('WALLET_NETWORK', WALLET_NETWORK);
+      console.log('LIGHTWALLETD_PROXY', LIGHTWALLET_PROXY);
+
       if (bytes) {
         console.info('Saved wallet detected. Restoring wallet from storage');
-        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, bytes);
+        wallet = new WebWallet(WALLET_NETWORK, LIGHTWALLET_PROXY, 1, bytes);
       } else {
         console.info('No saved wallet detected. Creating new wallet');
-        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1);
+        wallet = new WebWallet(WALLET_NETWORK, LIGHTWALLET_PROXY, 1);
       }
 
       dispatch({ type: 'set-web-wallet', payload: wallet });
