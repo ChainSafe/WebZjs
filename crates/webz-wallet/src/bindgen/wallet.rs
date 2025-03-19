@@ -305,7 +305,7 @@ impl WebWallet {
     ) -> Result<Vec<u8>, Error> {
         assert!(!thread::is_web_worker_thread());
 
-        let usk = usk_from_seed_str(seed_phrase, account_hd_index, &self.inner.network)?;
+        let (usk, _) = usk_from_seed_str(seed_phrase, account_hd_index, &self.inner.network)?;
         let db = self.inner.clone();
 
         let sync_handler = thread::Builder::new()
@@ -388,6 +388,21 @@ impl WebWallet {
         }
     }
 
+    /// Create a Shielding PCZT (Partially Constructed Zcash Transaction).
+    ///
+    /// A Proposal for shielding funds is created and the the PCZT is constructed for it
+    ///
+    /// # Arguments
+    ///
+    /// * `account_id` - The ID of the account which transparent funds will be shielded.
+    ///
+    pub async fn pczt_shield(&self, account_id: u32) -> Result<Pczt, Error> {
+        self.inner
+            .pczt_shield(account_id.into())
+            .await
+            .map(Into::into)
+    }
+
     /// Creates a PCZT (Partially Constructed Zcash Transaction).
     ///
     /// A Proposal is created similar to `create_proposed_transactions` and then a PCZT is constructed from it.
@@ -436,6 +451,12 @@ impl WebWallet {
 
     pub async fn pczt_send(&self, pczt: Pczt) -> Result<(), Error> {
         self.inner.pczt_send(pczt.into()).await
+    }
+
+    pub fn pczt_combine(&self, pczts: Vec<Pczt>) -> Result<Pczt, Error> {
+        self.inner
+            .pczt_combine(pczts.into_iter().map(Into::into).collect())
+            .map(Into::into)
     }
 
     /// Get the current unified address for a given account and extracts the transparent component. This is returned as a string in canonical encoding

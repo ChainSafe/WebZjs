@@ -14,6 +14,7 @@ use crate::error::Error;
 use crate::BlockRange;
 use webz_common::Network;
 
+use pczt::roles::combiner::Combiner;
 use pczt::roles::prover::Prover;
 use pczt::roles::signer::Signer;
 use pczt::roles::updater::Updater;
@@ -31,12 +32,12 @@ use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
     create_pczt_from_proposal, create_proposed_transactions,
     extract_and_store_transaction_from_pczt, input_selection::GreedyInputSelector,
-    propose_transfer,
+    propose_shielding, propose_transfer,
 };
-use zcash_client_backend::data_api::WalletCommitmentTrees;
 use zcash_client_backend::data_api::{
     Account, AccountBirthday, AccountPurpose, InputSource, WalletRead, WalletSummary, WalletWrite,
 };
+use zcash_client_backend::data_api::{WalletCommitmentTrees, Zip32Derivation};
 use zcash_client_backend::fees::standard::MultiOutputChangeStrategy;
 use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::fees::{DustOutputPolicy, SplitPolicy, StandardFeeRule};
@@ -183,8 +184,11 @@ where
         key_source: Option<&str>,
     ) -> Result<AccountId, Error> {
         // decode the mnemonic and derive the first account
-        let usk = usk_from_seed_str(seed_phrase, account_hd_index, &self.network)?;
+        let (usk, seed_fp) = usk_from_seed_str(seed_phrase, account_hd_index, &self.network)?;
         let ufvk = usk.to_unified_full_viewing_key();
+
+        let derivation =
+            Zip32Derivation::new(seed_fp, zip32::AccountId::try_from(account_hd_index)?);
 
         tracing::info!("Key successfully decoded. Importing into wallet");
 
@@ -192,7 +196,9 @@ where
             account_name,
             &ufvk,
             birthday_height,
-            AccountPurpose::Spending { derivation: None },
+            AccountPurpose::Spending {
+                derivation: Some(derivation),
+            },
             key_source,
         )
         .await
@@ -416,11 +422,12 @@ where
     pub async fn transfer(
         &self,
         seed_phrase: &str,
+        account_hd_index: u32,
         from_account_id: AccountId,
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<(), Error> {
-        let usk = usk_from_seed_str(seed_phrase, 0, &self.network)?;
+        let (usk, _) = usk_from_seed_str(seed_phrase, account_hd_index, &self.network)?;
         let proposal = self
             .propose_transfer(from_account_id, to_address, value)
             .await?;
@@ -432,6 +439,66 @@ where
         self.send_authorized_transactions(&txids).await
     }
 
+    pub async fn pczt_shield(&self, account_id: AccountId) -> Result<Pczt, Error> {
+        let change_strategy = MultiOutputChangeStrategy::new(
+            StandardFeeRule::Zip317,
+            None,
+            ShieldedProtocol::Orchard,
+            DustOutputPolicy::default(),
+            SplitPolicy::with_min_output_value(
+                NonZeroUsize::new(self.target_note_count)
+                    .ok_or(Error::FailedToCreateTransaction)?,
+                Zatoshis::from_u64(self.min_split_output_value)?,
+            ),
+        );
+
+        let input_selector = GreedyInputSelector::new();
+        let mut db = self.db.write().await;
+
+        // Shield all funds immediately
+        let max_height = match db.chain_height()? {
+            Some(max_height) => max_height,
+            // If we haven't scanned anything, there's nothing to do.
+            None => {
+                return Err(Error::Generic(
+                    "Havent scanned yet, cant shield".to_string(),
+                ))
+            }
+        };
+
+        let transparent_balances = db.get_transparent_balances(account_id, max_height)?;
+        let from_addrs = transparent_balances.into_keys().collect::<Vec<_>>();
+
+        let proposal = propose_shielding::<_, _, _, _, <W as WalletCommitmentTrees>::Error>(
+            &mut *db,
+            &self.network,
+            &input_selector,
+            &change_strategy,
+            Zatoshis::ZERO,
+            &from_addrs,
+            account_id,
+            0,
+        )
+        .map_err(|e| Error::Generic(format!("Error when shielding: {:?}", e)))?;
+
+        let pczt = create_pczt_from_proposal::<
+            _,
+            _,
+            <MemoryWalletDb<Network> as InputSource>::Error,
+            _,
+            <StandardFeeRule as FeeRule>::Error,
+            _,
+        >(
+            &mut *db,
+            &self.network,
+            account_id,
+            OvkPolicy::Sender,
+            &proposal,
+        )
+        .map_err(|_| Error::PcztCreate)?;
+
+        Ok(pczt)
+    }
     ///
     /// Create a PCZT
     ///
@@ -453,6 +520,7 @@ where
                 Zatoshis::from_u64(self.min_split_output_value)?,
             ),
         );
+
         let input_selector = GreedyInputSelector::new();
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
@@ -468,7 +536,7 @@ where
             request,
             self.min_confirmations,
         )
-            .map_err(|_e| Error::Generic("something bad happened when calling propose transfer. Possibly insufficient balance..".to_string()))?;
+            .map_err(|e| Error::Generic(format!("something bad happened when calling propose transfer. Possibly insufficient balance... {:?}", e)))?;
         tracing::info!("Proposal: {:#?}", proposal);
         let pczt = create_pczt_from_proposal::<
             _,
@@ -570,13 +638,19 @@ where
         self.send_authorized_transactions(&NonEmpty::new(txid))
             .await
     }
+
+    pub fn pczt_combine(&self, pczts: Vec<Pczt>) -> Result<Pczt, Error> {
+        Combiner::new(pczts)
+            .combine()
+            .map_err(|e| Error::PcztCombine(format!("Failed to combine PCZT: {:?}", e)))
+    }
 }
 
 pub(crate) fn usk_from_seed_str(
     seed: &str,
     account_id: u32,
     network: &Network,
-) -> Result<UnifiedSpendingKey, Error> {
+) -> Result<(UnifiedSpendingKey, SeedFingerprint), Error> {
     let mnemonic = <Mnemonic<English>>::from_phrase(seed).map_err(|_| Error::InvalidSeedPhrase)?;
     let seed = {
         let mut seed = mnemonic.to_seed("");
@@ -584,6 +658,8 @@ pub(crate) fn usk_from_seed_str(
         seed.zeroize();
         SecretVec::new(secret)
     };
+    let seed_fingerprint =
+        SeedFingerprint::from_seed(seed.expose_secret()).expect("seed fingerprint");
     let usk = UnifiedSpendingKey::from_seed(network, seed.expose_secret(), account_id.try_into()?)?;
-    Ok(usk)
+    Ok((usk, seed_fingerprint))
 }

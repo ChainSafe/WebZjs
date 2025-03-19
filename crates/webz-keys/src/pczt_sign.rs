@@ -1,3 +1,4 @@
+use crate::error::Error;
 use crate::{SeedFingerprint, UnifiedSpendingKey};
 use pczt::roles::signer::Signer;
 use pczt::roles::verifier::Verifier;
@@ -8,8 +9,6 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use webz_common::{Network, Pczt};
 use zcash_primitives::consensus::{NetworkConstants, Parameters};
 use zcash_primitives::legacy::keys::{NonHardenedChildIndex, TransparentKeyScope};
-
-use crate::error::Error;
 
 /// Signs and applies signatures to a PCZT.
 /// Should in a secure environment (e.g. Metamask snap).
@@ -44,6 +43,7 @@ pub async fn pczt_sign_inner(
     seed_fp: zip32::fingerprint::SeedFingerprint,
 ) -> Result<pczt::Pczt, Error> {
     // Find all the spends matching our seed.
+    #[derive(Debug)]
     enum KeyRef {
         Orchard {
             index: usize,
@@ -129,7 +129,6 @@ pub async fn pczt_sign_inner(
         })
         .map_err(|e| Error::PcztSign(format!("Invalid PCZT: {:?}", e)))?
         .finish();
-
     let mut signer = Signer::new(pczt).unwrap();
     //.map_err(|e| anyhow!("Failed to initialize Signer: {:?}", e))?;
     for (account_index, spends) in keys {
@@ -163,26 +162,29 @@ pub async fn pczt_sign_inner(
                     index,
                     scope,
                     address_index,
-                } => signer
-                    .sign_transparent(
-                        index,
-                        &usk.transparent()
-                            .derive_secret_key(scope, address_index)
-                            .map_err(|e| {
-                                Error::PcztSign(format!(
-                                    "Failed to derive transparent key at .../{:?}/{:?}: {:?}",
-                                    scope, address_index, e,
-                                ))
-                            })?,
-                    )
-                    .map_err(|e| {
-                        Error::PcztSign(format!(
-                            "Failed to sign transparent input {index}: {:?}",
-                            e
-                        ))
-                    })?,
+                } => {
+                    signer
+                        .sign_transparent(
+                            index,
+                            &usk.transparent()
+                                .derive_secret_key(scope, address_index)
+                                .map_err(|e| {
+                                    Error::PcztSign(format!(
+                                        "Failed to derive transparent key at .../{:?}/{:?}: {:?}",
+                                        scope, address_index, e,
+                                    ))
+                                })?,
+                        )
+                        .map_err(|e| {
+                            Error::PcztSign(format!(
+                                "Failed to sign transparent input {index}: {:?}",
+                                e
+                            ))
+                        })?;
+                }
             }
         }
     }
+
     Ok(signer.finish())
 }

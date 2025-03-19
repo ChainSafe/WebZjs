@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Pczt(pczt::Pczt);
 
 impl From<pczt::Pczt> for Pczt {
@@ -18,7 +20,12 @@ impl From<Pczt> for pczt::Pczt {
 #[wasm_bindgen]
 impl Pczt {
     /// Returns a JSON object with the details of the Pczt.
-    pub fn describe(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self.0).unwrap()
+    pub fn to_json(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+
+    /// Returns a Pczt from a JSON object
+    pub fn from_json(s: JsValue) -> Pczt {
+        serde_wasm_bindgen::from_value(s).unwrap()
     }
 }

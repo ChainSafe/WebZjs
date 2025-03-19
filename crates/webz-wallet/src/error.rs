@@ -88,6 +88,8 @@ pub enum Error {
     PcztProve(String),
     #[error("Failed to send Pczt: {0}")]
     PcztSend(String),
+    #[error("Failed to combine Pczt: {0}")]
+    PcztCombine(String),
     // TODO: Remove this. It is just to help with the inability to handle the generic tests from LRZ at the moment
     #[error("An generic error occurred: {0}")]
     Generic(String),
