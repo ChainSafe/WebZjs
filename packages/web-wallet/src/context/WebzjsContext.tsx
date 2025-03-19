@@ -17,7 +17,7 @@ import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
 import { Snap } from '../types';
 import toast, { Toaster } from 'react-hot-toast';
 
-interface State {
+export interface WebZjsState {
   webWallet: WebWallet | null;
   installedSnap: Snap | null;
   error: Error | null | string;
@@ -37,7 +37,7 @@ type Action =
   | { type: 'set-sync-in-progress'; payload: boolean }
   | { type: 'set-loading'; payload: boolean };
 
-const initialState: State = {
+const initialState: WebZjsState = {
   webWallet: null,
   installedSnap: null,
   error: null,
@@ -48,7 +48,7 @@ const initialState: State = {
   loading: true,
 };
 
-function reducer(state: State, action: Action): State {
+function reducer(state: WebZjsState, action: Action): WebZjsState {
   switch (action.type) {
     case 'set-web-wallet':
       return { ...state, webWallet: action.payload };
@@ -70,7 +70,7 @@ function reducer(state: State, action: Action): State {
 }
 
 interface WebZjsContextType {
-  state: State;
+  state: WebZjsState;
   dispatch: React.Dispatch<Action>;
 }
 

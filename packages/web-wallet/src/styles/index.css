@@ -44,11 +44,11 @@
 }
 
 body {
+  background: linear-gradient(#fff 0%, #bcefef 187.66%);
   position: relative;
-  overflow: hidden;
   background: #fafafa url('../assets/diamond-bg.png') no-repeat center center
     fixed;
-
+  background-size: 400%;
   &.home-page-bg {
     background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);
 

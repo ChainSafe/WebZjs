@@ -2,6 +2,9 @@ import React from 'react';
 import { zatsToZec } from '../utils';
 import { CoinsSvg, ShieldDividedSvg, ShieldSvg } from '../assets';
 import useBalance from '../hooks/useBalance';
+import { useWebZjsContext } from 'src/context/WebzjsContext';
+import { BlockHeightCard } from 'src/components/BlockHeightCard/BlockHeightCard';
+import { useMetaMaskContext } from 'src/context/MetamaskContext';
 
 interface BalanceCard {
   name: string;
@@ -11,6 +14,8 @@ interface BalanceCard {
 
 function AccountSummary() {
   const { totalBalance, unshieldedBalance, shieldedBalance } = useBalance();
+  const { state } = useWebZjsContext();
+  const { snapState } = useMetaMaskContext();
 
   const BalanceCards: BalanceCard[] = [
     {
@@ -59,10 +64,16 @@ function AccountSummary() {
         </div>
       </div>
       <div
-        className={'rounded-2xl justify-start items-center gap-6 flex flex-col min-[1000px]:flex-row'}
+        className={
+          'rounded-2xl justify-start items-center gap-6 flex flex-col min-[1000px]:flex-row'
+        }
       >
         {BalanceCards.map((card) => renderBalanceCard(card))}
       </div>
+      <BlockHeightCard
+        state={state}
+        syncedFrom={snapState?.webWalletSyncStartBlock}
+      />
     </div>
   );
 }

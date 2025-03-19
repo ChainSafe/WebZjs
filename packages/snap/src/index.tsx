@@ -1,8 +1,15 @@
 import { getViewingKey } from './rpc/getViewingKey';
 import { InitOutput } from '@webzjs/webz-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
-import { OnRpcRequestHandler, OnUserInputHandler, UserInputEventType } from '@metamask/snaps-sdk';
-import { setBirthdayBlock, SetBirthdayBlockParams } from './rpc/setBirthdayBlock';
+import {
+  OnRpcRequestHandler,
+  OnUserInputHandler,
+  UserInputEventType,
+} from '@metamask/snaps-sdk';
+import { setBirthdayBlock } from './rpc/setBirthdayBlock';
+import { getSnapState } from './rpc/getSnapState';
+import { SetBirthdayBlockParams, SnapState } from './types';
+import { setSnapState } from './rpc/setSnapState';
 
 let wasm: InitOutput;
 
@@ -24,24 +31,29 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
     case 'getViewingKey':
       return await getViewingKey();
     case 'setBirthdayBlock':
-      const params = request.params as SetBirthdayBlockParams;
-      return await setBirthdayBlock(params);
+      const setBirthdayBlockParams = request.params as SetBirthdayBlockParams;
+      return await setBirthdayBlock(setBirthdayBlockParams);
+    case 'getSnapStete':
+      return await getSnapState();
+    case 'setSnapStete':
+      const setSnapStateParams = request.params as unknown as SnapState;
+      return await setSnapState(setSnapStateParams);
     default:
       throw new Error('Method not found.');
   }
 };
 
-export const onUserInput: OnUserInputHandler = async ({ id, event, context }) => {
+export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
   if (event.type === UserInputEventType.FormSubmitEvent) {
     switch (event.name) {
-      case "birthday-block-form":
+      case 'birthday-block-form':
         await snap.request({
-          method: "snap_resolveInterface",
+          method: 'snap_resolveInterface',
           params: {
             id,
-            value: event.value
-          }
-        })
+            value: event.value,
+          },
+        });
 
       default:
         break;
