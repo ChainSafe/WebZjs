@@ -6,19 +6,23 @@ import Button from '../../components/Button/Button';
 import TransactionStatusCard from '../../components/TransactionStatusCard/TransactionStatusCard';
 
 interface Step3Props {
+  formData: TransferBalanceFormType['formData'];
   resetForm: TransferBalanceFormType['resetForm'];
   error?: string | Error;
 }
 
-function Step3({ resetForm, error }: Step3Props): React.JSX.Element {
+function Step3({
+  formData: { error },
+  resetForm,
+}: Step3Props): React.JSX.Element {
   const navigate = useNavigate();
 
   return (
     <>
       {error ? (
         <TransactionStatusCard
-          headText="Transfer complete"
-          statusMessage="Your transaction has been sent."
+          headText="Transfer incomplete"
+          statusMessage="Your transaction has not been sent."
           icon={<WarningSVG />}
         >
           <Button

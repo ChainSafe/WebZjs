@@ -2,14 +2,18 @@ import { getViewingKey } from './rpc/getViewingKey';
 import { InitOutput } from '@webzjs/webz-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
 import {
+  Json,
   OnRpcRequestHandler,
   OnUserInputHandler,
   UserInputEventType,
 } from '@metamask/snaps-sdk';
 import { setBirthdayBlock } from './rpc/setBirthdayBlock';
 import { getSnapState } from './rpc/getSnapState';
-import { SetBirthdayBlockParams, SnapState } from './types';
+import { SetBirthdayBlockParams, SignPcztParams, SnapState } from './types';
 import { setSnapState } from './rpc/setSnapState';
+import { signPczt } from './rpc/signPczt'
+
+import { assert, object, number, optional, instance, string } from 'superstruct';
 
 let wasm: InitOutput;
 
@@ -30,9 +34,13 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
   switch (request.method) {
     case 'getViewingKey':
       return await getViewingKey();
+    case 'signPczt':
+      assert(request.params, object({ pcztJsonStringified: string() }));
+      // console.log('verified', request.params);
+      return await signPczt(request.params as SignPcztParams);
     case 'setBirthdayBlock':
-      const setBirthdayBlockParams = request.params as SetBirthdayBlockParams;
-      return await setBirthdayBlock(setBirthdayBlockParams);
+      assert(request.params, object({ latestBlock: optional(number()) }));
+      return await setBirthdayBlock(request.params as SetBirthdayBlockParams);
     case 'getSnapStete':
       return await getSnapState();
     case 'setSnapStete':

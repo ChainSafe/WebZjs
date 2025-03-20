@@ -30,7 +30,8 @@
     "@metamask/snaps-sdk": "^6.17.1",
     "@webzjs/webz-keys": "workspace:^",
     "buffer": "^6.0.3",
-    "fork-ts-checker-webpack-plugin": "^9.0.2"
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
+    "superstruct": "^2.0.2"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
