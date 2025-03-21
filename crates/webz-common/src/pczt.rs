@@ -28,4 +28,14 @@ impl Pczt {
     pub fn from_json(s: JsValue) -> Pczt {
         serde_wasm_bindgen::from_value(s).unwrap()
     }
+
+    /// Returns the postcard serialization of the Pczt.
+    pub fn serialize(&self) -> Vec<u8> {
+        self.0.serialize()
+    }
+
+    /// Deserialize to a Pczt from postcard bytes.
+    pub fn from_bytes(bytes: &[u8]) -> Pczt {
+        Self(pczt::Pczt::parse(bytes).unwrap())
+    }
 }
