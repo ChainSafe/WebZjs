@@ -208,6 +208,7 @@ where
         &self,
         account_name: &str,
         ufvk: &UnifiedFullViewingKey,
+        purpose: AccountPurpose, 
         birthday_height: Option<u32>,
         key_source: Option<&str>,
     ) -> Result<AccountId, Error> {
@@ -215,7 +216,7 @@ where
             account_name,
             ufvk,
             birthday_height,
-            AccountPurpose::ViewOnly,
+            purpose,
             key_source,
         )
         .await

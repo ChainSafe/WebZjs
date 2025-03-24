@@ -15,7 +15,7 @@ use wasm_thread as thread;
 use webz_common::{Network, Pczt};
 use webz_keys::{ProofGenerationKey, SeedFingerprint, UnifiedSpendingKey};
 use zcash_address::ZcashAddress;
-use zcash_client_backend::data_api::{InputSource, WalletRead};
+use zcash_client_backend::data_api::{AccountPurpose, InputSource, WalletRead, Zip32Derivation};
 use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
@@ -23,6 +23,8 @@ use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::transaction::TxId;
+use zcash_primitives::zip32;
+
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
 pub type AccountId = <MemoryWalletDb<Network> as WalletRead>::AccountId;
 pub type NoteRef = <MemoryWalletDb<Network> as InputSource>::NoteRef;
@@ -198,13 +200,58 @@ impl WebWallet {
         &self,
         account_name: &str,
         encoded_ufvk: &str,
+        seed_fingerprint: SeedFingerprint,
+        account_hd_index: u32,
+        birthday_height: Option<u32>,
+    ) -> Result<u32, Error> {
+        let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, encoded_ufvk)
+            .map_err(Error::KeyParse)?;
+        let derivation = Some(Zip32Derivation::new(
+            seed_fingerprint.into(),
+            zip32::AccountId::try_from(account_hd_index)?,
+        ));
+        self.inner
+            .import_ufvk(
+                account_name,
+                &ufvk,
+                AccountPurpose::Spending { derivation },
+                birthday_height,
+                None,
+            )
+            .await
+            .map(|id| *id)
+    }
+
+    /// Add a new view-only account to the wallet by directly importing a Unified Full Viewing Key (UFVK)
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - [ZIP316](https://zips.z.cash/zip-0316) encoded UFVK
+    /// * `birthday_height` - Block height at which the account was created. The sync logic will assume no funds are send or received prior to this height which can VERY significantly reduce sync time
+    ///
+    /// # Examples
+    ///
+    /// ```javascript
+    /// const wallet = new WebWallet("main", "https://zcash-mainnet.chainsafe.dev", 10);
+    /// const account_id = await wallet.import_ufvk("...", 2657762)
+    /// ```
+    pub async fn create_account_view_ufvk(
+        &self,
+        account_name: &str,
+        encoded_ufvk: &str,
         birthday_height: Option<u32>,
     ) -> Result<u32, Error> {
         let ufvk = UnifiedFullViewingKey::decode(&self.inner.network, encoded_ufvk)
             .map_err(Error::KeyParse)?;
 
         self.inner
-            .import_ufvk(account_name, &ufvk, birthday_height, None)
+            .import_ufvk(
+                account_name,
+                &ufvk,
+                AccountPurpose::ViewOnly,
+                birthday_height,
+                None,
+            )
             .await
             .map(|id| *id)
     }

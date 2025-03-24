@@ -32,6 +32,17 @@ impl SeedFingerprint {
                 .ok_or(Error::SeedFingerprint)?,
         })
     }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.inner.to_bytes().to_vec()
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<SeedFingerprint, Error> {
+        let bytes: [u8; 32] = bytes.try_into().map_err(|_| Error::SeedFingerprint)?;
+        Ok(Self {
+            inner: zip32::fingerprint::SeedFingerprint::from_bytes(bytes),
+        })
+    }
 }
 
 impl From<SeedFingerprint> for zip32::fingerprint::SeedFingerprint {
@@ -40,6 +51,11 @@ impl From<SeedFingerprint> for zip32::fingerprint::SeedFingerprint {
     }
 }
 
+impl From<zip32::fingerprint::SeedFingerprint> for SeedFingerprint {
+    fn from(value: zip32::fingerprint::SeedFingerprint) -> Self {
+       Self{ inner: value } 
+    }
+}
 /// A Zcash Sapling proof generation key
 ///
 /// This is a wrapper around the `sapling::ProofGenerationKey` type. It is used for generating proofs for Sapling PCZTs.
