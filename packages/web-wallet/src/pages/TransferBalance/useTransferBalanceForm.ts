@@ -55,7 +55,7 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
 
   const submitForm = () => {
     const { amount, recipient } = formData;
-    //TODO - get it from state
+    //TODO - get accoundId it from state
     handlePcztTransaction(1, recipient, amount);
   };
 

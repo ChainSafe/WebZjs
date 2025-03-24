@@ -6,12 +6,11 @@ import {
   Pczt,
 } from '@webzjs/webz-keys';
 import { getSeed } from '../utils/getSeed';
-import { Json } from '@metamask/snaps-sdk';
 import { SignPcztParams } from 'src/types';
 
 
 
-export async function signPczt({ pcztJsonStringified }: SignPcztParams): Promise<Json> {
+export async function signPczt({ pcztHexTring }: SignPcztParams): Promise<string> {
 
   const result = await snap.request({
     method: 'snap_dialog',
@@ -20,7 +19,7 @@ export async function signPczt({ pcztJsonStringified }: SignPcztParams): Promise
       content: (
         <Box>
           <Heading>Are you sure you want to sign this PCZT?</Heading>
-          <Text>{pcztJsonStringified}</Text>
+          <Text>Description</Text>
         </Box>
       ),
     },
@@ -33,38 +32,39 @@ export async function signPczt({ pcztJsonStringified }: SignPcztParams): Promise
   const seed = await getSeed();
 
   // Generate the UnifiedSpendingKey and obtain the Viewing Key
-  const spendingKey = new UnifiedSpendingKey('main', seed, 0);
+  const spendingKey = new UnifiedSpendingKey('main', seed, 1);
   const seedFp = new SeedFingerprint(seed);
 
-  console.log("pcztJsonStringified")
-  console.log(pcztJsonStringified)
+  console.log("pcztHexTring")
+  console.log(pcztHexTring)
+ 
+  const pcztBuffer = Buffer.from(pcztHexTring, 'hex');
 
-  const pcztJsonObject = JSON.parse(pcztJsonStringified, (value) => JSON.parse(JSON.stringify(value, (key, value) =>
-    typeof value === 'bigint'
-      ? value.toString()
-      : value // return everything else unchanged
-  )))
 
-  console.log("pcztJsonObject")
-  console.log(pcztJsonObject)
+  const pcztUint8Array = new Uint8Array(pcztBuffer);
 
-  const unsignedPczt = Pczt.from_json(pcztJsonObject);
+  console.log("pcztUint8Array")
+  console.log(typeof pcztUint8Array)
+  console.log(pcztUint8Array)
 
-  console.log("unsignedPczt")
-  console.log(unsignedPczt)
+  const pczt = Pczt.from_bytes(pcztUint8Array)
 
-  const signedPczt = await pczt_sign('main', unsignedPczt, spendingKey, seedFp);
+  console.log("pczt")
+  console.log(pczt)
 
-  console.log("signedPczt")
-  console.log(signedPczt)
+  const pcztSigned = await pczt_sign('main', pczt, spendingKey, seedFp);
 
-  const signedPcztJson = signedPczt.to_json();
 
-  console.log("signedPcztJson")
-  console.log(signedPcztJson)
+  console.log("pcztSigned")
+  console.log(pcztSigned)
 
-  console.log("signedPcztJson in snap____");
-  console.log(signedPcztJson);
+  const pcztUint8Signed = pcztSigned.serialize();
 
-  return signedPcztJson;
+  console.log("pcztUint8Signed")
+  console.log(pcztUint8Signed)
+
+  const pcztHexStringSigned = Buffer.from(pcztUint8Signed).toString('hex');
+
+
+  return pcztHexStringSigned;
 }

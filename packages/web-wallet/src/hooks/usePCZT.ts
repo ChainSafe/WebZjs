@@ -12,10 +12,6 @@ interface PcztActions {
   ) => void;
 }
 
-function bigIntReplacer(_key: string, value: any): any {
-  return typeof value === 'bigint' ? value.toString() : value;
-}
-
 export const usePczt = (): PcztActions => {
   const { state } = useWebZjsContext();
   const invokeSnap = useInvokeSnap();
@@ -47,27 +43,24 @@ export const usePczt = (): PcztActions => {
     }
   };
 
-  const signPczt = async (pczt: Pczt): Promise<any> => {
+  const signPczt = async (pczt: Pczt): Promise<string> => {
 
-    const pcztObject = pczt.to_json()
+    const pcztBytes = pczt.serialize();
 
-    console.log("pcztObject")
-    console.log(pcztObject)
+    console.log("pcztBytes")
+    console.log(pcztBytes)
 
-    const pcztJsonStringified: string = JSON.stringify(pcztObject, bigIntReplacer);
+    const pcztHexTring = Buffer.from(pcztBytes).toString('hex');
 
     
-
-    console.log('unsignedPcztJsonStringified_________________');
-    console.log(pcztJsonStringified);
-    console.log(typeof pcztJsonStringified);
-
+    console.log('unsignedPcztHexTring_________________');
+    console.log(pcztHexTring);
 
 
     return (await invokeSnap({
       method: 'signPczt',
-      params: { pcztJsonStringified },
-    }));
+      params: { pcztHexTring },
+    }) as string);
   };
 
   const sendPczt = async (signedPczt: Pczt) => {
@@ -94,15 +87,25 @@ export const usePczt = (): PcztActions => {
     console.log(state.summary)
     console.log(state.summary?.account_balances)
 
-    const pczt = await createPCZT(1, toAddress, valueinZats);
+    const pczt = await createPCZT(accountId, toAddress, valueinZats);
 
     if (pczt) {
-      const signedPcztJson = await signPczt(pczt);
+      const pcztHexStringSigned = await signPczt(pczt);
 
-      console.log('signedPcztJson______');
-      console.log(signedPcztJson);
+      console.log('pcztHexStringSigned_____________');
+      console.log(pcztHexStringSigned);
 
-      const signedPczt = Pczt.from_json(signedPcztJson);
+      const pcztBufferSigned = Buffer.from(pcztHexStringSigned, 'hex');
+
+      console.log("pcztBufferSigned")
+      console.log(pcztBufferSigned)
+
+      const pcztUint8ArraySigned = new Uint8Array(pcztBufferSigned);
+
+      console.log("pcztUint8ArraySigned")
+      console.log(pcztUint8ArraySigned)
+
+      const signedPczt = Pczt.from_bytes(pcztUint8ArraySigned)
 
       console.log('signedPczt_____________');
       console.log(signedPczt);
