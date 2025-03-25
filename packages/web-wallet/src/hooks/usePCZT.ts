@@ -2,7 +2,7 @@ import { useWebZjsContext } from '../context/WebzjsContext';
 import { Pczt } from '@webzjs/webz-wallet';
 import { useInvokeSnap } from './snaps/useInvokeSnap';
 import { zecToZats } from '../utils';
-import { Json } from '@metamask/snaps-sdk';
+import { useWebZjsActions } from './useWebzjsActions';
 
 interface PcztActions {
   handlePcztTransaction: (
@@ -15,6 +15,7 @@ interface PcztActions {
 export const usePczt = (): PcztActions => {
   const { state } = useWebZjsContext();
   const invokeSnap = useInvokeSnap();
+  const { triggerRescan } = useWebZjsActions();
 
   const checkWebWallet = () => {
     if (!state.webWallet) {
@@ -44,23 +45,20 @@ export const usePczt = (): PcztActions => {
   };
 
   const signPczt = async (pczt: Pczt): Promise<string> => {
-
     const pcztBytes = pczt.serialize();
 
-    console.log("pcztBytes")
-    console.log(pcztBytes)
+    console.log('pcztBytes');
+    console.log(pcztBytes);
 
     const pcztHexTring = Buffer.from(pcztBytes).toString('hex');
 
-    
     console.log('unsignedPcztHexTring_________________');
     console.log(pcztHexTring);
-
 
     return (await invokeSnap({
       method: 'signPczt',
       params: { pcztHexTring },
-    }) as string);
+    })) as string;
   };
 
   const sendPczt = async (signedPczt: Pczt) => {
@@ -76,17 +74,28 @@ export const usePczt = (): PcztActions => {
 
     const valueinZats = zecToZats(value);
 
-    console.log("accountId")
-    console.log(accountId)
-    console.log("toAddress")
-    console.log(toAddress)
-    console.log("valueinZats")
-    console.log(valueinZats)
+    console.log('accountId');
+    console.log(accountId);
+    console.log('toAddress');
+    console.log(toAddress);
+    console.log('valueinZats');
+    console.log(valueinZats);
 
-    console.log("state.summary")
-    console.log(state.summary)
-    console.log(state.summary?.account_balances)
+    console.log('state.summary');
+    console.log(state.summary);
+    console.log(state.summary?.account_balances);
 
+    const chainHeight = await state.webWallet!.get_latest_block();
+
+    console.log('chain heigthetetete');
+    console.log(chainHeight);
+
+    const isSynced =
+      chainHeight.toString() === state.summary?.fully_scanned_height.toString();
+    console.log('______isSynced_______');
+    console.log(isSynced);
+
+    if (!isSynced) await triggerRescan();
     const pczt = await createPCZT(accountId, toAddress, valueinZats);
 
     if (pczt) {
@@ -97,15 +106,15 @@ export const usePczt = (): PcztActions => {
 
       const pcztBufferSigned = Buffer.from(pcztHexStringSigned, 'hex');
 
-      console.log("pcztBufferSigned")
-      console.log(pcztBufferSigned)
+      console.log('pcztBufferSigned');
+      console.log(pcztBufferSigned);
 
       const pcztUint8ArraySigned = new Uint8Array(pcztBufferSigned);
 
-      console.log("pcztUint8ArraySigned")
-      console.log(pcztUint8ArraySigned)
+      console.log('pcztUint8ArraySigned');
+      console.log(pcztUint8ArraySigned);
 
-      const signedPczt = Pczt.from_bytes(pcztUint8ArraySigned)
+      const signedPczt = Pczt.from_bytes(pcztUint8ArraySigned);
 
       console.log('signedPczt_____________');
       console.log(signedPczt);
@@ -115,9 +124,36 @@ export const usePczt = (): PcztActions => {
       console.log('provedPcz_____________');
       console.log(provedPczt);
 
-      await sendPczt(provedPczt);
+      const chainHeightBeforeSend = await state.webWallet!.get_latest_block();
 
-      console.log("sent")
+      const isSyncedBeforeSend =
+        chainHeightBeforeSend.toString() ===
+        state.summary?.fully_scanned_height.toString();
+
+      console.log('___________________isSyncedBeforeSend___________________');
+      console.log(isSyncedBeforeSend);
+
+      if (isSyncedBeforeSend) {
+        await sendPczt(provedPczt);
+      } else {
+
+
+        await triggerRescan();
+
+
+        const chainHeightBeforeSendSend = await state.webWallet!.get_latest_block();
+
+        const isSyncedBeforeSendSend =
+        chainHeightBeforeSendSend.toString() ===
+          state.summary?.fully_scanned_height.toString();
+  
+        console.log('___________________isSyncedBeforeSendSend___________________');
+        console.log(isSyncedBeforeSendSend);
+        await sendPczt(provedPczt);
+      }
+
+      console.log('sent');
+      await triggerRescan();
     }
   };
 

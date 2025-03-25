@@ -4,6 +4,7 @@ import { useWebZjsContext } from '../context/WebzjsContext';
 import { useMetaMask } from './snaps/useMetaMask';
 import { useInvokeSnap } from './snaps/useInvokeSnap';
 import { useRequestSnap } from './snaps/useRequestSnap';
+import { SeedFingerprint } from '@webzjs/webz-wallet';
 
 interface WebzjsActions {
   getAccountData: () => Promise<
@@ -25,7 +26,7 @@ export function useWebZjsActions(): WebzjsActions {
     try {
       const accountIndex = state.activeAccount ?? 0;
 
-      if(!state.webWallet) return
+      if (!state.webWallet) return;
 
       const unifiedAddress =
         await state.webWallet.get_current_address(accountIndex);
@@ -37,8 +38,6 @@ export function useWebZjsActions(): WebzjsActions {
         unifiedAddress,
         transparentAddress,
       };
-      
-      
     } catch (error) {
       dispatch({
         type: 'set-error',
@@ -109,25 +108,47 @@ export function useWebZjsActions(): WebzjsActions {
         params: { latestBlock },
       })) as number | null;
 
-
       // in case user pressed "Close" instead of "Continue to wallet" on prompt, still allow account creation with latest block
-      if(birthdayBlock === null) {
+      if (birthdayBlock === null) {
         await invokeSnap({
           method: 'setSnapStete',
           params: { webWalletSyncStartBlock: latestBlock },
         });
-        birthdayBlock = latestBlock
+        birthdayBlock = latestBlock;
       }
 
       const viewingKey = (await invokeSnap({
         method: 'getViewingKey',
       })) as string;
 
+      const seedFingerprintHexString = (await invokeSnap({
+        method: 'getSeedFingerprint',
+      })) as string;
+
+      const seedFingerprintBuffer = Buffer.from(
+        seedFingerprintHexString,
+        'hex',
+      );
+
+      console.log('seedFingerprintBuffer');
+      console.log(seedFingerprintBuffer);
+
+      const seedFingerprintUint8Array = new Uint8Array(seedFingerprintBuffer);
+
+      const seedFingerprint = SeedFingerprint.from_bytes(
+        seedFingerprintUint8Array,
+      );
+
       const account_id = await state.webWallet.create_account_ufvk(
         'account-0',
         viewingKey,
+        seedFingerprint,
+        0,
         birthdayBlock,
       );
+
+      console.log("account_id on creation")
+      console.log(account_id)
 
       dispatch({ type: 'set-active-account', payload: account_id });
       if (state.webWallet) {
@@ -176,7 +197,6 @@ export function useWebZjsActions(): WebzjsActions {
       return;
     }
     if (state.syncInProgress) {
-
       return;
     }
 

@@ -14,6 +14,7 @@ import { setSnapState } from './rpc/setSnapState';
 import { signPczt } from './rpc/signPczt'
 
 import { assert, object, number, optional, instance, string } from 'superstruct';
+import { getSeedFingerprint } from './rpc/getSeedFingerprint';
 
 let wasm: InitOutput;
 
@@ -35,9 +36,10 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
     case 'getViewingKey':
       return await getViewingKey();
     case 'signPczt':
-      assert(request.params, object({ pcztJsonStringified: string() }));
-      // console.log('verified', request.params);
+      assert(request.params, object({ pcztHexTring: string() }));
       return await signPczt(request.params as SignPcztParams);
+    case 'getSeedFingerprint':
+      return await getSeedFingerprint();
     case 'setBirthdayBlock':
       assert(request.params, object({ latestBlock: optional(number()) }));
       return await setBirthdayBlock(request.params as SetBirthdayBlockParams);

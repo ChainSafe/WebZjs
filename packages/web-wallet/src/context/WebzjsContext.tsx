@@ -151,21 +151,21 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [state.error, dispatch]);
 
-  useEffect(() => {
-    if (!state.webWallet) return;
-    // If the wallet is not loading, not syncing, and is present, we flush it to store
-    if (!state.loading && !state.syncInProgress) {
-      flushDbToStore().catch(console.error);
-    }
+  // useEffect(() => {
+  //   if (!state.webWallet) return;
+  //   // If the wallet is not loading, not syncing, and is present, we flush it to store
+  //   if (!state.loading && !state.syncInProgress) {
+  //     flushDbToStore().catch(console.error);
+  //   }
 
-    async function flushDbToStore() {
-      if (!(state.webWallet instanceof WebWallet)) return;
-      console.info('Serializing wallet and dumping to IndexedDB store');
-      const bytes = await state.webWallet.db_to_bytes();
-      await set('wallet', bytes);
-      console.info('Wallet saved to storage');
-    }
-  }, [state.webWallet, state.syncInProgress, state.loading]);
+  //   async function flushDbToStore() {
+  //     if (!(state.webWallet instanceof WebWallet)) return;
+  //     console.info('Serializing wallet and dumping to IndexedDB store');
+  //     const bytes = await state.webWallet.db_to_bytes();
+  //     await set('wallet', bytes);
+  //     console.info('Wallet saved to storage');
+  //   }
+  // }, [state.webWallet, state.syncInProgress, state.loading]);
 
   return (
     <WebZjsContext.Provider value={{ state, dispatch }}>

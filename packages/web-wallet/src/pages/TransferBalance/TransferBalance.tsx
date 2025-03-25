@@ -7,6 +7,7 @@ import Step1 from './Step1';
 import Step2 from './Step2';
 import Step3 from './Step3';
 import { zatsToZec } from '../../utils';
+import { useWebZjsActions } from 'src/hooks';
 
 function TransferBalance(): React.JSX.Element {
   const { totalBalance } = useBalance();
@@ -18,6 +19,8 @@ function TransferBalance(): React.JSX.Element {
     resetForm,
     submitForm,
   } = useTransferBalanceForm();
+
+  const { triggerRescan } = useWebZjsActions();
 
   return (
     <div className="flex flex-col w-full">
@@ -56,6 +59,9 @@ function TransferBalance(): React.JSX.Element {
         />
       )}
       {currentStep === 3 && <Step3 formData={formData} resetForm={resetForm} />}
+      
+
+      <button onClick={() => triggerRescan()} >Trigger rescan</button>
     </div>
   );
 }

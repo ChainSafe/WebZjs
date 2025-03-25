@@ -5,11 +5,11 @@ import { useWebZjsActions } from './hooks';
 import Layout from './components/Layout/Layout';
 
 function App() {
-  const { triggerRescan } = useWebZjsActions();
+  // const { triggerRescan } = useWebZjsActions();
 
-  useInterval(() => {
-    triggerRescan();
-  }, RESCAN_INTERVAL);
+  // useInterval(() => {
+  //   triggerRescan();
+  // }, RESCAN_INTERVAL);
 
   return (
     <Layout>

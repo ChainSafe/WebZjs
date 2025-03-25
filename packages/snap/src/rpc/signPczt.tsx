@@ -32,7 +32,7 @@ export async function signPczt({ pcztHexTring }: SignPcztParams): Promise<string
   const seed = await getSeed();
 
   // Generate the UnifiedSpendingKey and obtain the Viewing Key
-  const spendingKey = new UnifiedSpendingKey('main', seed, 1);
+  const spendingKey = new UnifiedSpendingKey('main', seed, 0);
   const seedFp = new SeedFingerprint(seed);
 
   console.log("pcztHexTring")
