@@ -130,9 +130,6 @@ export function useWebZjsActions(): WebzjsActions {
         'hex',
       );
 
-      console.log('seedFingerprintBuffer');
-      console.log(seedFingerprintBuffer);
-
       const seedFingerprintUint8Array = new Uint8Array(seedFingerprintBuffer);
 
       const seedFingerprint = SeedFingerprint.from_bytes(
@@ -147,14 +144,8 @@ export function useWebZjsActions(): WebzjsActions {
         birthdayBlock,
       );
 
-      console.log("account_id on creation")
-      console.log(account_id)
-
       dispatch({ type: 'set-active-account', payload: account_id });
-      if (state.webWallet) {
-        const summary = await state.webWallet.get_wallet_summary();
-        console.log('account_balances', summary?.account_balances.length);
-      }
+
       await syncStateWithWallet();
 
       await flushDbToStore();

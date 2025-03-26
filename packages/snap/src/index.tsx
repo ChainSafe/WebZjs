@@ -2,7 +2,6 @@ import { getViewingKey } from './rpc/getViewingKey';
 import { InitOutput } from '@webzjs/webz-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
 import {
-  Json,
   OnRpcRequestHandler,
   OnUserInputHandler,
   UserInputEventType,
@@ -13,7 +12,7 @@ import { SetBirthdayBlockParams, SignPcztParams, SnapState } from './types';
 import { setSnapState } from './rpc/setSnapState';
 import { signPczt } from './rpc/signPczt'
 
-import { assert, object, number, optional, instance, string } from 'superstruct';
+import { assert, object, number, optional, string } from 'superstruct';
 import { getSeedFingerprint } from './rpc/getSeedFingerprint';
 
 let wasm: InitOutput;

@@ -7,7 +7,7 @@ function zatsToZec(zats: number): number {
 }
 
 function zecToZats(zecAmount: string): bigint {
-  console.log(zecAmount);
+
   if (!/^\d+(\.\d+)?$/.test(zecAmount)) {
     throw new Error('Invalid ZEC format: must be positive number');
   }
@@ -19,7 +19,6 @@ function zecToZats(zecAmount: string): bigint {
   }
 
   const zats = amount.mul(100_000_000).toDecimalPlaces(0, Decimal.ROUND_DOWN);
-  console.log(zats.toFixed());
   return BigInt(zats.toFixed());
 }
 

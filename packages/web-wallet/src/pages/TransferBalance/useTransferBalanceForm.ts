@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import { PoolType, TransactionType } from '../../types/transfer';
-import { usePczt } from '../../hooks/usePCZT';
+import { PcztTransferStatus, usePczt } from '../../hooks/usePCZT';
 
 export interface TransferBalanceFormData {
   amount: string;
   recipient: string;
-  transactionType?: TransactionType;
-  pool: PoolType;
-  memo?: string;
-  error: string;
 }
 
 export type TransferBalanceFormHandleChange = (
@@ -24,26 +19,28 @@ export type TransferBalanceFormHandleChange = (
 export interface TransferBalanceFormType {
   currentStep: number;
   formData: TransferBalanceFormData;
+  pcztTransferStatus: PcztTransferStatus;
   nextStep: () => void;
-  prevStep: () => void;
   handleChange: TransferBalanceFormHandleChange;
   submitForm: () => void;
   resetForm: () => void;
 }
 
+export enum TransferStep {
+  INPUT,
+  CONFIRM,
+  RESULT
+}
+
 const useTransferBalanceForm = (): TransferBalanceFormType => {
-  const { handlePcztTransaction } = usePczt();
-  const [currentStep, setCurrentStep] = useState<number>(1);
+  const { handlePcztTransaction, pcztTransferStatus  } = usePczt();
+  const [currentStep, setCurrentStep] = useState<TransferStep>(0);
   const [formData, setFormData] = useState<TransferBalanceFormData>({
     amount: '',
     recipient: '',
-    transactionType: undefined,
-    pool: PoolType.ORCHARD,
-    error: '',
   });
 
   const nextStep = () => setCurrentStep((prev) => prev + 1);
-  const prevStep = () => setCurrentStep((prev) => prev - 1);
 
   const handleChange: TransferBalanceFormHandleChange = (input) => (e) => {
     if (typeof e === 'string') {
@@ -64,19 +61,15 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
     setFormData({
       amount: '',
       recipient: '',
-      transactionType: undefined,
-      pool: PoolType.ORCHARD,
-      memo: '',
-      error: '',
     });
-    setCurrentStep(1);
+    setCurrentStep(TransferStep.INPUT);
   };
 
   return {
     currentStep,
     formData,
+    pcztTransferStatus,
     nextStep,
-    prevStep,
     handleChange,
     submitForm,
     resetForm,

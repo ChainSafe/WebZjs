@@ -5,25 +5,22 @@ import {
 } from './useTransferBalanceForm';
 import Button from '../../components/Button/Button';
 
-interface Step2Props {
+interface TransferConfirmProps {
   formData: TransferBalanceFormData;
   nextStep: TransferBalanceFormType['nextStep'];
-  handleChange: TransferBalanceFormType['handleChange'];
   submitForm: () => void;
 }
 
-function Step2({
-  formData: { recipient, amount, memo, pool, transactionType },
+export function TransferConfirm({
+  formData: { recipient, amount},
   nextStep,
   submitForm,
-  handleChange,
-}: Step2Props): React.JSX.Element {
+}: TransferConfirmProps): React.JSX.Element {
   const handleNextStep = () => {
     try {
       submitForm();
       nextStep();
     } catch (error) {
-      handleChange('error')(String(error));
       nextStep();
       console.error(error);
     }
@@ -43,26 +40,6 @@ function Step2({
           </div>
         </div>
         <div className="self-stretch justify-start items-center gap-2 inline-flex">
-          <div className="grow shrink basis-0 text-black text-base font-medium font-['Roboto'] leading-normal">
-            Transaction type:
-          </div>
-          <div className="p-3 rounded-xl justify-start items-center gap-2 flex">
-            <div className="text-[#4f4f4f] text-base font-normal font-['Roboto'] leading-normal capitalize">
-              {transactionType}
-            </div>
-          </div>
-        </div>
-        <div className="self-stretch justify-start items-center gap-2 inline-flex">
-          <div className="grow shrink basis-0 text-black text-base font-medium font-['Roboto'] leading-normal">
-            Pool:
-          </div>
-          <div className="p-3 rounded-xl justify-start items-center gap-2 flex">
-            <div className="text-[#4f4f4f] text-base font-normal font-['Roboto'] capitalize leading-normal">
-              {pool}
-            </div>
-          </div>
-        </div>
-        <div className="self-stretch justify-start items-center gap-2 inline-flex">
           <div className="grow shrink basis-0 text-black text-base font-normal font-['Roboto'] leading-normal">
             Amount:
           </div>
@@ -72,18 +49,6 @@ function Step2({
             </div>
           </div>
         </div>
-        {memo && (
-          <div className="self-stretch h-[104px] py-6 border-t border-b border-[#c6c4c4] flex-col justify-start items-start gap-2 flex">
-            <div className="self-stretch text-black text-base font-medium font-['Roboto'] leading-normal">
-              Memo:
-            </div>
-            <div className="self-stretch bg-white rounded-xl justify-start items-start gap-2 inline-flex">
-              <div className="grow shrink basis-0 text-[#4f4f4f] text-base font-normal font-['Roboto'] leading-normal">
-                {memo}
-              </div>
-            </div>
-          </div>
-        )}
         <div className="self-stretch pt-6 flex-col justify-center items-center gap-3 flex">
           <div className="justify-start items-start inline-flex">
           <Button
@@ -97,4 +62,3 @@ function Step2({
   );
 }
 
-export default Step2;

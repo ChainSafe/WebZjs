@@ -13,8 +13,5 @@ export async function getSeedFingerprint(): Promise<string> {
 
   const seedFingerprintHexString = Buffer.from(seedFingerprintUint8).toString('hex');
 
-  console.log("seedFingerprintHexString__________")
-  console.log(seedFingerprintHexString)
-
   return seedFingerprintHexString;
 }

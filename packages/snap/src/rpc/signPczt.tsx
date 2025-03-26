@@ -34,34 +34,17 @@ export async function signPczt({ pcztHexTring }: SignPcztParams): Promise<string
   // Generate the UnifiedSpendingKey and obtain the Viewing Key
   const spendingKey = new UnifiedSpendingKey('main', seed, 0);
   const seedFp = new SeedFingerprint(seed);
-
-  console.log("pcztHexTring")
-  console.log(pcztHexTring)
  
   const pcztBuffer = Buffer.from(pcztHexTring, 'hex');
 
 
   const pcztUint8Array = new Uint8Array(pcztBuffer);
 
-  console.log("pcztUint8Array")
-  console.log(typeof pcztUint8Array)
-  console.log(pcztUint8Array)
-
   const pczt = Pczt.from_bytes(pcztUint8Array)
-
-  console.log("pczt")
-  console.log(pczt)
 
   const pcztSigned = await pczt_sign('main', pczt, spendingKey, seedFp);
 
-
-  console.log("pcztSigned")
-  console.log(pcztSigned)
-
   const pcztUint8Signed = pcztSigned.serialize();
-
-  console.log("pcztUint8Signed")
-  console.log(pcztUint8Signed)
 
   const pcztHexStringSigned = Buffer.from(pcztUint8Signed).toString('hex');
 
