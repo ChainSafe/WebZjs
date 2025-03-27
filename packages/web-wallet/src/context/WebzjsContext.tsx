@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import { get, set } from 'idb-keyval';
+import { get } from 'idb-keyval';
 
 import initWebzWallet, {
   initThreadPool,

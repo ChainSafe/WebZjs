@@ -1,4 +1,4 @@
-import { Json } from "@metamask/snaps-sdk";
+import type { Json } from '@metamask/snaps-sdk';
 
 export type SetBirthdayBlockParams = { latestBlock: number };
 

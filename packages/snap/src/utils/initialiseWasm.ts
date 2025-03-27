@@ -1,8 +1,9 @@
-import { InitOutput, initSync } from '@webzjs/webz-keys';
+import type { InitOutput } from '@webzjs/webz-keys';
+import { initSync } from '@webzjs/webz-keys';
 import wasmDataBase64 from '@webzjs/webz-keys/webz_keys_bg.wasm';
 
 export function initialiseWasm(): InitOutput {
-  const base64String = wasmDataBase64 as any as string;
+  const base64String = wasmDataBase64 as unknown as string;
   // Check if the imported data is a data URL
   const base64Formatted = base64String.startsWith('data:')
     ? base64String.split(',')[1]

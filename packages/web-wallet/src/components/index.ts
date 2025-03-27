@@ -4,6 +4,5 @@ export * from './Select/Select';
 export * from './Button/Button';
 export * from './NavBar/NavBar';
 export * from './TransactionStatusCard/TransactionStatusCard';
-export * from './Table/Table';
 export * from './PageHeading/PageHeading';
 export * from './Loader/Loader';

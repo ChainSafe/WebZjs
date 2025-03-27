@@ -4,12 +4,14 @@ const NU5_ACTIVATION = 1687104;
 export function setSyncBlockHeight(
   userInputCreationBlock: string | null,
   latestBlock: number,
-) {
-  if(userInputCreationBlock === null) return latestBlock;
+): number {
+  if (userInputCreationBlock === null) return latestBlock;
 
   const customBirthdayBlock = Number(userInputCreationBlock);
 
   const latestAcceptableSyncBlock = NU5_ACTIVATION;
 
-  return customBirthdayBlock>latestAcceptableSyncBlock ? customBirthdayBlock : latestAcceptableSyncBlock
+  return customBirthdayBlock > latestAcceptableSyncBlock
+    ? customBirthdayBlock
+    : latestAcceptableSyncBlock;
 }

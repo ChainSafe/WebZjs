@@ -29,8 +29,8 @@ export const useRequest = () => {
         } as RequestArguments)) ?? null;
 
       return data;
-    } catch (requestError: any) {
-      setError(requestError);
+    } catch (requestError) {
+      setError(requestError as Error);
 
       return null;
     }

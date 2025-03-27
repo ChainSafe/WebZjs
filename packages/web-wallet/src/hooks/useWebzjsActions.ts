@@ -43,6 +43,7 @@ export function useWebZjsActions(): WebzjsActions {
         type: 'set-error',
         payload: 'Cannot get active account data',
       });
+      console.error(error);
     }
   }, [dispatch, state.activeAccount, state.webWallet]);
 
