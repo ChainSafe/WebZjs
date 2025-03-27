@@ -1,7 +1,7 @@
 {
   "name": "@webzjs/zcash-snap",
   "version": "0.1.0",
-  "description": "The 'Hello, world!' of MetaMask Snaps, now written in TypeScript.",
+  "description": "Zcash Metmamask Snap that utilizes WebZjs.",
   "repository": {
     "type": "git",
     "url": "https://github.com/MetaMask/template-snap-monorepo.git"
