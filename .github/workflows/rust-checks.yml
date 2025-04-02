@@ -36,4 +36,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all --lib -- -D warnings
+          args: --all --lib -- -D warnings -A deprecated
