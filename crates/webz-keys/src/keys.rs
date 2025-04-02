@@ -53,7 +53,7 @@ impl From<SeedFingerprint> for zip32::fingerprint::SeedFingerprint {
 
 impl From<zip32::fingerprint::SeedFingerprint> for SeedFingerprint {
     fn from(value: zip32::fingerprint::SeedFingerprint) -> Self {
-       Self{ inner: value } 
+        Self { inner: value }
     }
 }
 /// A Zcash Sapling proof generation key

@@ -208,18 +208,12 @@ where
         &self,
         account_name: &str,
         ufvk: &UnifiedFullViewingKey,
-        purpose: AccountPurpose, 
+        purpose: AccountPurpose,
         birthday_height: Option<u32>,
         key_source: Option<&str>,
     ) -> Result<AccountId, Error> {
-        self.import_account_ufvk(
-            account_name,
-            ufvk,
-            birthday_height,
-            purpose,
-            key_source,
-        )
-        .await
+        self.import_account_ufvk(account_name, ufvk, birthday_height, purpose, key_source)
+            .await
     }
 
     /// Helper method for importing an account directly from a Ufvk or from seed.
