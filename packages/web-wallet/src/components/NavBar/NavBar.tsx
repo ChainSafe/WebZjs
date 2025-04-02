@@ -5,7 +5,6 @@ import { NavLink } from 'react-router-dom';
 import {
   ArrowReceiveSvg,
   ArrowTransferSvg,
-  ClockSvg,
   SummarySvg,
 } from '../../assets';
 

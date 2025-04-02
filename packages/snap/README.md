@@ -1,12 +1,23 @@
-# TypeScript Example Snap
+# WebZjs Zcash Snap
 
-This snap demonstrates how to develop a snap with TypeScript. It is a simple
-snap that displays a confirmation dialog when the `hello` JSON-RPC method is
-called.
+## 🔐 Overview
 
-## Testing
+WebZjs Zcash Snap is a MetaMask Snap that brings Zcash functionality directly into the MetaMask browser extension. WebZjs is the first JavaScript SDK for Zcash, enabling seamless integration of Zcash privacy features for web users.
 
-The snap comes with some basic tests, to demonstrate how to write tests for
-snaps. To test the snap, run `yarn test` in this directory. This will use
-[`@metamask/snaps-jest`](https://github.com/MetaMask/snaps/tree/main/packages/snaps-jest)
-to run the tests in `src/index.test.ts`.
+## 📘 Project Description
+
+Snap uses a Rust library [WebZjs](https://github.com/ChainSafe/WebZjs) compiled to WebAssembly (Wasm). It is meant to be used in conjunction with WebZjs web-wallet.
+
+## 🛠 Prerequisites
+
+[WebZjs](https://github.com/ChainSafe/WebZjs)
+
+- Node.js
+- Yarn
+- MetaMask Browser Extension (Metamask Flask for development purposes) [Install MM Flask](https://docs.metamask.io/snaps/get-started/install-flask/)
+
+## 🔨 Development
+
+1. Install dependencies with `yarn install`
+2. Build the project with `yarn build`
+3. Host snap on localhost http://localhost:8080 `yarn serve`

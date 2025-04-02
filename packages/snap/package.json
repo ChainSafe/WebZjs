@@ -1,7 +1,7 @@
 {
   "name": "@webzjs/zcash-snap",
   "version": "0.1.0",
-  "description": "The 'Hello, world!' of MetaMask Snaps, now written in TypeScript.",
+  "description": "Zcash Metmamask Snap that utilizes WebZjs.",
   "repository": {
     "type": "git",
     "url": "https://github.com/MetaMask/template-snap-monorepo.git"
@@ -17,10 +17,8 @@
     "build": "mm-snap build",
     "build:clean": "yarn clean && yarn build",
     "clean": "rimraf dist",
-    "lint": "yarn lint:eslint && yarn lint:misc --check",
-    "lint:eslint": "eslint . --cache --ext js,ts",
-    "lint:fix": "yarn lint:eslint --fix && yarn lint:misc --write",
-    "lint:misc": "prettier '**/*.json' '**/*.md' '!CHANGELOG.md' --ignore-path .gitignore",
+    "lint": "eslint --color --ext .ts src/",
+    "lint:fix": "yarn run lint --fix",
     "prepublishOnly": "mm-snap manifest",
     "serve": "mm-snap serve",
     "start": "mm-snap watch",
@@ -30,9 +28,10 @@
     "@metamask/snaps-sdk": "^6.17.1",
     "@webzjs/webz-keys": "workspace:^",
     "buffer": "^6.0.3",
-    "fork-ts-checker-webpack-plugin": "^9.0.2"
+    "superstruct": "^2.0.2"
   },
   "devDependencies": {
+    "@chainsafe/eslint-config": "^2.2.4",
     "@jest/globals": "^29.5.0",
     "@metamask/auto-changelog": "^4.0.0",
     "@metamask/eslint-config": "^14.0.0",
@@ -45,7 +44,7 @@
     "@types/react-dom ": "18.2.4",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^5.42.1",
-    "eslint": "^9.14.0",
+    "eslint": "8",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "~2.31.0",
     "eslint-plugin-jest": "^27.1.5",

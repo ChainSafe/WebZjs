@@ -14,6 +14,9 @@ zcash_address.workspace = true
 thiserror.workspace = true
 wasm-bindgen.workspace = true
 js-sys.workspace = true
+pczt = { workspace = true, default-features = false, features = ["orchard", "sapling", "transparent"] }
+serde-wasm-bindgen.workspace = true
+
 
 [lints]
 workspace = true

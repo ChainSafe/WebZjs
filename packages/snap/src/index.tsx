@@ -8,8 +8,12 @@ import {
 } from '@metamask/snaps-sdk';
 import { setBirthdayBlock } from './rpc/setBirthdayBlock';
 import { getSnapState } from './rpc/getSnapState';
-import { SetBirthdayBlockParams, SnapState } from './types';
+import { SetBirthdayBlockParams, SignPcztParams, SnapState } from './types';
 import { setSnapState } from './rpc/setSnapState';
+import { signPczt } from './rpc/signPczt'
+
+import { assert, object, number, optional, string } from 'superstruct';
+import { getSeedFingerprint } from './rpc/getSeedFingerprint';
 
 let wasm: InitOutput;
 
@@ -30,9 +34,14 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
   switch (request.method) {
     case 'getViewingKey':
       return await getViewingKey();
+    case 'signPczt':
+      assert(request.params, object({ pcztHexTring: string() }));
+      return await signPczt(request.params as SignPcztParams);
+    case 'getSeedFingerprint':
+      return await getSeedFingerprint();
     case 'setBirthdayBlock':
-      const setBirthdayBlockParams = request.params as SetBirthdayBlockParams;
-      return await setBirthdayBlock(setBirthdayBlockParams);
+      assert(request.params, object({ latestBlock: optional(number()) }));
+      return await setBirthdayBlock(request.params as SetBirthdayBlockParams);
     case 'getSnapStete':
       return await getSnapState();
     case 'setSnapStete':

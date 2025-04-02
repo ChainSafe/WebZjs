@@ -4,11 +4,77 @@
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
+use crate::error::Error;
 use bip0039::{Count, English, Mnemonic};
+use webz_common::Network;
 use zcash_primitives::zip32::AccountId;
 
-use crate::error::Error;
-use webz_common::Network;
+/// A ZIP32 seed fingerprint. Essentially a Blake2b hash of the seed.
+///
+/// This is a wrapper around the `zip32::fingerprint::SeedFingerprint` type.
+///
+#[wasm_bindgen]
+pub struct SeedFingerprint {
+    inner: zip32::fingerprint::SeedFingerprint,
+}
+#[wasm_bindgen]
+impl SeedFingerprint {
+    /// Construct a new SeedFingerprint
+    ///
+    /// # Arguments
+    ///
+    /// * `seed` - At least 32 bytes of entry. Care should be taken as to how this is derived
+    ///
+    #[wasm_bindgen(constructor)]
+    pub fn new(seed: Box<[u8]>) -> Result<SeedFingerprint, Error> {
+        Ok(Self {
+            inner: zip32::fingerprint::SeedFingerprint::from_seed(&seed)
+                .ok_or(Error::SeedFingerprint)?,
+        })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.inner.to_bytes().to_vec()
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<SeedFingerprint, Error> {
+        let bytes: [u8; 32] = bytes.try_into().map_err(|_| Error::SeedFingerprint)?;
+        Ok(Self {
+            inner: zip32::fingerprint::SeedFingerprint::from_bytes(bytes),
+        })
+    }
+}
+
+impl From<SeedFingerprint> for zip32::fingerprint::SeedFingerprint {
+    fn from(value: SeedFingerprint) -> Self {
+        value.inner
+    }
+}
+
+impl From<zip32::fingerprint::SeedFingerprint> for SeedFingerprint {
+    fn from(value: zip32::fingerprint::SeedFingerprint) -> Self {
+        Self { inner: value }
+    }
+}
+/// A Zcash Sapling proof generation key
+///
+/// This is a wrapper around the `sapling::ProofGenerationKey` type. It is used for generating proofs for Sapling PCZTs.
+#[wasm_bindgen]
+pub struct ProofGenerationKey {
+    inner: sapling::ProofGenerationKey,
+}
+
+impl From<ProofGenerationKey> for sapling::ProofGenerationKey {
+    fn from(value: ProofGenerationKey) -> sapling::ProofGenerationKey {
+        value.inner
+    }
+}
+
+impl From<sapling::ProofGenerationKey> for ProofGenerationKey {
+    fn from(value: sapling::ProofGenerationKey) -> Self {
+        Self { inner: value }
+    }
+}
 
 /// A Zcash spending key
 ///
@@ -45,6 +111,18 @@ impl UnifiedSpendingKey {
         UnifiedFullViewingKey {
             inner: self.inner.to_unified_full_viewing_key(),
         }
+    }
+
+    pub fn to_sapling_proof_generation_key(&self) -> ProofGenerationKey {
+        ProofGenerationKey {
+            inner: self.inner.sapling().expsk.proof_generation_key(),
+        }
+    }
+}
+
+impl From<UnifiedSpendingKey> for zcash_keys::keys::UnifiedSpendingKey {
+    fn from(value: UnifiedSpendingKey) -> Self {
+        value.inner
     }
 }
 

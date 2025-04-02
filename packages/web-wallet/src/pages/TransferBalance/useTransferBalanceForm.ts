@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { PoolType, TransactionType } from '../../types/transfer';
+import { PcztTransferStatus, usePczt } from '../../hooks/usePCZT';
 
 export interface TransferBalanceFormData {
   amount: string;
   recipient: string;
-  transactionType?: TransactionType;
-  pool: PoolType;
-  memo?: string;
 }
 
 export type TransferBalanceFormHandleChange = (
@@ -22,23 +19,28 @@ export type TransferBalanceFormHandleChange = (
 export interface TransferBalanceFormType {
   currentStep: number;
   formData: TransferBalanceFormData;
+  pcztTransferStatus: PcztTransferStatus;
   nextStep: () => void;
-  prevStep: () => void;
   handleChange: TransferBalanceFormHandleChange;
+  submitForm: () => void;
   resetForm: () => void;
 }
 
+export enum TransferStep {
+  INPUT,
+  CONFIRM,
+  RESULT
+}
+
 const useTransferBalanceForm = (): TransferBalanceFormType => {
-  const [currentStep, setCurrentStep] = useState<number>(1);
+  const { handlePcztTransaction, pcztTransferStatus  } = usePczt();
+  const [currentStep, setCurrentStep] = useState<TransferStep>(0);
   const [formData, setFormData] = useState<TransferBalanceFormData>({
     amount: '',
     recipient: '',
-    transactionType: undefined,
-    pool: PoolType.ORCHARD,
   });
 
   const nextStep = () => setCurrentStep((prev) => prev + 1);
-  const prevStep = () => setCurrentStep((prev) => prev - 1);
 
   const handleChange: TransferBalanceFormHandleChange = (input) => (e) => {
     if (typeof e === 'string') {
@@ -48,23 +50,28 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
     }
   };
 
+  const submitForm = () => {
+    const { amount, recipient } = formData;
+    //TODO - get accoundId it from state
+    handlePcztTransaction(1, recipient, amount);
+  };
+
+
   const resetForm = () => {
     setFormData({
       amount: '',
       recipient: '',
-      transactionType: undefined,
-      pool: PoolType.ORCHARD,
-      memo: '',
     });
-    setCurrentStep(1);
+    setCurrentStep(TransferStep.INPUT);
   };
 
   return {
     currentStep,
     formData,
+    pcztTransferStatus,
     nextStep,
-    prevStep,
     handleChange,
+    submitForm,
     resetForm,
   };
 };
