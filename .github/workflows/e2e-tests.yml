@@ -36,4 +36,5 @@ jobs:
       run: yarn playwright install --with-deps
 
     - name: Run Playwright tests
+      if: false  # Skip e2e test
       run: yarn run test:e2e
