@@ -8,6 +8,7 @@ build:
 
 build-wallet *features:
     cd crates/webz-wallet && wasm-pack build -t web --release --scope webzjs --out-dir ../../packages/webz-wallet --no-default-features --features="wasm wasm-parallel {{features}}" -Z build-std="panic_abort,std"
+    ./add-worker-module.sh
 
 build-keys *features:
     cd crates/webz-keys && wasm-pack build -t web --release --scope webzjs --out-dir ../../packages/webz-keys --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
