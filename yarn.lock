@@ -1712,7 +1712,7 @@ __metadata:
     "@metamask/snaps-jest": "npm:^8.8.1"
     "@metamask/snaps-sdk": "npm:^6.17.1"
     "@types/react": "npm:18.2.4"
-    "@types/react-dom ": "npm:18.2.4"
+    "@types/react-dom": "npm:18.2.4"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
     "@typescript-eslint/parser": "npm:^5.42.1"
     buffer: "npm:^6.0.3"
@@ -5694,12 +5694,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom @npm:18.2.4":
+"@types/react-dom@npm:18.2.4":
   version: 18.2.4
-  resolution: "@types/react-dom @npm:18.2.4::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40types%2Freact-dom%2F-%2Freact-dom-18.2.4.tgz"
+  resolution: "@types/react-dom@npm:18.2.4"
   dependencies:
     "@types/react": "npm:*"
-  checksum: 10c0/79133248f88ff17112b57e5da5ac1b2996a83656b9811f83a31d9db0406b7c48f3b6613fb1989445a424d8c4a06b3bb6146403d67c4a0db1d32e89a494041e23
+  checksum: 10c0/dfeaabb4268d39bdd5addc6c0b7099d5c57a364e70f1087b7c3ee189374312dc65201abfd3d87fee0de11d27c225678ce39c22d14b3035cde5792678704c27b5
   languageName: node
   linkType: hard
 
