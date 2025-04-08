@@ -1,5 +1,5 @@
 [package]
-name = "webz-common"
+name = "webzjs-requests"
 version = "0.1.0"
 authors = ["ChainSafe Systems"]
 license = "MIT OR Apache-2.0"
@@ -7,16 +7,24 @@ repository = "https://github.com/ChainSafe/WebZjs"
 description = "A browser client-side library for generating and manipulating zcash keys"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O4", "-O4"]
+
 [dependencies]
-serde.workspace = true
-zcash_primitives.workspace = true
-zcash_address.workspace = true
-thiserror.workspace = true
 wasm-bindgen.workspace = true
 js-sys.workspace = true
-pczt = { workspace = true, default-features = false, features = ["orchard", "sapling", "transparent"] }
+
+zcash_address.workspace = true
+zcash_primitives.workspace = true
+zip321.workspace = true
+thiserror.workspace = true
 serde-wasm-bindgen.workspace = true
 
+# fixes "failed to resolve: use of undeclared crate or module `imp`" error
+getrandom = { version = "0.2", features = ["js"] }
 
 [lints]
 workspace = true

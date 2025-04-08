@@ -1,5 +1,5 @@
 [package]
-name = "webz-requests"
+name = "webzjs-keys"
 version = "0.1.0"
 authors = ["ChainSafe Systems"]
 license = "MIT OR Apache-2.0"
@@ -14,14 +14,20 @@ crate-type = ["cdylib", "rlib"]
 wasm-opt = ["-O4", "-O4"]
 
 [dependencies]
-wasm-bindgen.workspace = true
-js-sys.workspace = true
+webzjs-common = { path = "../webzjs-common" }
 
-zcash_address.workspace = true
-zcash_primitives.workspace = true
-zip321.workspace = true
+js-sys.workspace = true
 thiserror.workspace = true
-serde-wasm-bindgen.workspace = true
+wasm-bindgen.workspace = true
+zcash_primitives = { workspace = true, features = ["transparent-inputs"] }
+zcash_keys.workspace = true
+bip0039.workspace = true
+zip32 = "0.1"
+sapling = { workspace = true }
+bip32 = "0.5"
+pczt = { workspace = true, default-features = false, features = ["signer", "orchard", "sapling", "transparent", "tx-extractor"] }
+orchard = { version = "0.10.1", default-features = false }
+wasm-bindgen-futures = "0.4.43"
 
 # fixes "failed to resolve: use of undeclared crate or module `imp`" error
 getrandom = { version = "0.2", features = ["js"] }

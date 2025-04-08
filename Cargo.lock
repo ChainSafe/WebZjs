@@ -3305,7 +3305,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "webz-common"
+name = "webzjs-common"
 version = "0.1.0"
 dependencies = [
  "js-sys",
@@ -3319,7 +3319,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "webz-keys"
+name = "webzjs-keys"
 version = "0.1.0"
 dependencies = [
  "bip0039",
@@ -3332,14 +3332,14 @@ dependencies = [
  "thiserror",
  "wasm-bindgen",
  "wasm-bindgen-futures",
- "webz-common",
+ "webzjs-common",
  "zcash_keys",
  "zcash_primitives",
  "zip32",
 ]
 
 [[package]]
-name = "webz-requests"
+name = "webzjs-requests"
 version = "0.1.0"
 dependencies = [
  "getrandom",
@@ -3353,7 +3353,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "webz-wallet"
+name = "webzjs-wallet"
 version = "0.1.0"
 dependencies = [
  "bip0039",
@@ -3392,8 +3392,8 @@ dependencies = [
  "wasm_sync",
  "wasm_thread",
  "web-sys",
- "webz-common",
- "webz-keys",
+ "webzjs-common",
+ "webzjs-keys",
  "zcash_address",
  "zcash_client_backend",
  "zcash_client_memory",

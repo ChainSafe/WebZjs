@@ -1,5 +1,5 @@
 {
-  "name": "@webzjs/e2e-tests",
+  "name": "@chainsafe/webzjs-e2e-tests",
   "version": "1.0.0",
   "description": "",
   "source": "src/index.html",
@@ -11,12 +11,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@chainsafe/webzjs-keys": "workspace:^",
+    "@chainsafe/webzjs-requests": "workspace:^",
+    "@chainsafe/webzjs-wallet": "workspace:^",
     "@parcel/core": "^2.12.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.7.4",
-    "@webzjs/webz-keys": "workspace:^",
-    "@webzjs/webz-requests": "workspace:^",
-    "@webzjs/webz-wallet": "workspace:^",
     "parcel": "^2.12.0",
     "serve": "^14.2.3"
   }

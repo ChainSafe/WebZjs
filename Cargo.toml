@@ -2,10 +2,10 @@
 resolver = "2"
 
 members = [
-    "crates/webz-common",
-    "crates/webz-keys",
-    "crates/webz-requests",
-    "crates/webz-wallet",
+    "crates/webzjs-common",
+    "crates/webzjs-keys",
+    "crates/webzjs-requests",
+    "crates/webzjs-wallet",
 ]
 
 [profile.release]
@@ -16,7 +16,7 @@ codegen-units = 1
 
 [workspace.dependencies]
 ## Web dependencies
-wasm-bindgen = "0.2.99" # higher versions has an issues with attachment of the file: webz-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js
+wasm-bindgen = "0.2.99" # higher versions has an issues with attachment of the file: webzjs-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js
 js-sys = "0.3.77"
 wasm-bindgen-futures = "0.4.43"
 web-sys = { version = "0.3.70", features = [

@@ -1,5 +1,5 @@
 import { getViewingKey } from './rpc/getViewingKey';
-import { InitOutput } from '@webzjs/webz-keys';
+import { InitOutput } from '@chainsafe/webzjs-keys';
 import { initialiseWasm } from './utils/initialiseWasm';
 import {
   OnRpcRequestHandler,

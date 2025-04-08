@@ -3,7 +3,7 @@ import React, { FormEvent, useContext, useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { toast, ToastContainer } from 'react-toastify';
-import { generate_seed_phrase } from '@webzjs/webz-keys';
+import { generate_seed_phrase } from '@chainsafe/webzjs-keys';
 
 import { WalletContext } from '../App';
 import {

@@ -9,7 +9,7 @@ import Stack from 'react-bootstrap/Stack';
 import Container from 'react-bootstrap/Container';
 import LoadingOverlay from 'react-loading-overlay';
 
-import { WebWallet, WalletSummary } from '@webzjs/webz-wallet';
+import { WebWallet, WalletSummary } from '@chainsafe/webzjs-wallet';
 
 import { init, triggerRescan } from './Actions';
 import { Header } from './components/Header';

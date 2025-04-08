@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::convert::Infallible;
 use std::str::FromStr;
 use wasm_bindgen::prelude::wasm_bindgen;
-use webz_common::{Network, Pczt};
+use webzjs_common::{Network, Pczt};
 use zcash_primitives::consensus::{NetworkConstants, Parameters};
 use zcash_primitives::legacy::keys::{NonHardenedChildIndex, TransparentKeyScope};
 

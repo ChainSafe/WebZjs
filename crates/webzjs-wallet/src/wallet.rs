@@ -12,7 +12,7 @@ use tonic::{
 
 use crate::error::Error;
 use crate::BlockRange;
-use webz_common::Network;
+use webzjs_common::Network;
 
 use pczt::roles::combiner::Combiner;
 use pczt::roles::prover::Prover;

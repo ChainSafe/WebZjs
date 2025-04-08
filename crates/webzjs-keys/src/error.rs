@@ -2,8 +2,8 @@ use wasm_bindgen::JsValue;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("webz-common crate gives error: {0}")]
-    WebzCommon(#[from] webz_common::Error),
+    #[error("webzjs-common crate gives error: {0}")]
+    WebzJSCommon(#[from] webzjs_common::Error),
     #[error("Invalid account id")]
     AccountIdConversion(#[from] zcash_primitives::zip32::TryFromIntError),
     #[error("Failed to derive key from seed")]

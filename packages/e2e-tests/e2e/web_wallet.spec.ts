@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { WebWallet } from '@webzjs/webz-wallet';
+import { WebWallet } from '@chainsafe/webzjs-wallet';
 
-import type * as WebZKeys from '@webzjs/webz-keys';
+import type * as WebZJSKeys from '@chainsafe/webzjs-keys';
 declare global {
   interface Window {
     webWallet: WebWallet;
-    WebZKeys: typeof WebZKeys;
+    WebZJSKeys: typeof WebZJSKeys;
   }
 }
 
@@ -43,7 +43,7 @@ test('Accont can be added from ufvk', async ({ page }) => {
   let result = await page.evaluate(async () => {
     let seed = new Uint8Array(32);
     let birthday = 2657762;
-    let usk = new window.WebZKeys.UnifiedSpendingKey('main', seed, 0);
+    let usk = new window.WebZJSKeys.UnifiedSpendingKey('main', seed, 0);
     let ufvk = usk.to_unified_full_viewing_key();
     await window.webWallet.create_account_ufvk(
       'account-0',

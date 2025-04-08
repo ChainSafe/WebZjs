@@ -1,20 +1,20 @@
 {
-  "name": "@webzjs/web-wallet",
+  "name": "@chainsafe/webzjs-web-wallet",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "source": [
     "index.html",
-    "../../node_modules/@webzjs/webz-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js"
+    "../../node_modules/@chainsafe/webzjs-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js"
   ],
   "scripts": {
     "dev": "node server.js",
     "build": "parcel build index.html --dist-dir dist"
   },
   "dependencies": {
+    "@chainsafe/webzjs-keys": "workspace:^",
+    "@chainsafe/webzjs-wallet": "workspace:^",
     "@metamask/providers": "^18.2.0",
-    "@webzjs/webz-keys": "workspace:^",
-    "@webzjs/webz-wallet": "workspace:^",
     "classnames": "^2.5.1",
     "decimal.js": "^10.5.0",
     "idb-keyval": "^6.2.1",

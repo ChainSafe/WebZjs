@@ -1,4 +1,4 @@
-import { UnifiedSpendingKey } from '@webzjs/webz-keys';
+import { UnifiedSpendingKey } from '@chainsafe/webzjs-keys';
 import { getSeed } from '../utils/getSeed';
 
 type Network = 'main' | 'test';

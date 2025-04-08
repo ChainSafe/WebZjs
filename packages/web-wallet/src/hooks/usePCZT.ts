@@ -1,5 +1,5 @@
 import { useWebZjsContext } from '../context/WebzjsContext';
-import { Pczt } from '@webzjs/webz-wallet';
+import { Pczt } from '@chainsafe/webzjs-wallet';
 import { useInvokeSnap } from './snaps/useInvokeSnap';
 import { zecToZats } from '../utils';
 import { useWebZjsActions } from './useWebzjsActions';
