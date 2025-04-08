@@ -15,7 +15,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: "index.html",
-        worker: "node_modules/@webzjs/webz-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js",
+        worker: "node_modules/@chainsafe/webzjs-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js",
       },
     },
     manifest: true,

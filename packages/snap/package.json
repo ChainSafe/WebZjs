@@ -1,5 +1,5 @@
 {
-  "name": "@webzjs/zcash-snap",
+  "name": "@chainsafe/webzjs-zcash-snap",
   "version": "0.1.0",
   "description": "Zcash Metmamask Snap that utilizes WebZjs.",
   "repository": {
@@ -25,8 +25,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@chainsafe/webzjs-keys": "workspace:^",
     "@metamask/snaps-sdk": "^6.17.1",
-    "@webzjs/webz-keys": "workspace:^",
     "buffer": "^6.0.3",
     "superstruct": "^2.0.2"
   },

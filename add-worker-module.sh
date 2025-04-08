@@ -1,10 +1,18 @@
 #!/bin/bash
 
-# Create the directory if it doesn't exist
-mkdir -p packages/webz-wallet/snippets/wasm_thread-8ee53d0673203880/src/wasm32/js
+# Find the wasm_thread directory regardless of the hash
+WASM_THREAD_DIR=$(find packages/webzjs-wallet/snippets -type d -name "wasm_thread-*" | head -n 1)
+
+if [ -z "$WASM_THREAD_DIR" ]; then
+    echo "Error: Could not find wasm_thread directory"
+    exit 1
+fi
+
+# Create the directory structure
+mkdir -p "$WASM_THREAD_DIR/src/wasm32/js"
 
 # Create the worker module file
-cat > packages/webz-wallet/snippets/wasm_thread-8ee53d0673203880/src/wasm32/js/web_worker_module.bundler.js << 'EOL'
+cat > "$WASM_THREAD_DIR/src/wasm32/js/web_worker_module.bundler.js" << 'EOL'
 // synchronously, using the browser, import wasm_bindgen shim JS scripts
 import init, { wasm_thread_entry_point } from "../../../../../";
 // Wait for the main thread to send us the shared module/memory and work context.
@@ -42,3 +50,5 @@ self.onended = function(e) {
     throw e;
 }
 EOL
+
+echo "Added worker module to: $WASM_THREAD_DIR/src/wasm32/js/web_worker_module.bundler.js"

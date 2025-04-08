@@ -1,5 +1,5 @@
 {
-  "name": "@webzjs/demo-wallet",
+  "name": "@chainsafe/webzjs-demo-wallet",
   "source": "index.html",
   "version": "0.1.0",
   "scripts": {
@@ -9,11 +9,11 @@
   },
   "type": "module",
   "dependencies": {
+    "@chainsafe/webzjs-keys": "workspace:^",
+    "@chainsafe/webzjs-wallet": "workspace:^",
     "@metamask/providers": "^18.1.0",
     "@types/react": "^18.3.9",
     "@types/react-dom": "^18.3.0",
-    "@webzjs/webz-keys": "workspace:^",
-    "@webzjs/webz-wallet": "workspace:^",
     "bootstrap": "^5.3.3",
     "idb-keyval": "^6.2.1",
     "react": "^18.2.0",

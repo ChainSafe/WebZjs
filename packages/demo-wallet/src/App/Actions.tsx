@@ -1,5 +1,5 @@
-import initWebzWallet, { initThreadPool, WebWallet } from '@webzjs/webz-wallet';
-import initWebzKeys from '@webzjs/webz-keys';
+import initWebzJSWallet, { initThreadPool, WebWallet } from '@chainsafe/webzjs-wallet';
+import initWebzJSKeys from '@chainsafe/webzjs-keys';
 
 import { get, set } from 'idb-keyval';
 
@@ -7,8 +7,8 @@ import { State, Action } from './App';
 import { MAINNET_LIGHTWALLETD_PROXY } from './Constants';
 
 export async function init(state: State, dispatch: React.Dispatch<Action>) {
-  await initWebzWallet();
-  await initWebzKeys();
+  await initWebzJSWallet();
+  await initWebzJSKeys();
 
   await initThreadPool(10);
 

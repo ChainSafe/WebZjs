@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::error::Error;
 use bip0039::{Count, English, Mnemonic};
-use webz_common::Network;
+use webzjs_common::Network;
 use zcash_primitives::zip32::AccountId;
 
 /// A ZIP32 seed fingerprint. Essentially a Blake2b hash of the seed.

@@ -4,7 +4,7 @@ import {
   UnifiedSpendingKey,
   pczt_sign,
   Pczt,
-} from '@webzjs/webz-keys';
+} from '@chainsafe/webzjs-keys';
 import { getSeed } from '../utils/getSeed';
 import { SignPcztParams } from 'src/types';
 

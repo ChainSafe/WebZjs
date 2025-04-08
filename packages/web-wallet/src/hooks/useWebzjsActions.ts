@@ -4,7 +4,7 @@ import { useWebZjsContext } from '../context/WebzjsContext';
 import { useMetaMask } from './snaps/useMetaMask';
 import { useInvokeSnap } from './snaps/useInvokeSnap';
 import { useRequestSnap } from './snaps/useRequestSnap';
-import { SeedFingerprint } from '@webzjs/webz-wallet';
+import { SeedFingerprint } from '@chainsafe/webzjs-wallet';
 
 interface WebzjsActions {
   getAccountData: () => Promise<

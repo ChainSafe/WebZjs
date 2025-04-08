@@ -12,8 +12,8 @@ use crate::error::Error;
 use crate::wallet::usk_from_seed_str;
 use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
-use webz_common::{Network, Pczt};
-use webz_keys::{ProofGenerationKey, SeedFingerprint, UnifiedSpendingKey};
+use webzjs_common::{Network, Pczt};
+use webzjs_keys::{ProofGenerationKey, SeedFingerprint, UnifiedSpendingKey};
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::{AccountPurpose, InputSource, WalletRead, Zip32Derivation};
 use zcash_client_backend::proto::service::{

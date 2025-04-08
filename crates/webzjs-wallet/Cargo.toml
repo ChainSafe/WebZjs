@@ -1,5 +1,5 @@
 [package]
-name = "webz-wallet"
+name = "webzjs-wallet"
 version = "0.1.0"
 authors = ["ChainSafe Systems"]
 license = "MIT OR Apache-2.0"
@@ -28,8 +28,8 @@ console_error_panic_hook = ["dep:console_error_panic_hook"]
 no-bundler = ["wasm-bindgen-rayon?/no-bundler", "wasm_thread/no-bundler"]
 
 [dependencies]
-webz-common = { path = "../webz-common" }
-webz-keys = { path = "../webz-keys" }
+webzjs-common = { path = "../webzjs-common" }
+webzjs-keys = { path = "../webzjs-keys" }
 ## Web dependencies
 wasm-bindgen.workspace = true
 js-sys.workspace = true

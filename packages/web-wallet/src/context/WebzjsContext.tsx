@@ -7,12 +7,12 @@ import React, {
 } from 'react';
 import { get } from 'idb-keyval';
 
-import initWebzWallet, {
+import initWebzJSWallet, {
   initThreadPool,
   WalletSummary,
   WebWallet,
-} from '@webzjs/webz-wallet';
-import initWebzKeys from '@webzjs/webz-keys';
+} from '@chainsafe/webzjs-wallet';
+import initWebzJSKeys from '@chainsafe/webzjs-keys';
 import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
 import { Snap } from '../types';
 import toast, { Toaster } from 'react-hot-toast';
@@ -88,8 +88,8 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const initAll = useCallback(async () => {
     try {
-      await initWebzWallet();
-      await initWebzKeys();
+      await initWebzJSWallet();
+      await initWebzJSKeys();
 
       try {
         const concurrency = navigator.hardwareConcurrency || 4;
