@@ -4,10 +4,10 @@
   "proposedName": "WebZjs Snap",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "https://github.com/ChainSafe/WebZjs/tree/main/packages/snap"
   },
   "source": {
-    "shasum": "bWDrBVj+U8wN6pHU5ruxXdApjEE3fQbwwNq+3HCQg5M=",
+    "shasum": "PMmFAEa2sAfRl+MLgISIiQiGu18ebgtJti3N31i1mng=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -31,6 +31,6 @@
     ],
     "snap_manageState": {}
   },
-  "platformVersion": "6.17.1",
+  "platformVersion": "6.22.0",
   "manifestVersion": "0.1"
 }
