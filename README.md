@@ -110,15 +110,7 @@ yarn dev
 
 ### Testing
 
-Browser tests are run in a headless browser environment and can be run with
-
-```shell
-just test-web
-```
-
 ## Known Issues
-
-
 
 ## Security Warnings
 
