@@ -17,10 +17,6 @@ dist
 .idea
 .vscode
 
-# Demo Wallet package
-packages/demo-wallet/dist/*
-!/packages/demo-wallet/dist/_headers
-
 # e2e Tests package
 packages/e2e-tests/dist/*
 !/packages/e2e-tests/dist/serve.json
