@@ -1,4 +1,4 @@
-name: Build and Deploy demo to Netlify
+name: Build and Web Wallet demo to Netlify
 
 on:
     # Runs on pushes targeting the default branch
@@ -33,12 +33,12 @@ jobs:
         run: yarn install --immutable
 
       - name: Build
-        run: yarn demo-wallet:build
+        run: yarn web-wallet:build
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
-          publish-dir: './packages/demo-wallet/dist'
+          publish-dir: './packages/web--wallet/dist'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
