@@ -1,17 +1,17 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "WebZjs Snap for demo wallet",
   "proposedName": "WebZjs Snap",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ChainSafe/WebZjs/tree/main/packages/snap"
+    "url": "https://github.com/ChainSafe/WebZjs.git"
   },
   "source": {
-    "shasum": "PMmFAEa2sAfRl+MLgISIiQiGu18ebgtJti3N31i1mng=",
+    "shasum": "gjWQCyynhkKtUwZ5PUNQq9zfnJRqy0Iwwb7G4hSLVic=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
-        "iconPath": "images/zcash.svg",
+        "iconPath": "images/logo.svg",
         "packageName": "@chainsafe/webzjs-zcash-snap",
         "registry": "https://registry.npmjs.org/"
       }
@@ -31,6 +31,6 @@
     ],
     "snap_manageState": {}
   },
-  "platformVersion": "6.22.0",
+  "platformVersion": "6.17.1",
   "manifestVersion": "0.1"
 }

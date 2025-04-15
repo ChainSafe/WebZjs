@@ -110,7 +110,10 @@ yarn dev
 
 ### Testing
 
+
 ## Known Issues
+
+Web Wallet may have trouble wasm instantiating. Please refresh the app in that case.
 
 ## Security Warnings
 
