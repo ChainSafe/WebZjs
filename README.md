@@ -72,8 +72,6 @@ This just script uses wasm-pack to build a web-ready copy of `webzjs-wallet` and
 just build
 ```
 
-### Building and running the demo-wallet
-
 #### Prerequisites
 
 [Install yarn](https://yarnpkg.com/getting-started/install)
@@ -89,25 +87,26 @@ just build
 Install js dependencies with
 
 ```shell
-yarn i
+yarn
 ```
 
-Build the demo wallet with
+## Development
+
+### Building and running WebZjs Zcash Snap locally
 
 ```shell
+cd packages/snap
 yarn build
-```
-
-Serve it with
-
-```shell
 yarn serve
 ```
 
-> [!IMPORTANT]  
-> For unknown reasons it is currently not possible to use the parcel dev server to serve the demo-wallet hence the build and then serve steps
+### Building and running WebZjs Web-wallet locally
 
-## Development
+```shell
+cd packages/web-wallet
+yarn build
+yarn dev
+```
 
 ### Testing
 
@@ -119,7 +118,7 @@ just test-web
 
 ## Known Issues
 
-You might notice the demo-wallet builds using parcel despite being configured to use Vite for development. This is due to a [known issue](https://github.com/vitejs/vite/issues/7015) with vite where it cannot correctly handle what it deems to be a cyclic dependency introduced by `wasm_bindgen_rayon` webworkers. Other bundlers tested to not seem to be affected.
+
 
 ## Security Warnings
 

@@ -10,6 +10,7 @@
   "main": "./dist/bundle.js",
   "files": [
     "dist/",
+    "images/logo.svg",
     "snap.manifest.json"
   ],
   "scripts": {
@@ -25,7 +26,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@chainsafe/webzjs-keys": "workspace:^",
+    "@chainsafe/webzjs-keys": "0.1.0",
     "@metamask/snaps-sdk": "^6.17.1",
     "buffer": "^6.0.3",
     "superstruct": "^2.0.2"
@@ -41,7 +42,7 @@
     "@metamask/snaps-cli": "^6.5.2",
     "@metamask/snaps-jest": "^8.8.1",
     "@types/react": "18.2.4",
-    "@types/react-dom ": "18.2.4",
+    "@types/react-dom": "18.2.4",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^5.42.1",
     "eslint": "8",
