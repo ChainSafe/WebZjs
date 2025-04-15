@@ -102,11 +102,17 @@ yarn serve
 
 ### Building and running WebZjs Web-wallet locally
 
+set packages/web-wallet/.env SNAP_ORIGIN=""
+
 ```shell
 cd packages/web-wallet
 yarn build
 yarn dev
 ```
+
+### Dev Build
+
+![webzjs.chainsafe.dev](https://webzjs.chainsafe.dev/)
 
 ### Testing
 
