@@ -110,15 +110,10 @@ yarn dev
 
 ### Testing
 
-Browser tests are run in a headless browser environment and can be run with
-
-```shell
-just test-web
-```
 
 ## Known Issues
 
-
+Web Wallet may have trouble wasm instantiating. Please refresh the app in that case.
 
 ## Security Warnings
 
