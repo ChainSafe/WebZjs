@@ -34,6 +34,8 @@ jobs:
 
       - name: Build
         run: yarn web-wallet:build
+        env: 
+          SNAP_ORIGIN: npm:@chainsafe/webzjs-zcash-snap
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
