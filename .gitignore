@@ -21,5 +21,7 @@ dist
 packages/e2e-tests/dist/*
 !/packages/e2e-tests/dist/serve.json
 
-!/packages/web-wallet/dist/_headers
+# Web wallet
+packages/web-wallet/dist/*
+!packages/web-wallet/dist/_headers
 
