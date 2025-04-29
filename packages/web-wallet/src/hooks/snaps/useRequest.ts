@@ -20,6 +20,7 @@ export const useRequest = () => {
    * @param params.params - The method params.
    * @returns The result of the request.
    */
+
   const request: Request = async ({ method, params }) => {
     try {
       const data =
@@ -32,7 +33,7 @@ export const useRequest = () => {
     } catch (requestError) {
       setError(requestError as Error);
 
-      return null;
+      throw requestError;
     }
   };
 
