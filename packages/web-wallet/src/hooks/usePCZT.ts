@@ -65,9 +65,6 @@ export const usePczt = (): IUsePczt => {
       const pcztBytes = pczt.serialize();
 
       const pcztHexTring = Buffer.from(pcztBytes).toString('hex');
-      console.log('pcztHexTring');
-      console.log(pcztHexTring);
-
       const params: SignPcztDetails = {
         pcztHexTring,
         signDetails,
