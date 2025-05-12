@@ -1,4 +1,4 @@
-import { Box, Heading, Text } from '@metamask/snaps-sdk/jsx';
+import { Box, Copyable, Divider, Heading, Text } from '@metamask/snaps-sdk/jsx';
 import {
   SeedFingerprint,
   UnifiedSpendingKey,
@@ -10,7 +10,7 @@ import { SignPcztParams } from 'src/types';
 
 
 
-export async function signPczt({ pcztHexTring }: SignPcztParams): Promise<string> {
+export async function signPczt({ pcztHexTring, signDetails }: SignPcztParams, origin: string): Promise<string> {
 
   const result = await snap.request({
     method: 'snap_dialog',
@@ -18,8 +18,14 @@ export async function signPczt({ pcztHexTring }: SignPcztParams): Promise<string
       type: 'confirmation',
       content: (
         <Box>
-          <Heading>Are you sure you want to sign this PCZT?</Heading>
-          <Text>Description</Text>
+          <Heading>Sing PCZT</Heading>
+          <Divider />
+          <Text>Origin: {origin}</Text>
+          <Text>Recipient: {signDetails.recipient}</Text>
+          <Text>Amount: {signDetails.amount}</Text>
+          <Divider />
+          <Text>PCZT hex to sign</Text>
+          <Copyable value={pcztHexTring}/>
         </Box>
       ),
     },
