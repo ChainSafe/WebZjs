@@ -26,7 +26,7 @@ let wasm: InitOutput;
  * @returns The ViewingKey
  * @throws If the request method is not valid for this snap.
  */
-export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
+export const onRpcRequest: OnRpcRequestHandler = async ({ request, origin }) => {
   if (!wasm) {
     wasm = initialiseWasm();
   }
@@ -35,8 +35,14 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
     case 'getViewingKey':
       return await getViewingKey();
     case 'signPczt':
-      assert(request.params, object({ pcztHexTring: string() }));
-      return await signPczt(request.params as SignPcztParams);
+      assert(request.params, object({
+        pcztHexTring: string(),
+        signDetails: object({
+          recipient: string(),
+          amount: string()
+        }),
+      }));
+      return await signPczt(request.params as SignPcztParams, origin);
     case 'getSeedFingerprint':
       return await getSeedFingerprint();
     case 'setBirthdayBlock':

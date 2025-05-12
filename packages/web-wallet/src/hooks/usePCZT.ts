@@ -4,6 +4,7 @@ import { useInvokeSnap } from './snaps/useInvokeSnap';
 import { zecToZats } from '../utils';
 import { useWebZjsActions } from './useWebzjsActions';
 import { useState } from 'react';
+import { SignPcztDetails } from '../types/snap';
 
 interface IUsePczt {
   handlePcztTransaction: (
@@ -56,15 +57,22 @@ export const usePczt = (): IUsePczt => {
     }
   };
 
-  const signPczt = async (pczt: Pczt): Promise<string> => {
+  const signPczt = async (
+    pczt: Pczt,
+    signDetails: { recipient: string; amount: string },
+  ): Promise<string> => {
     try {
       const pcztBytes = pczt.serialize();
 
       const pcztHexTring = Buffer.from(pcztBytes).toString('hex');
+      const params: SignPcztDetails = {
+        pcztHexTring,
+        signDetails,
+      };
 
       return (await invokeSnap({
         method: 'signPczt',
-        params: { pcztHexTring },
+        params,
       })) as string;
     } catch (error) {
       console.error('Error signing PCZT:', error);
@@ -108,7 +116,10 @@ export const usePczt = (): IUsePczt => {
 
       //Signing PCZT
       setPcztTransferStatus(PcztTransferStatus.SIGNING_PCZT);
-      const pcztHexStringSigned = await signPczt(pczt);
+      const pcztHexStringSigned = await signPczt(pczt, {
+        recipient: toAddress,
+        amount: value,
+      });
 
       const pcztBufferSigned = Buffer.from(pcztHexStringSigned, 'hex');
 
@@ -128,7 +139,7 @@ export const usePczt = (): IUsePczt => {
       await triggerRescan();
     } catch (error) {
       console.error(error);
-      setPcztTransferStatus(PcztTransferStatus.SEND_ERROR)
+      setPcztTransferStatus(PcztTransferStatus.SEND_ERROR);
     }
   };
 
