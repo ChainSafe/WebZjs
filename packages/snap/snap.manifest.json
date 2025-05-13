@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "WebZjs Snap for demo wallet",
   "proposedName": "WebZjs Snap",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "https://github.com/ChainSafe/WebZjs.git"
   },
   "source": {
-    "shasum": "1blKtIhssnago+7w9eiBc33Ztr1pmSK+Aikkj+tanZk=",
+    "shasum": "5pxBczNgnRLbPdKgHp+fCDqSZIaRGVnx4RPS8oe0vik=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
