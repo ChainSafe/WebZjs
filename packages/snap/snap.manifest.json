@@ -7,7 +7,7 @@
     "url": "https://github.com/ChainSafe/WebZjs.git"
   },
   "source": {
-    "shasum": "5pxBczNgnRLbPdKgHp+fCDqSZIaRGVnx4RPS8oe0vik=",
+    "shasum": "bv6g12lbJdTIUvkAZs3+7obzF8zISIGA3ZWIp8innSA=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -22,7 +22,7 @@
     "endowment:webassembly": {},
     "endowment:rpc": {
       "allowedOrigins": [
-        "https://webzjs.chainsafe.dev/",
+        "https://webzjs.chainsafe.dev",
         "http://localhost:3000"
       ]
     },
