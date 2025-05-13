@@ -33,7 +33,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ request, origin }) => 
 
   switch (request.method) {
     case 'getViewingKey':
-      return await getViewingKey();
+      return await getViewingKey(origin);
     case 'signPczt':
       assert(request.params, object({
         pcztHexTring: string(),
