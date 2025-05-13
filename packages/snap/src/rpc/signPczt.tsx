@@ -25,7 +25,7 @@ export async function signPczt({ pcztHexTring, signDetails }: SignPcztParams, or
           <Text>Amount: {signDetails.amount}</Text>
           <Divider />
           <Text>PCZT hex to sign</Text>
-          <Copyable value={pcztHexTring}/>
+          <Copyable value={pcztHexTring} />
         </Box>
       ),
     },
@@ -40,7 +40,11 @@ export async function signPczt({ pcztHexTring, signDetails }: SignPcztParams, or
   // Generate the UnifiedSpendingKey and obtain the Viewing Key
   const spendingKey = new UnifiedSpendingKey('main', seed, 0);
   const seedFp = new SeedFingerprint(seed);
- 
+
+  if (!/^[0-9a-fA-F]+$/.test(pcztHexTring)) {
+    throw new Error('pcztHexTring must be valid hex');
+  }
+
   const pcztBuffer = Buffer.from(pcztHexTring, 'hex');
 
 
