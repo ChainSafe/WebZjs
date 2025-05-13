@@ -40,7 +40,6 @@ export async function getViewingKey(
 
     return viewingKey
   } catch (error) {
-    console.error('Error generating Viewing Key:', error);
     throw new Error('Failed to generate Viewing Key');
   }
 }
