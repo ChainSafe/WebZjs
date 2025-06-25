@@ -26,7 +26,7 @@ export async function setBirthdayBlock({
           <Box>
             <Heading>Optional syncing block height</Heading>
             <Text>
-              If you alerady created Zcash Web Wallet account with this Metamask
+              If you already created Zcash Web Wallet account with this MetaMask
               seed you can enter optional birthday block of that Wallet.
             </Text>
             <Divider />
