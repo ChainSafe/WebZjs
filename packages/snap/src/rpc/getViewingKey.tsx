@@ -26,7 +26,7 @@ export async function getViewingKey(
           <Box>
             <Heading>Reveal Viewing Key to the {origin}</Heading>
             <Divider />
-            <Text>{origin} needs access to the Viewing Key, approve this dialog to grant give permition.</Text>
+            <Text>{origin} needs access to the Viewing Key, approve this dialog to give permission.</Text>
             <Divider />
             <Copyable value={viewingKey} />
           </Box>

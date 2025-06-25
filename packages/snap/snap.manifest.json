@@ -1,5 +1,5 @@
 {
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "WebZjs Snap for demo wallet",
   "proposedName": "WebZjs Snap",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "https://github.com/ChainSafe/WebZjs.git"
   },
   "source": {
-    "shasum": "YsNLaFFSeBvE+cukvWF2qkh2PhTrCmU+H9gaEpVUr74=",
+    "shasum": "2cQaKNl4ouKN6+2be59JvbwHzwD0o6WGYIoui+3miYM=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -21,10 +21,7 @@
     "snap_dialog": {},
     "endowment:webassembly": {},
     "endowment:rpc": {
-      "allowedOrigins": [
-        "http://localhost:3000",
-        "https://webzjs.chainsafe.dev"
-      ]
+      "allowedOrigins": ["https://webzjs.chainsafe.dev"]
     },
     "snap_getBip44Entropy": [
       {
