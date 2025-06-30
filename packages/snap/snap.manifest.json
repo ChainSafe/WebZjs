@@ -1,13 +1,13 @@
 {
-  "version": "0.2.3",
-  "description": "WebZjs Snap for demo wallet",
-  "proposedName": "WebZjs Snap",
+  "version": "0.2.4",
+  "description": "WebZjs Snap for Zcash wallet",
+  "proposedName": "Zcash Shielded Wallet",
   "repository": {
     "type": "git",
     "url": "https://github.com/ChainSafe/WebZjs.git"
   },
   "source": {
-    "shasum": "2cQaKNl4ouKN6+2be59JvbwHzwD0o6WGYIoui+3miYM=",
+    "shasum": "xO5sXGTa5PxZf1GG33xhD0ep5PLontAmeamjM3h+YFA=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
