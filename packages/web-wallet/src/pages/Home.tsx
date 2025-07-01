@@ -52,7 +52,6 @@ const Home: React.FC = () => {
             MetaMask Snap
           </p>
           <button
-            disabled={!isFlask}
             onClick={handleConnectButton}
             className="flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] cursor-pointer"
           >
