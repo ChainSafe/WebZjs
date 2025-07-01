@@ -49,10 +49,10 @@ export function useWebZjsActions(): WebzjsActions {
 
   const syncStateWithWallet = useCallback(async () => {
     if (!state.webWallet) {
-      dispatch({
-        type: 'set-error',
-        payload: new Error('Wallet not initialized'),
-      });
+      // dispatch({
+      //   type: 'set-error',
+      //   payload: new Error('Wallet not initialized'),
+      // });
       return;
     }
     try {
@@ -72,10 +72,10 @@ export function useWebZjsActions(): WebzjsActions {
 
   const flushDbToStore = useCallback(async () => {
     if (!state.webWallet) {
-      dispatch({
-        type: 'set-error',
-        payload: new Error('Wallet not initialized'),
-      });
+      // dispatch({
+      //   type: 'set-error',
+      //   payload: new Error('Wallet not initialized'),
+      // });
       return;
     }
     try {
@@ -94,10 +94,10 @@ export function useWebZjsActions(): WebzjsActions {
       await requestSnap();
 
       if (state.webWallet === null) {
-        dispatch({
-          type: 'set-error',
-          payload: new Error('Wallet not initialized'),
-        });
+        // dispatch({
+        //   type: 'set-error',
+        //   payload: new Error('Wallet not initialized'),
+        // });
         return;
       }
 
@@ -178,10 +178,10 @@ export function useWebZjsActions(): WebzjsActions {
       return;
     }
     if (!state.webWallet) {
-      dispatch({
-        type: 'set-error',
-        payload: new Error('Wallet not initialized'),
-      });
+      // dispatch({
+      //   type: 'set-error',
+      //   payload: new Error('Wallet not initialized'),
+      // });
       return;
     }
     if (state.activeAccount === undefined) {
