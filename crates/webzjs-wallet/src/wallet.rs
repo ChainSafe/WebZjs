@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-use std::convert::Infallible;
 use std::num::{NonZeroU32, NonZeroUsize};
 
 use bip0039::{English, Mnemonic};
@@ -16,13 +14,12 @@ use webzjs_common::Network;
 
 use pczt::roles::combiner::Combiner;
 use pczt::roles::prover::Prover;
-use pczt::roles::signer::Signer;
+
 use pczt::roles::updater::Updater;
-use pczt::roles::verifier::Verifier;
 use pczt::Pczt;
 use sapling::ProofGenerationKey;
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::Serialize;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -39,7 +36,6 @@ use zcash_client_backend::data_api::{
 };
 use zcash_client_backend::data_api::{WalletCommitmentTrees, Zip32Derivation};
 use zcash_client_backend::fees::standard::MultiOutputChangeStrategy;
-use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::fees::{DustOutputPolicy, SplitPolicy, StandardFeeRule};
 use zcash_client_backend::proposal::Proposal;
 use zcash_client_backend::proto::service::{
@@ -54,16 +50,21 @@ use zcash_primitives::transaction::fees::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
 
-use crate::error::Error::PcztCreate;
+
 use zcash_client_backend::sync::run;
-use zcash_primitives::legacy::keys::{NonHardenedChildIndex, TransparentKeyScope};
-use zcash_primitives::zip32;
-use zcash_primitives::zip32::fingerprint::SeedFingerprint;
-use zcash_protocol::consensus::{NetworkConstants, Parameters};
+
+use zip32;
+use zip32::fingerprint::SeedFingerprint;
+use zcash_protocol::consensus::Parameters;
 use zcash_protocol::value::Zatoshis;
 
 const BATCH_SIZE: u32 = 10000;
+
+/// constant that signals what's the minimum transparent balance for proposing a
+/// shielding transaction
 const SHIELDING_THRESHOLD: Zatoshis = Zatoshis::const_from_u64(100000);
+
+
 /// # A Zcash wallet
 ///
 /// A wallet is a set of accounts that can be synchronized together with the blockchain.
