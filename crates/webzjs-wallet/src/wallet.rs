@@ -323,7 +323,7 @@ where
         );
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
-            NonNegativeAmount::from_u64(value)?,
+            Zatoshis::from_u64(value)?
         )])?;
 
         tracing::info!("Chain height: {:?}", self.db.read().await.chain_height()?);
@@ -519,7 +519,7 @@ where
         let input_selector = GreedyInputSelector::new();
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
-            NonNegativeAmount::from_u64(value)?,
+            Zatoshis::from_u64(value)?
         )])?;
         let mut db = self.db.write().await;
         let proposal = propose_transfer::<_, _, _,_, <W as WalletCommitmentTrees>::Error>(
@@ -583,7 +583,7 @@ where
                         .collect::<Vec<_>>();
 
                     // Assume all non-dummy spent notes are from the same account.
-                    for (index, derivation) in non_dummy_spends {
+                    for (index, _) in non_dummy_spends {
                         updater.update_spend_with(index, |mut spend_updater| {
                             spend_updater.set_proof_generation_key(sapling_proof_gen_key.clone())
                         })?;
