@@ -3349,6 +3349,7 @@ dependencies = [
  "wasm-bindgen",
  "zcash_address",
  "zcash_primitives",
+ "zcash_protocol",
  "zip321",
 ]
 

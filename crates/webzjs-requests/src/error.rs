@@ -3,7 +3,7 @@ use wasm_bindgen::JsValue;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Error parsing zatoshi amount: {0}")]
-    InvalidAmount(#[from] zcash_primitives::transaction::components::amount::BalanceError),
+    InvalidAmount(#[from] zcash_protocol::value::BalanceError),
     #[error("Attempted to create a transaction with a memo to an unsupported recipient. Only shielded addresses are supported.")]
     UnsupportedMemoRecipient,
     #[error("Error constructing ZIP321 transaction request: {0}")]
