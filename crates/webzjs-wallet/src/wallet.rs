@@ -47,10 +47,9 @@ use zcash_client_backend::proto::service::{
 };
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
-use zcash_client_backend::ShieldedProtocol;
+use zcash_protocol::ShieldedProtocol;
 use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
-use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
