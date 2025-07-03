@@ -64,7 +64,7 @@ use zcash_protocol::consensus::{NetworkConstants, Parameters};
 use zcash_protocol::value::Zatoshis;
 
 const BATCH_SIZE: u32 = 10000;
-
+const SHIELDING_THRESHOLD: Zatoshis = Zatoshis::const_from_u64(100000);
 /// # A Zcash wallet
 ///
 /// A wallet is a set of accounts that can be synchronized together with the blockchain.
@@ -469,10 +469,10 @@ where
             &self.network,
             &input_selector,
             &change_strategy,
-            Zatoshis::ZERO,
+            SHIELDING_THRESHOLD, // use a shielding threshold above a marginal fee transaction plus some value like Zashi does.
             &from_addrs,
             account_id,
-            0,
+            1, // librustzcash operates under the assumption of zero or one conf being the same but that could change.
         )
         .map_err(|e| Error::Generic(format!("Error when shielding: {:?}", e)))?;
 
