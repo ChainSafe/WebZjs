@@ -4,7 +4,7 @@
 use crate::error::Error;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
-use zcash_primitives::consensus::{self, Parameters};
+use zcash_protocol::consensus::{self, Parameters};
 
 /// Enum representing the network type
 /// This is used instead of the `consensus::Network` enum so we can derive
@@ -29,10 +29,10 @@ impl FromStr for Network {
 }
 
 impl Parameters for Network {
-    fn network_type(&self) -> zcash_address::Network {
+    fn network_type(&self) -> zcash_protocol::consensus::NetworkType {
         match self {
-            Network::MainNetwork => zcash_address::Network::Main,
-            Network::TestNetwork => zcash_address::Network::Test,
+            Network::MainNetwork => zcash_protocol::consensus::NetworkType::Main,
+            Network::TestNetwork => zcash_protocol::consensus::NetworkType::Test,
         }
     }
 

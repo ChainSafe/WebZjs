@@ -131,7 +131,7 @@ pub async fn pczt_sign_inner(
         .finish();
     let mut signer = Signer::new(pczt).unwrap();
     //.map_err(|e| anyhow!("Failed to initialize Signer: {:?}", e))?;
-    for (account_index, spends) in keys {
+    for (_, spends) in keys {
         // let usk = UnifiedSpendingKey::from_seed(&params, seed, account_index)?;
         for keyref in spends {
             match keyref {
