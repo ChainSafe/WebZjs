@@ -12,6 +12,11 @@ interface IUsePczt {
     toAddress: string,
     value: string,
   ) => void;
+  handlePcztShieldTransaction: (
+    accountId: number,
+    toAddress: string,
+    value: string,
+  ) => void;
   pcztTransferStatus: PcztTransferStatus;
 }
 
@@ -38,10 +43,15 @@ export const usePczt = (): IUsePczt => {
   const createPCZT = async (
     accountId: number,
     toAddress: string,
-    value: bigint,
+    value: string,
   ) => {
     try {
-      return await state.webWallet!.pczt_create(accountId, toAddress, value);
+      const valueinZats = zecToZats(value);
+      return await state.webWallet!.pczt_create(
+        accountId,
+        toAddress,
+        valueinZats,
+      );
     } catch (error) {
       console.error('Error creating PCZT:', error);
       throw error;
@@ -90,48 +100,42 @@ export const usePczt = (): IUsePczt => {
     }
   };
 
-  const handlePcztTransaction = async (
+  const handlePcztGenericTransaction = async (
     accountId: number,
     toAddress: string,
     value: string,
+    createPcztFunc: (
+      accountId: number,
+      toAddress: string,
+      value: string,
+    ) => Promise<Pczt>,
   ) => {
     if (!state.webWallet) return;
     try {
       const chainHeight = await state.webWallet.get_latest_block();
-
       const isSynced =
         chainHeight.toString() ===
         state.summary?.fully_scanned_height.toString();
-
       setPcztTransferStatus(PcztTransferStatus.CHECK_LATEST_BLOCK);
       if (!isSynced) {
         setPcztTransferStatus(PcztTransferStatus.SYNCING_CHAIN);
         await triggerRescan();
       }
 
-      //Creating PCZT
       setPcztTransferStatus(PcztTransferStatus.CREATING_PCZT);
-      const valueinZats = zecToZats(value);
-      const pczt = await createPCZT(accountId, toAddress, valueinZats);
+      const pczt = await createPcztFunc(accountId, toAddress, value);
 
-      //Signing PCZT
       setPcztTransferStatus(PcztTransferStatus.SIGNING_PCZT);
       const pcztHexStringSigned = await signPczt(pczt, {
         recipient: toAddress,
         amount: value,
       });
-
       const pcztBufferSigned = Buffer.from(pcztHexStringSigned, 'hex');
+      const signedPczt = Pczt.from_bytes(new Uint8Array(pcztBufferSigned));
 
-      const pcztUint8ArraySigned = new Uint8Array(pcztBufferSigned);
-
-      const signedPczt = Pczt.from_bytes(pcztUint8ArraySigned);
-
-      //Proving PCZT
       setPcztTransferStatus(PcztTransferStatus.PROVING_PCZT);
       const provedPczt = await provePczt(signedPczt);
 
-      //Sending PCZT
       setPcztTransferStatus(PcztTransferStatus.SENDING_PCZT);
       await sendPczt(provedPczt);
       setPcztTransferStatus(PcztTransferStatus.SEND_SUCCESSFUL);
@@ -143,5 +147,30 @@ export const usePczt = (): IUsePczt => {
     }
   };
 
-  return { handlePcztTransaction, pcztTransferStatus };
+  const handlePcztShieldTransaction = async (
+    accountId: number,
+    toAddress: string,
+    value: string,
+  ) => {
+    await handlePcztGenericTransaction(
+      accountId,
+      toAddress,
+      value,
+      async (accountId) => await state.webWallet!.pczt_shield(accountId),
+    );
+  };
+
+  const handlePcztTransaction = async (
+    accountId: number,
+    toAddress: string,
+    value: string,
+  ) => {
+    await handlePcztGenericTransaction(accountId, toAddress, value, createPCZT);
+  };
+
+  return {
+    handlePcztTransaction,
+    handlePcztShieldTransaction,
+    pcztTransferStatus,
+  };
 };

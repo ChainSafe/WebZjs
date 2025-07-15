@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import {
   TransferBalanceFormData,
   TransferBalanceFormHandleChange,
-} from './useTransferBalanceForm';
-import Input from '../../components/Input/Input';
-import Button from '../../components/Button/Button';
+} from '../../pages/TransferBalance/useTransferBalanceForm';
+import Input from '../Input/Input';
+import Button from '../Button/Button';
 
 interface TransferInputProps {
   formData: TransferBalanceFormData;
