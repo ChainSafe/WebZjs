@@ -6,6 +6,7 @@ import {
   ArrowReceiveSvg,
   ArrowTransferSvg,
   SummarySvg,
+  ShieldSvg
 } from '../../assets';
 
 interface NavItem {
@@ -24,6 +25,11 @@ const navItems: NavItem[] = [
     to: 'transfer-balance',
     label: 'Transfer Balance',
     icon: <ArrowTransferSvg />,
+  },
+    {
+    to: 'shield-balance',
+    label: 'Shield Balance',
+    icon: <ShieldSvg />,
   },
   {
     to: 'receive',
