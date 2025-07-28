@@ -4,12 +4,10 @@ import useTransferBalanceForm, { TransferStep } from './useTransferBalanceForm';
 import PageHeading from '../../components/PageHeading/PageHeading';
 import useBalance from '../../hooks/useBalance';
 import { zatsToZec } from '../../utils';
-import { TransferInput } from './TransferInput';
-import { TransferConfirm } from './TransferConfirm';
-import { TransferResult } from './TransferResult';
+import { TransferInput, TransferConfirm, TransferResult } from 'src/components/TransferCards';
 
 function TransferBalance(): React.JSX.Element {
-  const { totalBalance } = useBalance();
+  const { shieldedBalance } = useBalance();
   const {
     currentStep,
     formData,
@@ -27,7 +25,7 @@ function TransferBalance(): React.JSX.Element {
         <PageHeading title="Transfer Balance">
           <div className="flex items-center gap-2.5">
             <span className="text-black text-base font-normal font-inter leading-tight">
-              Available:
+              Available shielded balance:
             </span>
             <div className="px-4 py-2 bg-[#e8e8e8] rounded-3xl flex items-center gap-2.5">
               <img
@@ -36,7 +34,7 @@ function TransferBalance(): React.JSX.Element {
                 className="w-5 h-5"
               />
               <span className="text-[#434343] text-base font-semibold font-inter leading-tight">
-                {zatsToZec(totalBalance)} ZEC
+                {zatsToZec(shieldedBalance)} ZEC
               </span>
             </div>
           </div>

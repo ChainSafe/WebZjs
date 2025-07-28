@@ -2,8 +2,8 @@ import React from 'react';
 import {
   TransferBalanceFormData,
   TransferBalanceFormType,
-} from './useTransferBalanceForm';
-import Button from '../../components/Button/Button';
+} from '../../pages/TransferBalance/useTransferBalanceForm';
+import Button from '../Button/Button';
 
 interface TransferConfirmProps {
   formData: TransferBalanceFormData;
