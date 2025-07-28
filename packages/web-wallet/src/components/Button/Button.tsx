@@ -3,7 +3,7 @@ import cn from 'classnames';
 
 type ButtonVariant = 'primary' | 'secondary';
 
-interface ButtonProps {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   onClick: () => void;
   label: string;
   classNames?: string;
@@ -17,10 +17,12 @@ function Button({
   classNames = '',
   variant = 'primary',
   icon,
+  ...rest
 }: ButtonProps) {
   const buttonClasses = cn(
     'min-w-[228px] px-6 py-3 rounded-3xl text-base font-medium leading-normal',
-    'cursor-pointer transition-all hover:transition-all',
+    'transition-all hover:transition-all',
+    { 'cursor-not-allowed': rest.disabled, 'cursor-pointer': !rest.disabled },
     {
       'bg-[#0e0e0e] text-white border hover:bg-buttonBlackGradientHover':
         variant === 'primary',
@@ -31,7 +33,7 @@ function Button({
   );
 
   return (
-    <button onClick={onClick} className={buttonClasses}>
+    <button onClick={onClick} className={buttonClasses} {...rest}>
       <div className="flex items-center justify-center">
         {icon && <span className="mr-2 flex items-center">{icon}</span>}
         <span>{label}</span>

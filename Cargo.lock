@@ -3316,6 +3316,7 @@ dependencies = [
  "wasm-bindgen",
  "zcash_address",
  "zcash_primitives",
+ "zcash_protocol",
 ]
 
 [[package]]
@@ -3349,6 +3350,7 @@ dependencies = [
  "wasm-bindgen",
  "zcash_address",
  "zcash_primitives",
+ "zcash_protocol",
  "zip321",
 ]
 
@@ -3402,6 +3404,7 @@ dependencies = [
  "zcash_primitives",
  "zcash_proofs",
  "zcash_protocol",
+ "zip32",
  "zip321",
 ]
 

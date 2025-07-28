@@ -16,7 +16,7 @@ wasm-opt = ["-O4", "-O4"]
 [dependencies]
 wasm-bindgen.workspace = true
 js-sys.workspace = true
-
+zcash_protocol.workspace = true
 zcash_address.workspace = true
 zcash_primitives.workspace = true
 zip321.workspace = true

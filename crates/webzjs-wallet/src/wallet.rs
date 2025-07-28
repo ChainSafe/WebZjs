@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-use std::convert::Infallible;
 use std::num::{NonZeroU32, NonZeroUsize};
 
 use bip0039::{English, Mnemonic};
@@ -16,13 +14,12 @@ use webzjs_common::Network;
 
 use pczt::roles::combiner::Combiner;
 use pczt::roles::prover::Prover;
-use pczt::roles::signer::Signer;
+
 use pczt::roles::updater::Updater;
-use pczt::roles::verifier::Verifier;
 use pczt::Pczt;
 use sapling::ProofGenerationKey;
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::Serialize;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::sync::Arc;
@@ -39,7 +36,6 @@ use zcash_client_backend::data_api::{
 };
 use zcash_client_backend::data_api::{WalletCommitmentTrees, Zip32Derivation};
 use zcash_client_backend::fees::standard::MultiOutputChangeStrategy;
-use zcash_client_backend::fees::zip317::SingleOutputChangeStrategy;
 use zcash_client_backend::fees::{DustOutputPolicy, SplitPolicy, StandardFeeRule};
 use zcash_client_backend::proposal::Proposal;
 use zcash_client_backend::proto::service::{
@@ -47,23 +43,25 @@ use zcash_client_backend::proto::service::{
 };
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
-use zcash_client_backend::ShieldedProtocol;
 use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
-use zcash_primitives::transaction::components::amount::NonNegativeAmount;
 use zcash_primitives::transaction::fees::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
+use zcash_protocol::ShieldedProtocol;
 
-use crate::error::Error::PcztCreate;
 use zcash_client_backend::sync::run;
-use zcash_primitives::legacy::keys::{NonHardenedChildIndex, TransparentKeyScope};
-use zcash_primitives::zip32;
-use zcash_primitives::zip32::fingerprint::SeedFingerprint;
-use zcash_protocol::consensus::{NetworkConstants, Parameters};
+
+use zcash_protocol::consensus::Parameters;
 use zcash_protocol::value::Zatoshis;
+use zip32;
+use zip32::fingerprint::SeedFingerprint;
 
 const BATCH_SIZE: u32 = 10000;
+
+/// constant that signals what's the minimum transparent balance for proposing a
+/// shielding transaction
+const SHIELDING_THRESHOLD: Zatoshis = Zatoshis::const_from_u64(100000);
 
 /// # A Zcash wallet
 ///
@@ -323,7 +321,7 @@ where
         );
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
-            NonNegativeAmount::from_u64(value)?,
+            Zatoshis::from_u64(value)?,
         )])?;
 
         tracing::info!("Chain height: {:?}", self.db.read().await.chain_height()?);
@@ -469,10 +467,10 @@ where
             &self.network,
             &input_selector,
             &change_strategy,
-            Zatoshis::ZERO,
+            SHIELDING_THRESHOLD, // use a shielding threshold above a marginal fee transaction plus some value like Zashi does.
             &from_addrs,
             account_id,
-            0,
+            1, // librustzcash operates under the assumption of zero or one conf being the same but that could change.
         )
         .map_err(|e| Error::Generic(format!("Error when shielding: {:?}", e)))?;
 
@@ -519,7 +517,7 @@ where
         let input_selector = GreedyInputSelector::new();
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
-            NonNegativeAmount::from_u64(value)?,
+            Zatoshis::from_u64(value)?,
         )])?;
         let mut db = self.db.write().await;
         let proposal = propose_transfer::<_, _, _,_, <W as WalletCommitmentTrees>::Error>(
@@ -583,7 +581,7 @@ where
                         .collect::<Vec<_>>();
 
                     // Assume all non-dummy spent notes are from the same account.
-                    for (index, derivation) in non_dummy_spends {
+                    for (index, _) in non_dummy_spends {
                         updater.update_spend_with(index, |mut spend_updater| {
                             spend_updater.set_proof_generation_key(sapling_proof_gen_key.clone())
                         })?;

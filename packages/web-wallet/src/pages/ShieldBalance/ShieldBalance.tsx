@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ZcashYellowPNG } from '../../assets';
 import PageHeading from '../../components/PageHeading/PageHeading';
 import useBalance from '../../hooks/useBalance';
@@ -45,6 +45,10 @@ export function ShieldBalance(): React.JSX.Element {
     handlePcztShieldTransaction(1, addresses.unifiedAddress, unshieldedBalance.toString());
   }
 
+  const isMinimalShieldAmount = useMemo(()=>{
+    return unshieldedBalance > 100000;
+  },[unshieldedBalance])
+
   return (
     <div className="flex flex-col w-full">
       <PageHeading title="Shield Balance">
@@ -88,11 +92,17 @@ export function ShieldBalance(): React.JSX.Element {
               </div>
             </div>
             <div className="self-stretch pt-6 flex-col justify-center items-center gap-3 flex">
-              <div className="justify-start items-start inline-flex">
+              <div className="flex flex-col items-center justify-center">
                 <Button
                   onClick={handleShieldBalance}
                   label={'Shield balance'}
+                  disabled={!isMinimalShieldAmount}
                 />
+                {!isMinimalShieldAmount && (
+                  <div className="text-red-500 text-sm mt-2">
+                    The minimum shielding balance required is 0.001 ZEC.
+                  </div>
+                )}
               </div>
             </div>
           </div>
