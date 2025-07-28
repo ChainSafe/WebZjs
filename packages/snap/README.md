@@ -22,7 +22,7 @@ For local development, you need to add `http://localhost:8080` to the `allowedOr
 
 ```json
 "endowment:rpc": {
-  "allowedOrigins": ["https://webzjs.chainsafe.dev", "http://localhost:8080"]
+  "allowedOrigins": ["https://webzjs.chainsafe.dev", "http://localhost:3000"]
 }
 ```
 
