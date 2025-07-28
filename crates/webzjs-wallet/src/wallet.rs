@@ -43,27 +43,25 @@ use zcash_client_backend::proto::service::{
 };
 use zcash_client_backend::wallet::OvkPolicy;
 use zcash_client_backend::zip321::{Payment, TransactionRequest};
-use zcash_protocol::ShieldedProtocol;
 use zcash_client_memory::{MemBlockCache, MemoryWalletDb};
 use zcash_keys::keys::{UnifiedFullViewingKey, UnifiedSpendingKey};
 use zcash_primitives::transaction::fees::FeeRule;
 use zcash_primitives::transaction::TxId;
 use zcash_proofs::prover::LocalTxProver;
-
+use zcash_protocol::ShieldedProtocol;
 
 use zcash_client_backend::sync::run;
 
-use zip32;
-use zip32::fingerprint::SeedFingerprint;
 use zcash_protocol::consensus::Parameters;
 use zcash_protocol::value::Zatoshis;
+use zip32;
+use zip32::fingerprint::SeedFingerprint;
 
 const BATCH_SIZE: u32 = 10000;
 
 /// constant that signals what's the minimum transparent balance for proposing a
 /// shielding transaction
 const SHIELDING_THRESHOLD: Zatoshis = Zatoshis::const_from_u64(100000);
-
 
 /// # A Zcash wallet
 ///
@@ -323,7 +321,7 @@ where
         );
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
-            Zatoshis::from_u64(value)?
+            Zatoshis::from_u64(value)?,
         )])?;
 
         tracing::info!("Chain height: {:?}", self.db.read().await.chain_height()?);
@@ -519,7 +517,7 @@ where
         let input_selector = GreedyInputSelector::new();
         let request = TransactionRequest::new(vec![Payment::without_memo(
             to_address,
-            Zatoshis::from_u64(value)?
+            Zatoshis::from_u64(value)?,
         )])?;
         let mut db = self.db.write().await;
         let proposal = propose_transfer::<_, _, _,_, <W as WalletCommitmentTrees>::Error>(
