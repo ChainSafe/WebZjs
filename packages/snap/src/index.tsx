@@ -14,6 +14,8 @@ import { signPczt } from './rpc/signPczt'
 
 import { assert, object, number, optional, string } from 'superstruct';
 import { getSeedFingerprint } from './rpc/getSeedFingerprint';
+import type { OnInstallHandler } from "@metamask/snaps-sdk";
+import { installDialog } from './utils/dialogs';
 
 let wasm: InitOutput;
 
@@ -74,4 +76,8 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
         break;
     }
   }
+};
+
+export const onInstall: OnInstallHandler = async () => {
+  await installDialog();
 };

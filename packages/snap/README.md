@@ -18,7 +18,7 @@ Snap uses a Rust library [WebZjs](https://github.com/ChainSafe/WebZjs) compiled 
 
 ## 🔨 Development
 
-For local development, you need to add `http://localhost:8080` to the `allowedOrigins` in `snap.manifest.json`. The `endowment:rpc` section should look like this:
+For local development, you need to add `http://localhost:3000` to the `allowedOrigins` in `snap.manifest.json`. The `endowment:rpc` section should look like this:
 
 ```json
 "endowment:rpc": {
@@ -26,6 +26,19 @@ For local development, you need to add `http://localhost:8080` to the `allowedOr
 }
 ```
 
+### Build Scripts
+
+- **`yarn build`** - Standard build for production (only allows production origins)
+- **`yarn build:local`** - Build for local development (automatically adds localhost:3000 to allowedOrigins)
+
+The `build:local` script will:
+1. Create a backup of the original `snap.manifest.json`
+2. Modify the manifest to include `http://localhost:3000` in allowedOrigins
+3. Run the build process
+
+### Development Steps
+
 1. Install dependencies with `yarn install`
-2. Build the project with `yarn build`
-3. Host snap on localhost http://localhost:8080 `yarn serve`
+2. For local development: Build with `yarn build:local`
+3. For production: Build with `yarn build`
+4. Host snap on localhost http://localhost:8080 `yarn serve`

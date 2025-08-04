@@ -1,0 +1,73 @@
+name: Check Snap Manifest
+
+on:
+  pull_request:
+    paths:
+      - 'packages/snap/snap.manifest.json'
+      - '.github/workflows/check-snap-manifest.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'packages/snap/snap.manifest.json'
+      - '.github/workflows/check-snap-manifest.yml'
+
+jobs:
+  check-manifest:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+          
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        
+      - name: Check snap manifest allowedOrigins
+        run: |
+          cd packages/snap
+          
+          # Check if jq is available
+          if ! command -v jq &> /dev/null; then
+            echo "jq is not installed. Installing..."
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+          
+          # Extract allowedOrigins from the manifest
+          ALLOWED_ORIGINS=$(jq -r '.initialPermissions."endowment:rpc".allowedOrigins[]' snap.manifest.json)
+          
+          echo "Current allowedOrigins in snap.manifest.json:"
+          echo "$ALLOWED_ORIGINS"
+          
+          # Check if localhost is present
+          if echo "$ALLOWED_ORIGINS" | grep -q "localhost"; then
+            echo "❌ ERROR: localhost found in allowedOrigins. This should not be in production!"
+            echo "Please ensure snap.manifest.json only contains production URLs."
+            echo "Expected: [\"https://webzjs.chainsafe.dev\"]"
+            exit 1
+          fi
+          
+          # Check if the production URL is present
+          if ! echo "$ALLOWED_ORIGINS" | grep -q "https://webzjs.chainsafe.dev"; then
+            echo "❌ ERROR: Production URL 'https://webzjs.chainsafe.dev' not found in allowedOrigins!"
+            exit 1
+          fi
+          
+          # Check if there are any unexpected URLs
+          UNEXPECTED_URLS=$(echo "$ALLOWED_ORIGINS" | grep -v "https://webzjs.chainsafe.dev" || true)
+          if [ -n "$UNEXPECTED_URLS" ]; then
+            echo "❌ ERROR: Unexpected URLs found in allowedOrigins:"
+            echo "$UNEXPECTED_URLS"
+            echo "Expected only: https://webzjs.chainsafe.dev"
+            exit 1
+          fi
+          
+          echo "✅ SUCCESS: snap.manifest.json has correct allowedOrigins configuration"
+          echo "Found: https://webzjs.chainsafe.dev" 
