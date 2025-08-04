@@ -21,16 +21,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-  
-      - run: corepack enable
-      
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-        
       - name: Check snap manifest allowedOrigins
         run: |
           cd packages/snap
