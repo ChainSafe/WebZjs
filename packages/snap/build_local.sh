@@ -17,4 +17,3 @@ echo "Running build..."
 yarn build
 
 echo "Build completed!"
-echo "Note: Original manifest backed up as snap.manifest.json.backup" 
