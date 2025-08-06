@@ -10,7 +10,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useWebZjsContext();
   const { getAccountData, connectWebZjsSnap } = useWebZjsActions();
-  const { installedSnap, isFlask } = useMetaMask();
+  const { installedSnap } = useMetaMask();
   const { getSnapState } = useGetSnapState();
   const { setSnapState } = useMetaMaskContext();
 
@@ -51,11 +51,17 @@ const Home: React.FC = () => {
             Access the Zcash network from your web browser with the Zcash
             MetaMask Snap
           </p>
+          {!!installedSnap && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-xl">
+              Make sure you MetaMask is unlocked to continue
+            </div>
+          )}
           <button
+            disabled={!!installedSnap}
             onClick={handleConnectButton}
-            className="flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] cursor-pointer"
+            className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${!!installedSnap ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <span>Connect MetaMask Snap</span>
+            <span>{!!installedSnap ? 'Loading Web Wallet...' : 'Connect MetaMask Snap'}</span>
             <div className="ml-3">
               <img
                 src={MetaMaskLogoPNG}
