@@ -24,7 +24,9 @@ export function useWebZjsActions(): WebzjsActions {
 
   const getAccountData = useCallback(async () => {
     try {
-      const accountIndex = state.activeAccount ?? 0;
+      if (state.activeAccount === null || state.activeAccount === undefined) return; 
+      
+      const accountIndex = state.activeAccount;
 
       if (!state.webWallet) return;
 

@@ -24,16 +24,18 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (installedSnap) {
       const homeReload = async () => {
-        const accountData = await getAccountData();
+        if (state.activeAccount !== null && state.activeAccount !== undefined) {
+          const accountData = await getAccountData();
+          
+          if (accountData?.unifiedAddress) {
+            navigate('/dashboard/account-summary');
+          }
+        }
 
-        const snapState = await getSnapState();
-        setSnapState(snapState);
-
-        if (accountData?.unifiedAddress) navigate('/dashboard/account-summary');
       };
       homeReload();
     };
-  }, [navigate, getAccountData, state.activeAccount]);
+  }, [navigate, getAccountData, state.activeAccount, installedSnap]);
 
   return (
     <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">
