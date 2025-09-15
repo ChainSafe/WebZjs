@@ -96,7 +96,7 @@ yarn
 
 ```shell
 cd packages/snap
-yarn build
+yarn build:local
 yarn serve
 ```
 
