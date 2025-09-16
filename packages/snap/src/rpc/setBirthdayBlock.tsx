@@ -53,12 +53,19 @@ export async function setBirthdayBlock({
     },
   });
 
-  const { customBirthdayBlock } = (await snap.request({
-    method: 'snap_dialog',
-    params: {
-      id: interfaceId,
-    },
-  })) as BirthdayBlockForm;
+  let customBirthdayBlock: string | null;
+  try {
+    const dialogResponse = (await snap.request({
+      method: 'snap_dialog',
+      params: {
+        id: interfaceId,
+      },
+    })) as BirthdayBlockForm;
+    customBirthdayBlock = dialogResponse.customBirthdayBlock;
+  } catch (error) {
+    console.log('No custom birthday block provided, using latest block');
+    customBirthdayBlock = null;
+  }
 
   const webWalletSyncStartBlock = setSyncBlockHeight(customBirthdayBlock, latestBlock);
 
