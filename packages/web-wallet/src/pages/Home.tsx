@@ -3,6 +3,7 @@ import { ZcashYellowPNG, FormTransferSvg, MetaMaskLogoPNG } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { useWebZjsContext } from '../context/WebzjsContext';
 import { useMetaMask, useWebZjsActions } from '../hooks';
+import Loader from '../components/Loader/Loader';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -10,7 +11,6 @@ const Home: React.FC = () => {
   const { getAccountData, connectWebZjsSnap } = useWebZjsActions();
   const { installedSnap } = useMetaMask();
   const [showResetInstructions, setShowResetInstructions] = useState(false);
-  const isFirefox = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
 
 
   const handleConnectButton: React.MouseEventHandler<
@@ -65,11 +65,6 @@ const Home: React.FC = () => {
             Access the Zcash network from your web browser with the Zcash
             MetaMask Snap
           </p>
-          {isFirefox && (
-            <div className="w-full bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl">
-              <div>Zcash Web Wallet currently does not support Firefox.</div>
-            </div>
-          )}
           {showResetInstructions && (
             <div className="w-full space-y-2 bg-red-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl">
               <div>Error occurred while loading the wallet data, please reset the wallet</div>
@@ -93,6 +88,11 @@ const Home: React.FC = () => {
             className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${state.loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           >
             <span>{state.loading ? 'Wallet Initializing...' : 'Connect MetaMask Snap'}</span>
+            {state.loading && (
+              <div className="ml-3">
+                <Loader />
+              </div>
+            )}
             <div className="ml-3">
               <img
                 src={MetaMaskLogoPNG}
