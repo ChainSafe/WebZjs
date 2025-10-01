@@ -3,13 +3,15 @@ import { Outlet } from 'react-router-dom';
 import { RESCAN_INTERVAL } from './config/constants';
 import { useWebZjsActions } from './hooks';
 import Layout from './components/Layout/Layout';
+import { useMetaMaskContext } from './context/MetamaskContext';
 
 function App() {
   const { triggerRescan } = useWebZjsActions();
+  const { installedSnap } = useMetaMaskContext();
 
   useInterval(() => {
     triggerRescan();
-  }, RESCAN_INTERVAL);
+  }, installedSnap ? RESCAN_INTERVAL : null);
 
   return (
     <Layout>

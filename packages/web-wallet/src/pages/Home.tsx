@@ -1,18 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ZcashYellowPNG, FormTransferSvg, MetaMaskLogoPNG } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { useWebZjsContext } from '../context/WebzjsContext';
 import { useMetaMask, useWebZjsActions } from '../hooks';
-import { useMetaMaskContext } from 'src/context/MetamaskContext';
-import { useGetSnapState } from 'src/hooks/snaps/useGetSnapState';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { state } = useWebZjsContext();
+  const { state, dispatch } = useWebZjsContext();
   const { getAccountData, connectWebZjsSnap } = useWebZjsActions();
   const { installedSnap } = useMetaMask();
-  const { getSnapState } = useGetSnapState();
-  const { setSnapState } = useMetaMaskContext();
+  const [showResetInstructions, setShowResetInstructions] = useState(false);
+  const isFirefox = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
+
 
   const handleConnectButton: React.MouseEventHandler<
     HTMLButtonElement
@@ -22,20 +21,33 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
+    if (state.loading) {
+      return;
+    }
     if (installedSnap) {
       const homeReload = async () => {
         if (state.activeAccount !== null && state.activeAccount !== undefined) {
-          const accountData = await getAccountData();
-          
-          if (accountData?.unifiedAddress) {
-            navigate('/dashboard/account-summary');
+          try {
+            const accountData = await getAccountData();
+            if (accountData?.unifiedAddress) {
+              navigate('/dashboard/account-summary');
+            } else {
+              dispatch({ type: 'set-error', payload: 'Unified address not available for the active account' });
+              setShowResetInstructions(true);
+            }
+          } catch (err) {
+            dispatch({ type: 'set-error', payload: err instanceof Error ? err : new Error(String(err)) });
+            setShowResetInstructions(true);
           }
+        } else {
+          dispatch({ type: 'set-error', payload: 'Active account is not set' });
+          setShowResetInstructions(true);
         }
 
       };
       homeReload();
     };
-  }, [navigate, getAccountData, state.activeAccount, installedSnap]);
+  }, [navigate, getAccountData, state.activeAccount, state.loading]);
 
   return (
     <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">
@@ -53,17 +65,34 @@ const Home: React.FC = () => {
             Access the Zcash network from your web browser with the Zcash
             MetaMask Snap
           </p>
-          {!!installedSnap && (
-            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-xl">
-              Make sure your MetaMask is unlocked to continue
+          {isFirefox && (
+            <div className="w-full bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl">
+              <div>Zcash Web Wallet currently does not support Firefox.</div>
+            </div>
+          )}
+          {showResetInstructions && (
+            <div className="w-full space-y-2 bg-red-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl">
+              <div>Error occurred while loading the wallet data, please reset the wallet</div>
+              <div>To reset manually:</div>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>Open DevTools ➛ Application ➛ IndexedDB ➛ keyval-store ➛ Delete database</li>
+                <li>Opem Metamask ➛ ⋮ ➛ Snaps ➛ Zcash Shielded Wallet ➛ Remove Zcash Shielded Wallet ➛ Remove Snap</li>
+                <li>Refresh the page and start installation again</li>
+              </ul>
+              <details className="mt-2">
+                <summary className="cursor-pointer underline">Show error details</summary>
+                <div className="mt-2 whitespace-pre-wrap break-words text-sm text-red-700">
+                  {typeof state.error === 'string' ? state.error : (state.error ? state.error.toString() : 'No additional error details')}
+                </div>
+              </details>
             </div>
           )}
           <button
-            disabled={!!installedSnap}
+            disabled={state.loading}
             onClick={handleConnectButton}
-            className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${!!installedSnap ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${state.loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <span>{!!installedSnap ? 'Loading Web Wallet...' : 'Connect MetaMask Snap'}</span>
+            <span>{state.loading ? 'Wallet Initializing...' : 'Connect MetaMask Snap'}</span>
             <div className="ml-3">
               <img
                 src={MetaMaskLogoPNG}
