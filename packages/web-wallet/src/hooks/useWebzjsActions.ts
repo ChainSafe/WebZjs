@@ -153,12 +153,11 @@ export function useWebZjsActions(): WebzjsActions {
 
       await flushDbToStore();
     } catch (error) {
-      console.error(error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const fullMessage = `Failed to connect to MetaMask Snap and create account: ${errorMsg}`;
       dispatch({
         type: 'set-error',
-        payload: new Error(
-          'Failed to connect to MetaMask Snap and create account',
-        ),
+        payload: new Error(fullMessage),
       });
       throw error;
     }
