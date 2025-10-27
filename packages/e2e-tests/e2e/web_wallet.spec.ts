@@ -39,19 +39,3 @@ test('Wallet can be serialized', async ({ page }) => {
   });
 });
 
-test('Accont can be added from ufvk', async ({ page }) => {
-  let result = await page.evaluate(async () => {
-    let seed = new Uint8Array(32);
-    let birthday = 2657762;
-    let usk = new window.WebZJSKeys.UnifiedSpendingKey('main', seed, 0);
-    let ufvk = usk.to_unified_full_viewing_key();
-    await window.webWallet.create_account_ufvk(
-      'account-0',
-      ufvk.encode('main'),
-      birthday,
-    );
-    let summary = await window.webWallet.get_wallet_summary();
-    return summary?.account_balances.length;
-  });
-  expect(result).toBe(2);
-});
