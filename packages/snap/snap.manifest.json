@@ -22,7 +22,9 @@
     "endowment:lifecycle-hooks": {},
     "endowment:webassembly": {},
     "endowment:rpc": {
-      "allowedOrigins": ["https://webzjs.chainsafe.dev"]
+      "allowedOrigins": [
+        "https://webzjs.chainsafe.dev"
+      ]
     },
     "snap_getBip44Entropy": [
       {

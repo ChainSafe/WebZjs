@@ -30,11 +30,16 @@ For local development, you need to add `http://localhost:3000` to the `allowedOr
 
 - **`yarn build`** - Standard build for production (only allows production origins)
 - **`yarn build:local`** - Build for local development (automatically adds localhost:3000 to allowedOrigins)
+- **`yarn build:prePublish`** - Pre-publish build that ensures `allowedOrigins` is reset to `["https://webzjs.chainsafe.dev"]` and then runs `mm-snap build`
 
 The `build:local` script will:
 1. Create a backup of the original `snap.manifest.json`
 2. Modify the manifest to include `http://localhost:3000` in allowedOrigins
 3. Run the build process
+
+The `build:prePublish` script will:
+1. Overwrite `allowedOrigins` in `snap.manifest.json` to only `["https://webzjs.chainsafe.dev"]`
+2. Run the production build via `mm-snap build`
 
 ### Development Steps
 
