@@ -1,0 +1,53 @@
+name: Enforce Snap allowedOrigins
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'packages/snap/snap.manifest.json'
+      - '.github/workflows/check-snap-allowed-origins.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'packages/snap/snap.manifest.json'
+
+jobs:
+  check-allowed-origins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify allowedOrigins in snap.manifest.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="packages/snap/snap.manifest.json"
+
+          if [ ! -f "$FILE" ]; then
+            echo "::error title=Missing file::$FILE not found"
+            exit 1
+          fi
+
+          if ! command -v jq >/dev/null 2>&1; then
+            echo "Installing jq..."
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+
+          expected='["https://webzjs.chainsafe.dev"]'
+          actual=$(jq -c '.initialPermissions["endowment:rpc"].allowedOrigins' "$FILE")
+
+          echo "allowedOrigins in manifest: $actual"
+
+          if [ "$actual" != "$expected" ]; then
+            echo "::error title=Invalid allowedOrigins::For merges to main, allowedOrigins must be $expected. Found: $actual"
+            if echo "$actual" | grep -qi "localhost"; then
+              echo "::error title=localhost detected::Remove any localhost origins from allowedOrigins."
+            fi
+            exit 1
+          fi
+
+          echo "allowedOrigins are valid."
+
+
