@@ -144,7 +144,7 @@ where
     <W as WalletCommitmentTrees>::Error: std::error::Error + Send + Sync + 'static,
 
     // GRPC connection Trait Bounds
-    T: GrpcService<tonic::body::BoxBody> + Clone,
+    T: GrpcService<tonic::body::Body> + Clone,
     T::Error: Into<StdError>,
     T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
     <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,

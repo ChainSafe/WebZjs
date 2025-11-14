@@ -9,7 +9,7 @@ pub enum Error {
     #[error("webzjs-common crate gives error: {0}")]
     WebzJSCommon(#[from] webzjs_common::Error),
     #[error("Invalid account id")]
-    AccountIdConversion(#[from] zcash_primitives::zip32::TryFromIntError),
+    AccountIdConversion(#[from] zip32::TryFromIntError),
     #[error("Failed to derive key from seed")]
     // doesn't implement std::error. Should probably fix this upstream
     Derivation(#[from] zcash_keys::keys::DerivationError),
@@ -61,7 +61,7 @@ pub enum Error {
     #[error("Attempted to create a transaction with a memo to an unsupported recipient. Only shielded addresses are supported.")]
     UnsupportedMemoRecipient,
     #[error("Error decoding memo: {0}")]
-    MemoDecoding(#[from] zcash_primitives::memo::Error),
+    MemoDecoding(#[from] zcash_protocol::memo::Error),
 
     #[cfg(feature = "sqlite-db")]
     #[error("Sqlite error: {0}")]

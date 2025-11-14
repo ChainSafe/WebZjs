@@ -9,7 +9,7 @@ pub enum Error {
     #[error("Error constructing ZIP321 transaction request: {0}")]
     Zip321(#[from] zip321::Zip321Error),
     #[error("Error decoding memo: {0}")]
-    MemoDecoding(#[from] zcash_primitives::memo::Error),
+    MemoDecoding(#[from] zcash_protocol::memo::Error),
     #[error("Error attempting to decode address: {0}")]
     AddressDecoding(#[from] zcash_address::ParseError),
     #[error("serde wasm-bindgen error")]

@@ -23,7 +23,6 @@ use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::UnifiedFullViewingKey;
 use zcash_primitives::transaction::TxId;
-use zcash_primitives::zip32;
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
 pub type AccountId = <MemoryWalletDb<Network> as WalletRead>::AccountId;
