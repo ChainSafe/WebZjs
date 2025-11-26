@@ -41,10 +41,8 @@ pub enum Error {
     Scan(zcash_client_backend::scanning::ScanError),
     #[error("IO Error: {0}")]
     Io(#[from] std::io::Error),
-    #[error(
-        "Error parsing min_confirmations argument {0}. Must be an integer > 0 (e.g. at least 1)"
-    )]
-    InvalidMinConformations(u32),
+    #[error("Error parsing min_confirmations. Must be an integer > 0 (e.g. at least 1)")]
+    InvalidMinConformations,
     #[error("Error parsing zatoshi amount: {0}")]
     InvalidAmount(#[from] zcash_protocol::value::BalanceError),
     #[error("Failed to send transaction")]
