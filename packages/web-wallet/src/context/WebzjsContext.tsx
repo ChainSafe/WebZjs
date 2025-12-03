@@ -108,10 +108,10 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (bytes) {
         console.info('Saved wallet detected. Restoring wallet from storage');
-        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, bytes);
+        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, 1, bytes);
       } else {
         console.info('No saved wallet detected. Creating new wallet');
-        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1);
+        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, 1);
       }
 
       dispatch({ type: 'set-web-wallet', payload: wallet });
