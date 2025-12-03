@@ -7009,9 +7009,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001688":
-  version: 1.0.30001699
-  resolution: "caniuse-lite@npm:1.0.30001699"
-  checksum: 10c0/e87b3a0602c3124131f6a21f1eb262378e17a2ee3089e3c472ac8b9caa85cf7d6a219655379302c29c6f10a74051f2a712639d7f98ee0444c73fefcbaf25d519
+  version: 1.0.30001759
+  resolution: "caniuse-lite@npm:1.0.30001759"
+  checksum: 10c0/b0f415960ba34995cda18e0d25c4e602f6917b9179290a76bdd0311423505b78cc93e558a90c98a22a1cc6b1781ab720ef6beea24ec7e29a1c1164ca72eac3a2
   languageName: node
   linkType: hard
 
@@ -15168,11 +15168,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A^5.7.3#optional!builtin<compat/typescript>":
   version: 5.7.3
-  resolution: "typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=cef18b"
+  resolution: "typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/3b56d6afa03d9f6172d0b9cdb10e6b1efc9abc1608efd7a3d2f38773d5d8cfb9bbc68dfb72f0a7de5e8db04fc847f4e4baeddcd5ad9c9feda072234f0d788896
+  checksum: 10c0/6fd7e0ed3bf23a81246878c613423730c40e8bdbfec4c6e4d7bf1b847cbb39076e56ad5f50aa9d7ebd89877999abaee216002d3f2818885e41c907caaa192cc4
   languageName: node
   linkType: hard
 
