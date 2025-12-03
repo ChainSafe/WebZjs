@@ -92,6 +92,8 @@ yarn
 
 ## Development
 
+Ensure you have [Metamask Flask](https://docs.metamask.io/snaps/get-started/install-flask) installed for local development.
+
 ### Building and running WebZjs Zcash Snap locally
 
 ```shell
@@ -110,7 +112,7 @@ yarn dev
 
 ### Dev Build
 
-![webzjs.chainsafe.dev](https://webzjs.chainsafe.dev/)
+[webzjs.chainsafe.dev](https://webzjs.chainsafe.dev/)
 
 ### Testing
 
