@@ -1,20 +1,27 @@
+wasm_build := "release" # change to "dev" for dev builds to speed up compile times, e.g., `just wasm_build=dev build`
+wasm_release_flag := if wasm_build == "dev" {
+    "--no-opt"
+} else {
+    "--release --no-opt"
+}
+
 default:
     just --list
 
 build:
-    just build-wallet
-    just build-keys
-    just build-requests
+    just wasm_build={{wasm_build}} build-wallet
+    just wasm_build={{wasm_build}} build-keys
+    just wasm_build={{wasm_build}} build-requests
 
 build-wallet *features:
-    cd crates/webzjs-wallet && wasm-pack build -t web --release --scope chainsafe --out-dir ../../packages/webzjs-wallet --no-default-features --features="wasm wasm-parallel {{features}}" -Z build-std="panic_abort,std"
+    cd crates/webzjs-wallet && wasm-pack build -t web {{wasm_release_flag}} --scope chainsafe --out-dir ../../packages/webzjs-wallet --no-default-features --features="wasm wasm-parallel {{features}}" -Z build-std="panic_abort,std"
     ./add-worker-module.sh
 
 build-keys *features:
-    cd crates/webzjs-keys && wasm-pack build -t web --release --scope chainsafe --out-dir ../../packages/webzjs-keys --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
+    cd crates/webzjs-keys && wasm-pack build -t web {{wasm_release_flag}} --scope chainsafe --out-dir ../../packages/webzjs-keys --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
 
 build-requests *features:
-    cd crates/webzjs-requests && wasm-pack build -t web --release --scope chainsafe --out-dir ../../packages/webzjs-requests --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
+    cd crates/webzjs-requests && wasm-pack build -t web {{wasm_release_flag}} --scope chainsafe --out-dir ../../packages/webzjs-requests --no-default-features --features="{{features}}" -Z build-std="panic_abort,std"
 
 # All Wasm Tests
 test-web *features:

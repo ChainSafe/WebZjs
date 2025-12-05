@@ -78,6 +78,9 @@ just build
 
 ### Building
 
+> [!TIP]
+> `wasm-opt` takes a long time to run! For development purposes, build with `just wasm_build=dev build` to significantly speed up build times.
+
 First build WebZjs with
 
 ```shell
