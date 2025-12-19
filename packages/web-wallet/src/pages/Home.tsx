@@ -50,7 +50,13 @@ const Home: React.FC = () => {
   }, [navigate, getAccountData, state.activeAccount, state.loading]);
 
   return (
-    <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">
+    <div className="home-page flex flex-col items-stretch px-4 overflow-y-hidden">
+      <div className="w-full bg-yellow-100 border border-yellow-300 text-yellow-900 px-4 py-3 rounded-b-xl text-sm md:text-base mb-4">
+        <strong>Attention</strong> - this snap is under active development to bring it up to date
+        with the latest NU 6.1 update. Users may experience various issues until this update is
+        completed and should exercise caution if using the snap until the update is complete and
+        this banner is removed.
+      </div>
       <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-14">
         <div className="hidden md:flex items-end justify-end">
           <FormTransferSvg />
