@@ -24,7 +24,9 @@ echo "Building Rust WASM modules..."
 just build
 
 echo "Building web wallet..."
-yarn web-wallet:build
+# Run build from the web-wallet directory to ensure proper module resolution
+# This ensures Parcel resolves workspace dependencies correctly
+(cd packages/web-wallet && yarn build)
 
 echo "Build complete!"
 
