@@ -1,0 +1,13 @@
+{
+  "buildCommand": "./build.sh",
+  "outputDirectory": "packages/web-wallet/dist",
+  "installCommand": "echo 'Skipping default install - handled in build script'",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+

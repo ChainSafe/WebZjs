@@ -1,0 +1,10 @@
+target/
+.cargo/
+*.rs
+crates/
+justfile
+Cargo.toml
+Cargo.lock
+rust-toolchain.toml
+.github/
+
