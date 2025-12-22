@@ -18,9 +18,8 @@ default = ["native", "multicore"]
 
 multicore = ["zcash_proofs/multicore", "zcash_primitives/multicore", "zcash_client_memory/multicore"]
 
-
 # WASM specific features
-wasm = ["console_error_panic_hook", "dep:tracing-web", "zcash_client_backend/wasm-bindgen"]
+wasm = ["console_error_panic_hook", "dep:tracing-web"]
 wasm-parallel = ["wasm", "wasm-bindgen-rayon", "multicore"]
 native = ["tonic/channel", "tonic/gzip", "tonic/tls-webpki-roots", "tokio/macros", "tokio/rt", "tokio/rt-multi-thread"]
 sqlite-db = ["dep:zcash_client_sqlite"]
@@ -41,13 +40,19 @@ wasm-bindgen-rayon = { version = "1.3", optional = true }
 # WASM specific dependencies
 tracing-web = { version = "0.1.3", optional = true }
 console_error_panic_hook = { version = "0.1.7", optional = true }
-tonic-web-wasm-client = "0.6.0"
+tonic-web-wasm-client = "0.8.0"
 tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "sync", "macros", "time"] }
 
 ## Zcash dependencies
 
 zcash_keys = { workspace = true, features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { workspace = true, default-features = false, features = ["sync", "lightwalletd-tonic", "wasm-bindgen", "orchard", "pczt", "transparent-inputs"] }
+zcash_client_backend = { workspace = true, default-features = false, features = [
+    "sync",
+    "lightwalletd-tonic",
+    "orchard",
+    "pczt",
+    "transparent-inputs",
+] }
 zcash_client_memory = { workspace = true, features = ["orchard", "transparent-inputs"] }
 zcash_primitives = { workspace = true }
 zcash_address = { workspace = true }
@@ -56,21 +61,21 @@ zcash_proofs = { workspace = true, default-features = false, features = ["bundle
 zip321 = { workspace = true }
 zip32 = { workspace = true }
 pczt = { workspace = true, default-features = false, features = ["orchard", "sapling", "transparent"] }
-orchard = { version = "0.10.1", default-features = false }
+orchard = { version = "0.11", default-features = false }
 sapling = { workspace = true }
-bip32 = "0.5"
+bip32.workspace = true
 ## gRPC Web dependencies
-prost = { version = "0.13", default-features = false }
-tonic = { version = "0.12", default-features = false, features = [
-    "prost",
-] }
-
+prost = { version = "0.14", default-features = false }
+tonic = { version = "0.14", default-features = false, features = ["codegen"] }
 
 # Used in Native tests
 tokio.workspace = true
-zcash_client_sqlite = { git = "https://github.com/ChainSafe/librustzcash", rev = "46e8ee0937b61fdbb417df7c663f62e6945d8090", default-features = false, features = ["unstable", "orchard"], optional = true }
+zcash_client_sqlite = { git = "https://github.com/amanusk/librustzcash", rev = "97cd0dbad7fadee5e3402428b4fb834b5eb92bca", default-features = false, features = [
+    "unstable",
+    "orchard",
+], optional = true }
 
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { workspace = true, features = ["js"] }
 thiserror.workspace = true
 indexed_db_futures = "0.5.0"
 sha2 = "0.10"
@@ -84,7 +89,10 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = "0.1.40"
 rayon = { version = "1.8", features = ["web_spin_lock"] }
 subtle = "2.6.1"
-wasm_thread = { git = "https://github.com/ec2/wasm_thread", rev = "9e432077948d927d49373d1d039c23447d3648df", default-features = false, features = ["keep_worker_alive", "es_modules"] }
+wasm_thread = { git = "https://github.com/ec2/wasm_thread", rev = "9e432077948d927d49373d1d039c23447d3648df", default-features = false, features = [
+    "keep_worker_alive",
+    "es_modules",
+] }
 
 wasm_sync = "0.1.2"
 http = { version = "1.1.0", default-features = false }

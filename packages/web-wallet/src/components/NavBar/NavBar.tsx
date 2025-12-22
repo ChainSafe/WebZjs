@@ -6,7 +6,7 @@ import {
   ArrowReceiveSvg,
   ArrowTransferSvg,
   SummarySvg,
-  ShieldSvg
+  ShieldSvg,
 } from '../../assets';
 
 interface NavItem {
@@ -26,16 +26,16 @@ const navItems: NavItem[] = [
     label: 'Transfer Balance',
     icon: <ArrowTransferSvg />,
   },
-    {
-    to: 'shield-balance',
-    label: 'Shield Balance',
+  {
+    to: 'shielded-transfer',
+    label: 'STRK Shielded Transfer',
     icon: <ShieldSvg />,
   },
   {
     to: 'receive',
     label: 'Receive',
     icon: <ArrowReceiveSvg />,
-  }
+  },
 ];
 
 function NavBar() {
@@ -46,8 +46,8 @@ function NavBar() {
           key={item.to}
           to={item.to}
           className={({ isActive }) =>
-            cn('text-sm text-[#0e0e0e] font-semibold leading-tight pb-3', {
-              'text-black border-b border-orange-500': isActive,
+            cn('text-sm text-gray-300 font-semibold leading-tight pb-3', {
+              'text-white border-b border-orange-500': isActive,
             })
           }
         >

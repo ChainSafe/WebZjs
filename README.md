@@ -31,10 +31,11 @@ initThreadPool(8); // can set any number of threads here, ideally match it to wi
 Once this has been done we can create a WebWallet instance. You can theoretically have multiple of these per application but most cases will only want one. A single wallet can handle multiple Zcash accounts.
 
 > [!IMPORTANT]
-> When constructing a WebWallet it requires a lightwalletd URL. To work in the web these need to be a special gRPC-web proxy to a regular lightwalletd instance. Using an unproxied URL (e.g. https://zec.rocks) will NOT work. ChainSafe currently hosts a gRPC-web lightwalletd proxy and it is easy to deploy more. You can also run your own proxy locally by running `docker-compose up` in this repo.
+> When constructing a WebWallet it requires a lightwalletd URL. To work in the web these need to be a special gRPC-web proxy to a regular lightwalletd instance. Using an unproxied URL (e.g. https://zec.rocks) will NOT work. ChainSafe currently hosts a gRPC-web lightwalletd proxy and it is easy to deploy more.
 
 ```javascript
-let wallet = new WebWallet("main", "https://zcash-mainnet.chainsafe.dev", 1);
+// Pass trusted and untrusted confirmation counts (must be >=1).
+let wallet = new WebWallet("main", "https://zcash-mainnet.chainsafe.dev", 1, 1);
 ```
 
 Once you have a wallet instance it needs an account. Accounts can be added in a number of different ways. Here an account will be added from a 24 word seed phrase
@@ -91,14 +92,6 @@ yarn
 ```
 
 ## Development
-
-### Building and running WebZjs Zcash Snap locally
-
-```shell
-cd packages/snap
-yarn build:local
-yarn serve
-```
 
 ### Building and running WebZjs Web-wallet locally
 

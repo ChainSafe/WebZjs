@@ -21,7 +21,8 @@ async function loadPage() {
   await initRequests();
   await initThreadPool(N_THREADS);
 
-  window.webWallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1);
+  // Use minimum confirmations of 1 for both trusted and untrusted to match wallet defaults.
+  window.webWallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, 1);
   window.initialized = true;
   console.log('WebWallet initialized');
   console.log(webWallet);

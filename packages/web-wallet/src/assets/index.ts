@@ -1,9 +1,10 @@
-import ChainsafePNG from './chainsafe.png';
 import FormTransferSvg from './form-transfer.svg';
-import MetaMaskLogoPNG from './metaMask-logo.png';
-import MetaMaskSnapsLogoPNG from './metamask-snaps-logo.png';
 import ZcashPNG from './zcash.png';
 import ZcashYellowPNG from './zcash-yellow.png';
+import ZcashBrandmarkPNG from './zcash-brandmark.png';
+import NearIconPNG from './near-icon.png';
+import StarknetSymbolPNG from './starknet-symbol.png';
+import StarknetStackedPNG from './starknet-stacked.png';
 
 // Icons
 import ArrowReceiveSvg from './icons/arrow-receive.svg';
@@ -22,12 +23,13 @@ import CircleSvg from './icons/circle.svg';
 import CircleDashedSvg from './icons/circle-dashed.svg';
 
 export {
-  ChainsafePNG,
-  MetaMaskLogoPNG,
-  MetaMaskSnapsLogoPNG,
   ZcashPNG,
   ZcashYellowPNG,
+  ZcashBrandmarkPNG,
+  NearIconPNG,
   FormTransferSvg,
+  StarknetSymbolPNG,
+  StarknetStackedPNG,
   ArrowReceiveSvg,
   ArrowTransferSvg,
   ClockSvg,

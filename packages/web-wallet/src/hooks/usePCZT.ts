@@ -1,10 +1,15 @@
 import { useWebZjsContext } from '../context/WebzjsContext';
-import { Pczt } from '@chainsafe/webzjs-wallet';
-import { useInvokeSnap } from './snaps/useInvokeSnap';
+import { Pczt as WalletPczt } from '@chainsafe/webzjs-wallet';
 import { zecToZats } from '../utils';
 import { useWebZjsActions } from './useWebzjsActions';
 import { useState } from 'react';
-import { SignPcztDetails } from '../types/snap';
+import {
+  Pczt as KeysPczt,
+  SeedFingerprint,
+  UnifiedSpendingKey,
+  pczt_sign,
+} from '@chainsafe/webzjs-keys';
+import { mnemonicToSeedSync } from '@scure/bip39';
 
 interface IUsePczt {
   handlePcztTransaction: (
@@ -33,8 +38,7 @@ export enum PcztTransferStatus {
 }
 
 export const usePczt = (): IUsePczt => {
-  const { state } = useWebZjsContext();
-  const invokeSnap = useInvokeSnap();
+  const { state, getSeedForAccount } = useWebZjsContext();
   const { triggerRescan } = useWebZjsActions();
 
   const [pcztTransferStatus, setPcztTransferStatus] =
@@ -58,43 +62,49 @@ export const usePczt = (): IUsePczt => {
     }
   };
 
-  const provePczt = async (pczt: Pczt): Promise<Pczt> => {
+  const provePczt = async (pczt: WalletPczt): Promise<WalletPczt> => {
     try {
       return await state.webWallet!.pczt_prove(pczt);
     } catch (error) {
-      console.error('Error proving PCZT:', error);
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error('Error proving PCZT:', { msg, error });
       throw error;
     }
   };
 
-  const signPczt = async (
-    pczt: Pczt,
-    signDetails: { recipient: string; amount: string },
-  ): Promise<string> => {
-    try {
-      const pcztBytes = pczt.serialize();
+  const signPczt = async (pczt: WalletPczt): Promise<WalletPczt> => {
+    // Always derive using the HD account index used at creation (currently fixed to 0).
+    const { seedPhrase, accountIndex } = await getSeedForAccount();
 
-      const pcztHexTring = Buffer.from(pcztBytes).toString('hex');
-      const params: SignPcztDetails = {
-        pcztHexTring,
-        signDetails,
-      };
+    const seedBytes = new Uint8Array(mnemonicToSeedSync(seedPhrase));
 
-      return (await invokeSnap({
-        method: 'signPczt',
-        params,
-      })) as string;
-    } catch (error) {
-      console.error('Error signing PCZT:', error);
-      throw error;
-    }
+    // Derive using the HD account index associated with the seed (not the wallet account id).
+    const usk = new UnifiedSpendingKey('main', seedBytes, accountIndex);
+    const seedFp = new SeedFingerprint(seedBytes);
+
+    // Convert wallet Pczt to keys Pczt for signing, then back.
+    const keysPczt = KeysPczt.from_bytes(pczt.serialize());
+    const signedKeysPczt = await pczt_sign('main', keysPczt, usk, seedFp);
+    const signedWalletPczt = WalletPczt.from_bytes(signedKeysPczt.serialize());
+
+    return signedWalletPczt;
   };
 
-  const sendPczt = async (signedPczt: Pczt) => {
+  const sendPczt = async (signedPczt: WalletPczt) => {
     try {
+      // Optional debug snapshot before send; remove if too noisy
+      console.debug('Sending PCZT', {
+        pczt: signedPczt.to_json?.() ?? 'pczt_to_json_unavailable',
+      });
       await state.webWallet!.pczt_send(signedPczt);
     } catch (error) {
-      console.error('Error sending PCZT:', error);
+      const msg = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      const stringified =
+        typeof error === 'object'
+          ? JSON.stringify(error, null, 2)
+          : String(error);
+      console.error('Error sending PCZT:', { msg, stack, error, stringified });
       setPcztTransferStatus(PcztTransferStatus.SEND_ERROR);
       throw error;
     }
@@ -108,9 +118,12 @@ export const usePczt = (): IUsePczt => {
       accountId: number,
       toAddress: string,
       value: string,
-    ) => Promise<Pczt>,
+    ) => Promise<WalletPczt>,
   ) => {
-    if (!state.webWallet) return;
+    if (!state.webWallet) {
+      setPcztTransferStatus(PcztTransferStatus.SEND_ERROR);
+      return;
+    }
     try {
       const chainHeight = await state.webWallet.get_latest_block();
       const isSynced =
@@ -120,18 +133,22 @@ export const usePczt = (): IUsePczt => {
       if (!isSynced) {
         setPcztTransferStatus(PcztTransferStatus.SYNCING_CHAIN);
         await triggerRescan();
+        // Re-evaluate after rescan trigger
+        const refreshedHeight = await state.webWallet.get_latest_block();
+        const refreshedSynced =
+          refreshedHeight.toString() ===
+          state.summary?.fully_scanned_height.toString();
+        if (!refreshedSynced) {
+          setPcztTransferStatus(PcztTransferStatus.SEND_ERROR);
+          return;
+        }
       }
 
       setPcztTransferStatus(PcztTransferStatus.CREATING_PCZT);
       const pczt = await createPcztFunc(accountId, toAddress, value);
 
       setPcztTransferStatus(PcztTransferStatus.SIGNING_PCZT);
-      const pcztHexStringSigned = await signPczt(pczt, {
-        recipient: toAddress,
-        amount: value,
-      });
-      const pcztBufferSigned = Buffer.from(pcztHexStringSigned, 'hex');
-      const signedPczt = Pczt.from_bytes(new Uint8Array(pcztBufferSigned));
+      const signedPczt = await signPczt(pczt);
 
       setPcztTransferStatus(PcztTransferStatus.PROVING_PCZT);
       const provedPczt = await provePczt(signedPczt);

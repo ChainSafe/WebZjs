@@ -6,11 +6,11 @@ export const BlockHeightCard: FC<{
   syncedFrom?: string;
 }> = ({ state, syncedFrom }) => {
   return (
-    <div className="grow shrink min-w-[317px] basis-0 p-6 bg-white rounded-xl border border-[#afafaf] flex-col justify-start items-start gap-2 inline-flex">
+    <div className="grow shrink min-w-[317px] basis-0 p-6 bg-gray-900 rounded-xl border border-gray-700 flex-col justify-start items-start gap-2 inline-flex">
       {state.syncInProgress ? (
         <div className="self-stretch flex items-center gap-2">
           <svg
-            className="animate-spin h-4 w-4 text-[#595959]"
+            className="animate-spin h-4 w-4 text-gray-400"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -29,24 +29,24 @@ export const BlockHeightCard: FC<{
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span className="text-[#595959] text-sm font-semibold font-inter leading-[21px]">
+          <span className="text-gray-400 text-sm font-semibold font-inter leading-[21px]">
             Sync in progress...
           </span>
         </div>
       ) : null}
-      <div className="self-stretch text-[#595959] text-sm font-semibold font-inter leading-[21px]">
+      <div className="self-stretch text-gray-400 text-sm font-semibold font-inter leading-[21px]">
         Chain Height
       </div>
       <div className="self-stretch justify-start items-center gap-2 inline-flex">
-        <div className="text-black text-2xl font-medium font-['Inter'] leading-9">
+        <div className="text-white text-2xl font-medium font-['Inter'] leading-9">
           {state.chainHeight ? '' + state.chainHeight : '?'}
         </div>
       </div>
-      <div className="self-stretch text-[#595959] text-sm font-semibold font-inter leading-[21px]">
+      <div className="self-stretch text-gray-400 text-sm font-semibold font-inter leading-[21px]">
         Synced Height
       </div>
       <div className="self-stretch justify-start items-center gap-2 inline-flex">
-        <div className="text-black text-2xl font-medium font-['Inter'] leading-9">
+        <div className="text-white text-2xl font-medium font-['Inter'] leading-9">
           {state.summary?.fully_scanned_height
             ? state.summary?.fully_scanned_height
             : '?'}
@@ -54,11 +54,11 @@ export const BlockHeightCard: FC<{
       </div>
       {syncedFrom && (
         <>
-          <div className="self-stretch text-[#595959] text-sm font-semibold font-inter leading-[21px]">
+          <div className="self-stretch text-gray-400 text-sm font-semibold font-inter leading-[21px]">
             Sync Start Block
           </div>
           <div className="self-stretch justify-start items-center gap-2 inline-flex">
-            <div className="text-black text-2xl font-medium font-['Inter'] leading-9">
+            <div className="text-white text-2xl font-medium font-['Inter'] leading-9">
               {syncedFrom}
             </div>
           </div>

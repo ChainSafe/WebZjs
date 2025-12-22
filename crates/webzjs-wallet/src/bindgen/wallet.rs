@@ -2,7 +2,6 @@ use std::num::NonZeroU32;
 use std::str::FromStr;
 
 use nonempty::NonEmpty;
-use prost::Message;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -13,17 +12,17 @@ use crate::wallet::usk_from_seed_str;
 use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use webzjs_common::{Network, Pczt};
-use webzjs_keys::{ProofGenerationKey, SeedFingerprint, UnifiedSpendingKey};
+use webzjs_keys::{ProofGenerationKey, SeedFingerprint};
 use zcash_address::ZcashAddress;
+use zcash_client_backend::data_api::wallet::ConfirmationsPolicy;
 use zcash_client_backend::data_api::{AccountPurpose, InputSource, WalletRead, Zip32Derivation};
 use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::encoding::AddressCodec;
-use zcash_keys::keys::UnifiedFullViewingKey;
+use zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey};
 use zcash_primitives::transaction::TxId;
-use zcash_primitives::zip32;
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
 pub type AccountId = <MemoryWalletDb<Network> as WalletRead>::AccountId;
@@ -130,12 +129,19 @@ impl WebWallet {
     pub fn new(
         network: &str,
         lightwalletd_url: &str,
-        min_confirmations: u32,
+        min_confirmations_trusted: u32,
+        min_confirmations_untrusted: u32,
         db_bytes: Option<Box<[u8]>>,
     ) -> Result<WebWallet, Error> {
         let network = Network::from_str(network)?;
-        let min_confirmations = NonZeroU32::try_from(min_confirmations)
-            .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
+        let min_confirmations_trusted = NonZeroU32::try_from(min_confirmations_trusted)
+            .map_err(|_| Error::InvalidMinConformations)?;
+        let min_confirmations_untrusted = NonZeroU32::try_from(min_confirmations_untrusted)
+            .map_err(|_| Error::InvalidMinConformations)?;
+
+        let min_confirmations =
+            ConfirmationsPolicy::new(min_confirmations_trusted, min_confirmations_untrusted, true)
+                .map_err(|_| Error::InvalidMinConformations)?;
         let client = Client::new(lightwalletd_url.to_string());
 
         let db = match db_bytes {
@@ -432,7 +438,10 @@ impl WebWallet {
     ///
     pub async fn get_current_address(&self, account_id: u32) -> Result<String, Error> {
         let db = self.inner.db.read().await;
-        if let Some(address) = db.get_current_address(account_id.into())? {
+        if let Some(address) = db.get_last_generated_address_matching(
+            account_id.into(),
+            UnifiedAddressRequest::ALLOW_ALL,
+        )? {
             Ok(address.encode(&self.inner.network))
         } else {
             Err(Error::AccountNotFound(account_id))
@@ -518,7 +527,10 @@ impl WebWallet {
     ///
     pub async fn get_current_address_transparent(&self, account_id: u32) -> Result<String, Error> {
         let db = self.inner.db.read().await;
-        if let Some(address) = db.get_current_address(account_id.into())? {
+        if let Some(address) = db.get_last_generated_address_matching(
+            account_id.into(),
+            UnifiedAddressRequest::ALLOW_ALL,
+        )? {
             Ok(address.transparent().unwrap().encode(&self.inner.network))
         } else {
             Err(Error::AccountNotFound(account_id))

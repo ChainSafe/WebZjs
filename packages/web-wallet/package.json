@@ -14,7 +14,10 @@
   "dependencies": {
     "@chainsafe/webzjs-keys": "workspace:^",
     "@chainsafe/webzjs-wallet": "workspace:^",
-    "@metamask/providers": "^18.2.0",
+    "@defuse-protocol/one-click-sdk-typescript": "0.1.1",
+    "@scure/bip39": "^1.4.0",
+    "@starknet-io/get-starknet": "^4.0.0",
+    "@starknet-io/get-starknet-core": "^4.0.0",
     "classnames": "^2.5.1",
     "decimal.js": "^10.5.0",
     "idb-keyval": "^6.2.1",
@@ -23,6 +26,7 @@
     "react-hot-toast": "^2.5.1",
     "react-qr-code": "^2.0.15",
     "react-router-dom": "^6.27.0",
+    "starknet": "^8.7.0",
     "usehooks-ts": "^3.1.0"
   },
   "devDependencies": {

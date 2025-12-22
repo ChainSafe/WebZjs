@@ -53,40 +53,40 @@ export function ShieldBalance(): React.JSX.Element {
     <div className="flex flex-col w-full">
       <PageHeading title="Shield Balance">
         <div className="flex items-center gap-2.5">
-          <span className="text-black text-base font-normal font-inter leading-tight">
+          <span className="text-white text-base font-normal font-inter leading-tight">
             Available unshielded balance:
           </span>
-          <div className="px-4 py-2 bg-[#e8e8e8] rounded-3xl flex items-center gap-2.5">
+          <div className="px-4 py-2 bg-gray-800 rounded-3xl flex items-center gap-2.5">
             <img
               src={ZcashYellowPNG}
               alt="Zcash Yellow"
               className="w-5 h-5"
             />
-            <span className="text-[#434343] text-base font-semibold font-inter leading-tight">
+            <span className="text-gray-200 text-base font-semibold font-inter leading-tight">
               {zatsToZec(unshieldedBalance)} ZEC
             </span>
           </div>
         </div>
       </PageHeading>
       {shieldStatus === ShieldStatus.DEFAULT && (
-        <div className="min-h-[460px] px-12 py-6 bg-white rounded-3xl border border-[#afafaf] flex-col justify-start items-center gap-6 inline-flex">
+        <div className="min-h-[460px] px-12 py-6 bg-gray-900 rounded-3xl border border-gray-700 flex-col justify-start items-center gap-6 inline-flex">
           <div className="self-stretch h-[413px] flex-col justify-center items-center gap-3 flex">
             <div className="self-stretch justify-start items-center gap-2 inline-flex">
-              <div className="grow shrink basis-0 text-black text-base font-medium font-['Roboto'] leading-normal">
+              <div className="grow shrink basis-0 text-white text-base font-medium font-['Roboto'] leading-normal">
                 To:
               </div>
               <div className="p-3 rounded-xl justify-start items-center gap-2 flex">
-                <div className="text-[#4f4f4f] text-base font-normal font-['Roboto'] break-all leading-normal">
+                <div className="text-gray-400 text-base font-normal font-['Roboto'] break-all leading-normal">
                   {addresses.unifiedAddress}
                 </div>
               </div>
             </div>
             <div className="self-stretch justify-start items-center gap-2 inline-flex">
-              <div className="grow shrink basis-0 text-black text-base font-normal font-['Roboto'] leading-normal">
+              <div className="grow shrink basis-0 text-white text-base font-normal font-['Roboto'] leading-normal">
                 Amount:
               </div>
-              <div className="px-4 py-1.5 bg-[#e8e8e8] rounded-3xl justify-center items-center gap-2.5 flex">
-                <div className="text-[#0e0e0e] text-sm font-medium font-['Roboto'] leading-[21px]">
+              <div className="px-4 py-1.5 bg-gray-800 rounded-3xl justify-center items-center gap-2.5 flex">
+                <div className="text-white text-sm font-medium font-['Roboto'] leading-[21px]">
                   {zatsToZec(unshieldedBalance)} ZEC
                 </div>
               </div>
@@ -99,7 +99,7 @@ export function ShieldBalance(): React.JSX.Element {
                   disabled={!isMinimalShieldAmount}
                 />
                 {!isMinimalShieldAmount && (
-                  <div className="text-red-500 text-sm mt-2">
+                  <div className="text-red-400 text-sm mt-2">
                     The minimum shielding balance required is 0.001 ZEC.
                   </div>
                 )}

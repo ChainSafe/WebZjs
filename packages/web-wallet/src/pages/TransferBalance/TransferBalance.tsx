@@ -24,16 +24,16 @@ function TransferBalance(): React.JSX.Element {
       {currentStep !== 3 && (
         <PageHeading title="Transfer Balance">
           <div className="flex items-center gap-2.5">
-            <span className="text-black text-base font-normal font-inter leading-tight">
+            <span className="text-white text-base font-normal font-inter leading-tight">
               Available shielded balance:
             </span>
-            <div className="px-4 py-2 bg-[#e8e8e8] rounded-3xl flex items-center gap-2.5">
+            <div className="px-4 py-2 bg-gray-800 rounded-3xl flex items-center gap-2.5">
               <img
                 src={ZcashYellowPNG}
                 alt="Zcash Yellow"
                 className="w-5 h-5"
               />
-              <span className="text-[#434343] text-base font-semibold font-inter leading-tight">
+              <span className="text-gray-200 text-base font-semibold font-inter leading-tight">
                 {zatsToZec(shieldedBalance)} ZEC
               </span>
             </div>

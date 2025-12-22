@@ -26,21 +26,21 @@ const Input: React.FC<InputProps> = ({
       {label && (
         <label
           htmlFor={id}
-          className={`text-black text-base font-normal leading-normal ${labelClassName}`}
+          className={`text-gray-200 text-base font-normal leading-normal ${labelClassName}`}
         >
           {label}
         </label>
       )}
-      <div className="h-full flex items-center bg-neutral-50 rounded-xl border border-[#afafaf] p-3">
+      <div className="h-full flex items-center bg-gray-900 rounded-xl border border-gray-700 p-3">
         <input
           {...props}
           id={id}
-          className={`grow bg-transparent focus:outline-hidden text-[#0e0e0e] text-base font-semibold font-inter ${inputClassName}`}
+          className={`grow bg-transparent focus:outline-hidden text-white text-base font-semibold font-inter ${inputClassName}`}
           aria-describedby={`${id}-suffix`}
         />
         <span
           id={`${id}-suffix`}
-          className="ml-2 text-[#a9aaab] text-base font-medium leading-normal"
+          className="ml-2 text-gray-400 text-base font-medium leading-normal"
         >
           {suffix}
         </span>

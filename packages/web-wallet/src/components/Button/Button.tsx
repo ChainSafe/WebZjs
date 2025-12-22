@@ -24,9 +24,9 @@ function Button({
     'transition-all hover:transition-all',
     { 'cursor-not-allowed': rest.disabled, 'cursor-pointer': !rest.disabled },
     {
-      'bg-[#0e0e0e] text-white border hover:bg-buttonBlackGradientHover':
+      'bg-[#0e0e0e] text-white border border-gray-700 hover:bg-buttonBlackGradientHover':
         variant === 'primary',
-      'bg-transparent text-black hover:bg-[#fff7e6] border hover:border-[#ffa940]':
+      'bg-transparent text-white hover:bg-gray-800 border border-gray-700 hover:border-gray-600':
         variant === 'secondary',
     },
     classNames,

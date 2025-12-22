@@ -44,13 +44,11 @@
 }
 
 body {
-  background: linear-gradient(#fff 0%, #bcefef 187.66%);
+  background: #0a0a0a;
   position: relative;
-  background: #fafafa url('../assets/diamond-bg.png') no-repeat center center
-    fixed;
-  background-size: 400%;
+  color: #ffffff;
   &.home-page-bg {
-    background: linear-gradient(180deg, #fff 0%, #bcefef 187.66%);
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
 
     /* Noise background */
 
@@ -60,12 +58,12 @@ body {
       width: 100vw;
       height: 100vh;
       z-index: -1;
-      opacity: 0.25;
-      background: url('../assets/noise.png') lightgray 0 0 / 15px 15px repeat;
-      mix-blend-mode: color-burn;
+      opacity: 0.15;
+      background: url('../assets/noise.png') #1a1a1a 0 0 / 15px 15px repeat;
+      mix-blend-mode: overlay;
     }
 
-    /* Yellow oval shape background */
+    /* Subtle accent shape background */
 
     &:after {
       content: '';
@@ -76,7 +74,7 @@ body {
       left: 2.5rem;
       z-index: -1;
       border-radius: 88.1875rem;
-      background: rgba(187, 160, 17, 0.5);
+      background: rgba(100, 100, 100, 0.1);
       filter: blur(274px);
     }
   }

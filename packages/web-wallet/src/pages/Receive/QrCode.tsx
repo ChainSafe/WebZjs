@@ -12,11 +12,11 @@ function QrCode({ address }: QrCodeProps) {
 
   return (
     <>
-      <div className="p-[9.94px] rounded-[19.89px] border border-[#8c8c8c] flex-col justify-start items-center gap-[19.89px] flex">
+      <div className="p-[9.94px] rounded-[19.89px] border border-gray-700 flex-col justify-start items-center gap-[19.89px] flex bg-white">
         {address && <QRCode value={address} />}
       </div>
-      <div className="flex px-6 py-3 justify-center items-start gap-3  max-w-[400px] bg-neutral-50 rounded-3xl border border-[#d9d9d9]">
-        <div className=" text-[#4f4f4f] text-base font-normal font-['Roboto'] leading-normal max-w-[288px]">
+      <div className="flex px-6 py-3 justify-center items-start gap-3  max-w-[400px] bg-gray-800 rounded-3xl border border-gray-700">
+        <div className=" text-gray-300 text-base font-normal font-['Roboto'] leading-normal max-w-[288px]">
           {exposeAddress ? (
             <span className="break-words">{address}</span>
           ) : (

@@ -1,4 +1,4 @@
-use std::num::{NonZeroU32, NonZeroUsize};
+use std::num::NonZeroUsize;
 
 use bip0039::{English, Mnemonic};
 use nonempty::NonEmpty;
@@ -29,7 +29,7 @@ use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::wallet::{
     create_pczt_from_proposal, create_proposed_transactions,
     extract_and_store_transaction_from_pczt, input_selection::GreedyInputSelector,
-    propose_shielding, propose_transfer,
+    propose_shielding, propose_transfer, ConfirmationsPolicy, SpendingKeys,
 };
 use zcash_client_backend::data_api::{
     Account, AccountBirthday, AccountPurpose, InputSource, WalletRead, WalletSummary, WalletWrite,
@@ -88,7 +88,7 @@ pub struct Wallet<W, T> {
     // gRPC client used to connect to a lightwalletd instance for network data
     pub(crate) client: CompactTxStreamerClient<T>,
     pub(crate) network: Network,
-    pub(crate) min_confirmations: NonZeroU32,
+    pub(crate) min_confirmations: ConfirmationsPolicy,
     /// Note management: the number of notes to maintain in the wallet
     pub(crate) target_note_count: usize,
     /// Note management: the minimum allowed value for split change amounts
@@ -144,7 +144,7 @@ where
     <W as WalletCommitmentTrees>::Error: std::error::Error + Send + Sync + 'static,
 
     // GRPC connection Trait Bounds
-    T: GrpcService<tonic::body::BoxBody> + Clone,
+    T: GrpcService<tonic::body::Body> + Clone,
     T::Error: Into<StdError>,
     T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
     <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
@@ -154,7 +154,7 @@ where
         db: W,
         client: T,
         network: Network,
-        min_confirmations: NonZeroU32,
+        min_confirmations: ConfirmationsPolicy,
     ) -> Result<Self, Error> {
         Ok(Wallet {
             db: Arc::new(RwLock::new(db)),
@@ -294,7 +294,7 @@ where
             .db
             .read()
             .await
-            .get_wallet_summary(self.min_confirmations.into())?)
+            .get_wallet_summary(self.min_confirmations)?)
     }
 
     ///
@@ -330,7 +330,7 @@ where
             self.db
                 .read()
                 .await
-                .get_target_and_anchor_heights(self.min_confirmations)?
+                .get_target_and_anchor_heights(self.min_confirmations.trusted())?
         );
         let mut db = self.db.write().await;
         let proposal = propose_transfer::<_, _, _,_, <W as WalletCommitmentTrees>::Error>(
@@ -372,7 +372,7 @@ where
             &self.network,
             &prover,
             &prover,
-            usk,
+            &SpendingKeys::from_unified_spending_key(usk.clone()),
             OvkPolicy::Sender,
             &proposal,
         )
@@ -398,6 +398,11 @@ where
             let response = client.send_transaction(raw_tx).await?.into_inner();
 
             if response.error_code != 0 {
+                tracing::error!(
+                    "send_transaction failed: code={} reason={}",
+                    response.error_code,
+                    response.error_message
+                );
                 return Err(Error::SendFailed {
                     code: response.error_code,
                     reason: response.error_message,
@@ -459,7 +464,8 @@ where
             }
         };
 
-        let transparent_balances = db.get_transparent_balances(account_id, max_height)?;
+        let transparent_balances =
+            db.get_transparent_balances(account_id, max_height.into(), self.min_confirmations)?;
         let from_addrs = transparent_balances.into_keys().collect::<Vec<_>>();
 
         let proposal = propose_shielding::<_, _, _, _, <W as WalletCommitmentTrees>::Error>(
@@ -470,7 +476,7 @@ where
             SHIELDING_THRESHOLD, // use a shielding threshold above a marginal fee transaction plus some value like Zashi does.
             &from_addrs,
             account_id,
-            1, // librustzcash operates under the assumption of zero or one conf being the same but that could change.
+            self.min_confirmations, // librustzcash operates under the assumption of zero or one conf being the same but that could change.
         )
         .map_err(|e| Error::Generic(format!("Error when shielding: {:?}", e)))?;
 
@@ -617,9 +623,8 @@ where
         let txid = extract_and_store_transaction_from_pczt::<_, ()>(
             &mut *db,
             pczt,
-            &spend_vk,
-            &output_vk,
-            &orchard::circuit::VerifyingKey::build(),
+            Some((&spend_vk, &output_vk)),
+            Some(&orchard::circuit::VerifyingKey::build()),
         )
         .map_err(|e| {
             Error::PcztSend(format!(

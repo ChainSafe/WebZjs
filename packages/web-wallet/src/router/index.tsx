@@ -7,6 +7,7 @@ import AccountSummary from '../pages/AccountSummary';
 import TransferBalance from '../pages/TransferBalance/TransferBalance';
 import Receive from '../pages/Receive/Receive';
 import { ShieldBalance } from 'src/pages/ShieldBalance/ShieldBalance';
+import ShieldedTransfer from '../pages/ShieldedTransfer/ShieldedTransfer';
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
           { path: 'transfer-balance', element: <TransferBalance /> },
           { path: 'shield-balance', element: <ShieldBalance /> },
           { path: 'receive', element: <Receive /> },
+          { path: 'shielded-transfer', element: <ShieldedTransfer /> },
         ],
       },
     ],

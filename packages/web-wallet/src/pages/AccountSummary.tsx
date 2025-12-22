@@ -1,10 +1,9 @@
 import React from 'react';
 import { zatsToZec } from '../utils';
-import { CoinsSvg, ShieldDividedSvg, ShieldSvg } from '../assets';
+import { ShieldSvg } from '../assets';
 import useBalance from '../hooks/useBalance';
 import { useWebZjsContext } from 'src/context/WebzjsContext';
 import { BlockHeightCard } from 'src/components/BlockHeightCard/BlockHeightCard';
-import { useMetaMaskContext } from 'src/context/MetamaskContext';
 
 interface BalanceCard {
   name: string;
@@ -13,25 +12,14 @@ interface BalanceCard {
 }
 
 function AccountSummary() {
-  const { totalBalance, unshieldedBalance, shieldedBalance } = useBalance();
+  const { shieldedBalance } = useBalance();
   const { state } = useWebZjsContext();
-  const { snapState } = useMetaMaskContext();
 
   const BalanceCards: BalanceCard[] = [
-    {
-      name: 'Account Balance',
-      icon: <CoinsSvg />,
-      balance: totalBalance,
-    },
     {
       name: 'Shielded Balance',
       icon: <ShieldSvg />,
       balance: shieldedBalance,
-    },
-    {
-      name: 'Unshielded Balance',
-      icon: <ShieldDividedSvg />,
-      balance: unshieldedBalance,
     },
   ];
 
@@ -39,14 +27,14 @@ function AccountSummary() {
     return (
       <div
         key={name}
-        className="grow shrink min-w-[317px] basis-0 p-6 bg-white rounded-xl border border-[#afafaf] flex-col justify-start items-start gap-2 inline-flex"
+        className="grow shrink min-w-[317px] basis-0 p-6 bg-gray-900 rounded-xl border border-gray-700 flex-col justify-start items-start gap-2 inline-flex"
       >
         {icon}
-        <div className="self-stretch text-[#595959] text-sm font-semibold font-inter leading-[21px]">
+        <div className="self-stretch text-gray-400 text-sm font-semibold font-inter leading-[21px]">
           {name}
         </div>
         <div className="self-stretch justify-start items-center gap-2 inline-flex">
-          <div className="text-black text-2xl font-medium font-['Inter'] leading-9">
+          <div className="text-white text-2xl font-medium font-['Inter'] leading-9">
             {zatsToZec(balance)} ZEC
           </div>
         </div>
@@ -58,7 +46,7 @@ function AccountSummary() {
     <div className="pb-[72px] mt-[46px] flex-col justify-center items-center gap-6 inline-flex">
       <div className="py-6 self-start  gap-3 inline-flex">
         <div className="grow shrink basis-0 flex-col justify-start items-start gap-2 inline-flex">
-          <div className="self-stretch text-black text-[44px] font-semibold leading-[52.80px]">
+          <div className="self-stretch text-white text-[44px] font-semibold leading-[52.80px]">
             Account summary
           </div>
         </div>
@@ -72,7 +60,6 @@ function AccountSummary() {
       </div>
       <BlockHeightCard
         state={state}
-        syncedFrom={snapState?.webWalletSyncStartBlock}
       />
     </div>
   );

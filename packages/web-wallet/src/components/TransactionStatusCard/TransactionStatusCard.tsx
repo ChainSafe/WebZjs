@@ -15,15 +15,15 @@ function TransactionStatusCard({
 }: TransactionStatusCardProps): React.JSX.Element {
   return (
     <div className="x-9 mt-[72px] justify-center items-start gap-2.5 inline-flex">
-      <div className="max-w-[620px] w-full px-12 py-9 bg-white rounded-3xl border border-[#afafaf] flex-col justify-start items-center inline-flex">
+      <div className="max-w-[620px] w-full px-12 py-9 bg-gray-900 rounded-3xl border border-gray-700 flex-col justify-start items-center inline-flex">
         <div className="self-stretch  flex-col justify-start items-start gap-3 flex">
-          <div className="self-stretch mb-3 text-center text-black text-4xl font-medium font-['Inter'] leading-[43.20px]">
+          <div className="self-stretch mb-3 text-center text-white text-4xl font-medium font-['Inter'] leading-[43.20px]">
             {headText}
           </div>
           <div className="flex m-auto">{icon}</div>
         </div>
         <div className="self-stretch rounded-xl justify-start items-start gap-2 inline-flex mb-9">
-          <div className="grow shrink basis-0 text-center text-[#4f4f4f] text-base font-normal font-['Roboto'] leading-normal">
+          <div className="grow shrink basis-0 text-center text-gray-400 text-base font-normal font-['Roboto'] leading-normal">
             {statusMessage}
           </div>
         </div>

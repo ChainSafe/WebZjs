@@ -1,13 +1,14 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import React from 'react';
-import { useMetaMask } from '../../hooks';
+import { useWebZjsContext } from '../../context/WebzjsContext';
 
 const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const { installedSnap } = useMetaMask();
+  const { state } = useWebZjsContext();
+  const hasWallet = !!state.webWallet && state.activeAccount !== null;
 
-  if (!installedSnap) return <Navigate to="/" replace />;
+  if (!hasWallet) return <Navigate to="/" replace />;
 
   return children ? <>{children}</> : <Outlet />;
 };

@@ -50,7 +50,7 @@ export function TransferInput({
   };
 
   return (
-    <div className="px-12 py-9 bg-white rounded-3xl border border-[#afafaf] flex-col justify-start items-center gap-6 inline-flex">
+    <div className="px-12 py-9 bg-gray-900 rounded-3xl border border-gray-700 flex-col justify-start items-center gap-6 inline-flex">
       <div className="self-stretch flex-col justify-center items-center gap-6 flex">
         <div className="self-stretch h-[184px] flex-col justify-center items-start gap-6 flex">
           <div className="self-stretch justify-start items-start gap-6 inline-flex">

@@ -51,10 +51,10 @@ const DropdownOption: React.FC<DropdownOptionProps> = ({
   suffixOptions,
 }) => (
   <div
-    className="px-6 mr-1 py-3 hover:bg-neutral-100 cursor-pointer flex justify-between items-center"
+    className="px-6 mr-1 py-3 hover:bg-gray-800 cursor-pointer flex justify-between items-center"
     onClick={() => handleSelectOption(option)}
   >
-    <span className="text-[#0e0e0e] text-base font-normal font-['Roboto']">
+    <span className="text-white text-base font-normal font-['Roboto']">
       {option.label}
     </span>
     {suffixOptions && (
@@ -100,20 +100,20 @@ const Select: React.FC<SelectProps> = ({
     >
       {label && (
         <label
-          className={`text-black text-base font-normal leading-normal ${labelClassName}`}
+          className={`text-gray-200 text-base font-normal leading-normal ${labelClassName}`}
         >
           {label}
         </label>
       )}
       <div
-        className="relative h-full flex items-center bg-neutral-50 rounded-xl border border-[#afafaf] p-3 cursor-pointer"
+        className="relative h-full flex items-center bg-gray-900 rounded-xl border border-gray-700 p-3 cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="grow bg-transparent focus:outline-hidden text-[#0e0e0e] text-base font-semibold font-inter">
+        <span className="grow bg-transparent focus:outline-hidden text-white text-base font-semibold font-inter">
           {selected ? (
             selected.label
           ) : (
-            <div className="text-[#afafaf] text-base font-normal font-['Roboto'] leading-normal">
+            <div className="text-gray-500 text-base font-normal font-['Roboto'] leading-normal">
               -Select-
             </div>
           )}
@@ -121,12 +121,12 @@ const Select: React.FC<SelectProps> = ({
 
         <div className="ml-2 flex items-center justify-center">
           {selectedSuffix && <div className="mr-1">{selectedSuffix}</div>}
-          <ChevronSVG className="w-4 h-4 text-[#a9aaab]" />
+          <ChevronSVG className="w-4 h-4 text-gray-400" />
         </div>
 
         {isOpen && (
           <div
-            className={`absolute top-full left-0 right-0 bg-white border border-[#afafaf] rounded-xl overflow-hidden z-10 ${dropdownClassName}`}
+            className={`absolute top-full left-0 right-0 bg-gray-900 border border-gray-700 rounded-xl overflow-hidden z-10 ${dropdownClassName}`}
           >
             {options.map((option) => (
               <DropdownOption

@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
 import { WebZjsProvider } from './context/WebzjsContext';
-import { MetaMaskProvider } from './context/MetamaskContext';
+import { StarknetWalletProvider } from './context/StarknetWalletContext';
 
 createRoot(document.getElementById('root')!).render(
-  <MetaMaskProvider>
-    <WebZjsProvider>
+  <WebZjsProvider>
+    <StarknetWalletProvider>
       <RouterProvider router={router} />
-    </WebZjsProvider>
-  </MetaMaskProvider>,
+    </StarknetWalletProvider>
+  </WebZjsProvider>,
 );

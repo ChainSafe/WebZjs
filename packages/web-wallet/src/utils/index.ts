@@ -1,2 +1,2 @@
-export * from './metamask';
 export * from './balance';
+export * from './strk';

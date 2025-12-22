@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PcztTransferStatus, usePczt } from '../../hooks/usePCZT';
+import { useWebZjsContext } from '../../context/WebzjsContext';
 
 export interface TransferBalanceFormData {
   amount: string;
@@ -34,6 +35,7 @@ export enum TransferStep {
 
 const useTransferBalanceForm = (): TransferBalanceFormType => {
   const { handlePcztTransaction, pcztTransferStatus  } = usePczt();
+  const { state } = useWebZjsContext();
   const [currentStep, setCurrentStep] = useState<TransferStep>(0);
   const [formData, setFormData] = useState<TransferBalanceFormData>({
     amount: '',
@@ -52,8 +54,11 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
 
   const submitForm = () => {
     const { amount, recipient } = formData;
-    //TODO - get accoundId it from state
-    handlePcztTransaction(1, recipient, amount);
+    const accountId =
+      state.activeAccount !== null && state.activeAccount !== undefined
+        ? state.activeAccount
+        : 0;
+    handlePcztTransaction(accountId, recipient, amount);
   };
 
 

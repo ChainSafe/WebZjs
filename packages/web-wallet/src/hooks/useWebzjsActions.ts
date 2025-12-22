@@ -1,10 +1,6 @@
 import { set } from 'idb-keyval';
 import { useCallback } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
-import { useMetaMask } from './snaps/useMetaMask';
-import { useInvokeSnap } from './snaps/useInvokeSnap';
-import { useRequestSnap } from './snaps/useRequestSnap';
-import { SeedFingerprint } from '@chainsafe/webzjs-wallet';
 
 interface WebzjsActions {
   getAccountData: () => Promise<
@@ -13,14 +9,17 @@ interface WebzjsActions {
   triggerRescan: () => Promise<void>;
   flushDbToStore: () => Promise<void>;
   syncStateWithWallet: () => Promise<void>;
-  connectWebZjsSnap: () => Promise<void>;
 }
+
+// Module-level variables to track sync state across all hook instances
+// This prevents race conditions when multiple components call triggerRescan simultaneously
+let syncInProgress = false;
+let lastSyncTime = 0;
+// Minimum time between rescans (5 seconds)
+const MIN_SYNC_INTERVAL_MS = 5000;
 
 export function useWebZjsActions(): WebzjsActions {
   const { state, dispatch } = useWebZjsContext();
-  const { installedSnap } = useMetaMask();
-  const invokeSnap = useInvokeSnap();
-  const requestSnap = useRequestSnap();
 
   const getAccountData = useCallback(async () => {
     try {
@@ -91,89 +90,7 @@ export function useWebZjsActions(): WebzjsActions {
     }
   }, [state.webWallet, dispatch]);
 
-  const connectWebZjsSnap = useCallback(async () => {
-    try {
-      await requestSnap();
-
-      if (state.webWallet === null) {
-        // dispatch({
-        //   type: 'set-error',
-        //   payload: new Error('Wallet not initialized'),
-        // });
-        return;
-      }
-
-      const latestBlockBigInt = await state.webWallet.get_latest_block();
-      const latestBlock = Number(latestBlockBigInt);
-
-      let birthdayBlock = (await invokeSnap({
-        method: 'setBirthdayBlock',
-        params: { latestBlock },
-      })) as number | null;
-
-      // in case user pressed "Close" instead of "Continue to wallet" on prompt, still allow account creation with latest block
-      if (birthdayBlock === null) {
-        await invokeSnap({
-          method: 'setSnapStete',
-          params: { webWalletSyncStartBlock: latestBlock },
-        });
-        birthdayBlock = latestBlock;
-      }
-
-      const viewingKey = (await invokeSnap({
-        method: 'getViewingKey',
-      })) as string;
-
-      const seedFingerprintHexString = (await invokeSnap({
-        method: 'getSeedFingerprint',
-      })) as string;
-
-      const seedFingerprintBuffer = Buffer.from(
-        seedFingerprintHexString,
-        'hex',
-      );
-
-      const seedFingerprintUint8Array = new Uint8Array(seedFingerprintBuffer);
-
-      const seedFingerprint = SeedFingerprint.from_bytes(
-        seedFingerprintUint8Array,
-      );
-
-      const account_id = await state.webWallet.create_account_ufvk(
-        'account-0',
-        viewingKey,
-        seedFingerprint,
-        0,
-        birthdayBlock,
-      );
-
-      dispatch({ type: 'set-active-account', payload: account_id });
-
-      await syncStateWithWallet();
-
-      await flushDbToStore();
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      const fullMessage = `Failed to connect to MetaMask Snap and create account: ${errorMsg}`;
-      dispatch({
-        type: 'set-error',
-        payload: new Error(fullMessage),
-      });
-      throw error;
-    }
-  }, [
-    state.webWallet,
-    invokeSnap,
-    dispatch,
-    syncStateWithWallet,
-    flushDbToStore,
-  ]);
-
   const triggerRescan = useCallback(async () => {
-    if (!installedSnap) {
-      return;
-    }
-
     if (state.loading) {
       dispatch({ type: 'set-error', payload: new Error('App not yet loaded') });
       return;
@@ -189,10 +106,26 @@ export function useWebZjsActions(): WebzjsActions {
       dispatch({ type: 'set-error', payload: new Error('No active account') });
       return;
     }
-    if (state.syncInProgress) {
+    
+    // Check if sync is already in progress (atomic check using module-level variable)
+    if (syncInProgress) {
+      console.log('[triggerRescan] Sync already in progress, skipping...');
       return;
     }
 
+    // Throttle: prevent rescans too close together
+    const now = Date.now();
+    const timeSinceLastSync = now - lastSyncTime;
+    if (timeSinceLastSync < MIN_SYNC_INTERVAL_MS) {
+      console.log(
+        `[triggerRescan] Throttling: only ${timeSinceLastSync}ms since last sync (min ${MIN_SYNC_INTERVAL_MS}ms), skipping...`,
+      );
+      return;
+    }
+
+    // Set sync in progress atomically
+    syncInProgress = true;
+    lastSyncTime = now;
     dispatch({ type: 'set-sync-in-progress', payload: true });
 
     try {
@@ -203,13 +136,13 @@ export function useWebZjsActions(): WebzjsActions {
       console.error('Error during rescan:', err);
       dispatch({ type: 'set-error', payload: String(err) });
     } finally {
+      syncInProgress = false;
       dispatch({ type: 'set-sync-in-progress', payload: false });
     }
   }, [
     state.loading,
     state.webWallet,
     state.activeAccount,
-    state.syncInProgress,
     dispatch,
     syncStateWithWallet,
     flushDbToStore,
@@ -220,6 +153,5 @@ export function useWebZjsActions(): WebzjsActions {
     triggerRescan,
     flushDbToStore,
     syncStateWithWallet,
-    connectWebZjsSnap,
   };
 }
