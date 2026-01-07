@@ -80,8 +80,8 @@ pub fn validate_confirmations_policy(
     let trusted_nonzero =
         NonZeroU32::try_from(trusted).map_err(|_| ValidationError::TrustedConfirmationsZero)?;
 
-    let untrusted_nonzero = NonZeroU32::try_from(untrusted)
-        .map_err(|_| ValidationError::UntrustedConfirmationsZero)?;
+    let untrusted_nonzero =
+        NonZeroU32::try_from(untrusted).map_err(|_| ValidationError::UntrustedConfirmationsZero)?;
 
     ConfirmationsPolicy::new(trusted_nonzero, untrusted_nonzero, allow_mempool)
         .map_err(|_| ValidationError::InvalidConfirmationsPolicy)
@@ -97,21 +97,30 @@ mod tests {
     fn test_valid_minimum_confirmations() {
         // Both set to minimum valid value (1)
         let result = validate_confirmations_policy(1, 1, true);
-        assert!(result.is_ok(), "Minimum valid confirmations (1, 1) should succeed");
+        assert!(
+            result.is_ok(),
+            "Minimum valid confirmations (1, 1) should succeed"
+        );
     }
 
     #[test]
     fn test_valid_typical_configuration() {
         // Typical real-world configuration
         let result = validate_confirmations_policy(1, 10, true);
-        assert!(result.is_ok(), "Typical configuration (1, 10) should succeed");
+        assert!(
+            result.is_ok(),
+            "Typical configuration (1, 10) should succeed"
+        );
     }
 
     #[test]
     fn test_valid_conservative_configuration() {
         // Conservative configuration with higher trusted confirmations
         let result = validate_confirmations_policy(3, 10, false);
-        assert!(result.is_ok(), "Conservative configuration (3, 10) should succeed");
+        assert!(
+            result.is_ok(),
+            "Conservative configuration (3, 10) should succeed"
+        );
     }
 
     #[test]
@@ -125,7 +134,10 @@ mod tests {
     fn test_valid_high_confirmations() {
         // Very high confirmation counts (paranoid configuration)
         let result = validate_confirmations_policy(100, 1000, true);
-        assert!(result.is_ok(), "High confirmations (100, 1000) should succeed");
+        assert!(
+            result.is_ok(),
+            "High confirmations (100, 1000) should succeed"
+        );
     }
 
     #[test]
@@ -182,7 +194,10 @@ mod tests {
     fn test_invalid_zero_with_mempool_disabled() {
         // Even with mempool disabled, zero values should be rejected
         let result = validate_confirmations_policy(0, 1, false);
-        assert!(result.is_err(), "Zero trusted with mempool disabled should fail");
+        assert!(
+            result.is_err(),
+            "Zero trusted with mempool disabled should fail"
+        );
     }
 
     // ==================== Error Message Tests ====================

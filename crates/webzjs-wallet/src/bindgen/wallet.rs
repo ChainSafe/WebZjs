@@ -133,9 +133,12 @@ impl WebWallet {
         db_bytes: Option<Box<[u8]>>,
     ) -> Result<WebWallet, Error> {
         let network = Network::from_str(network)?;
-        let min_confirmations =
-            validate_confirmations_policy(min_confirmations_trusted, min_confirmations_untrusted, true)
-                .map_err(|_| Error::InvalidMinConformations)?;
+        let min_confirmations = validate_confirmations_policy(
+            min_confirmations_trusted,
+            min_confirmations_untrusted,
+            true,
+        )
+        .map_err(|_| Error::InvalidMinConformations)?;
         let client = Client::new(lightwalletd_url.to_string());
 
         let db = match db_bytes {
