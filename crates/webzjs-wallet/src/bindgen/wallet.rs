@@ -1,4 +1,3 @@
-use std::num::NonZeroU32;
 use std::str::FromStr;
 
 use nonempty::NonEmpty;
@@ -8,13 +7,13 @@ use wasm_bindgen::prelude::*;
 use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
+use crate::validation::validate_confirmations_policy;
 use crate::wallet::usk_from_seed_str;
 use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
 use wasm_thread as thread;
 use webzjs_common::{Network, Pczt};
 use webzjs_keys::{ProofGenerationKey, SeedFingerprint};
 use zcash_address::ZcashAddress;
-use zcash_client_backend::data_api::wallet::ConfirmationsPolicy;
 use zcash_client_backend::data_api::{AccountPurpose, InputSource, WalletRead, Zip32Derivation};
 use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
@@ -134,13 +133,8 @@ impl WebWallet {
         db_bytes: Option<Box<[u8]>>,
     ) -> Result<WebWallet, Error> {
         let network = Network::from_str(network)?;
-        let min_confirmations_trusted = NonZeroU32::try_from(min_confirmations_trusted)
-            .map_err(|_| Error::InvalidMinConformations)?;
-        let min_confirmations_untrusted = NonZeroU32::try_from(min_confirmations_untrusted)
-            .map_err(|_| Error::InvalidMinConformations)?;
-
         let min_confirmations =
-            ConfirmationsPolicy::new(min_confirmations_trusted, min_confirmations_untrusted, true)
+            validate_confirmations_policy(min_confirmations_trusted, min_confirmations_untrusted, true)
                 .map_err(|_| Error::InvalidMinConformations)?;
         let client = Client::new(lightwalletd_url.to_string());
 
