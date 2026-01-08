@@ -108,10 +108,19 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (bytes) {
         console.info('Saved wallet detected. Restoring wallet from storage');
-        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, bytes);
+        try {
+          wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, 1, bytes);
+        } catch (deserializeError) {
+          console.warn(
+            'Failed to restore wallet from storage (possibly incompatible format after upgrade). Creating fresh wallet.',
+            deserializeError
+          );
+          toast.error('Wallet data incompatible after upgrade. Please re-sync your wallet.');
+          wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, 1, null);
+        }
       } else {
         console.info('No saved wallet detected. Creating new wallet');
-        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1);
+        wallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, 1, null);
       }
 
       dispatch({ type: 'set-web-wallet', payload: wallet });

@@ -4,7 +4,7 @@
 use crate::error::Error;
 use wasm_bindgen::prelude::*;
 use zcash_address::ZcashAddress;
-use zcash_primitives::memo::MemoBytes;
+use zcash_protocol::memo::MemoBytes;
 
 /// A [ZIP-321](https://zips.z.cash/zip-0321) transaction request
 ///
