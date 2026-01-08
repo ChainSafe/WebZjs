@@ -82,6 +82,7 @@ export default defineConfig({
   webServer: {
     command: 'serve -l 8081 ./dist -c ./serve.json',
     url: 'http://127.0.0.1:8081',
-    // reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+    reuseExistingServer: !process.env.CI,
   },
 });
