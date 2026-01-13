@@ -71,7 +71,7 @@ const Home: React.FC = () => {
               <div>To reset manually:</div>
               <ul className="list-disc pl-6 space-y-1">
                 <li>Open DevTools ➛ Application ➛ IndexedDB ➛ keyval-store ➛ Delete database</li>
-                <li>Opem Metamask ➛ ⋮ ➛ Snaps ➛ Zcash Shielded Wallet ➛ Remove Zcash Shielded Wallet ➛ Remove Snap</li>
+                <li>Open Metamask ➛ ⋮ ➛ Snaps ➛ Zcash Shielded Wallet ➛ Remove Zcash Shielded Wallet ➛ Remove Snap</li>
                 <li>Refresh the page and start installation again</li>
               </ul>
               <details className="mt-2">
