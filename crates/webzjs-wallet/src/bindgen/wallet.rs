@@ -10,6 +10,7 @@ use crate::error::Error;
 use crate::validation::validate_confirmations_policy;
 use crate::wallet::usk_from_seed_str;
 use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
+use futures_util::TryStreamExt;
 use wasm_thread as thread;
 use webzjs_common::{Network, Pczt};
 use webzjs_keys::{ProofGenerationKey, SeedFingerprint};
@@ -19,7 +20,6 @@ use zcash_client_backend::proto::service::{
     compact_tx_streamer_client::CompactTxStreamerClient, BlockId, BlockRange, ChainSpec,
     TransparentAddressBlockFilter,
 };
-use futures_util::TryStreamExt;
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey};
