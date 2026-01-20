@@ -14,3 +14,7 @@ export type SignPcztDetails = {
     amount: string;
   };
 };
+
+export interface SnapState {
+  webWalletSyncStartBlock: string;
+}

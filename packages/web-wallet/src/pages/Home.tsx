@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ZcashYellowPNG, FormTransferSvg, MetaMaskLogoPNG } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { useWebZjsContext } from '../context/WebzjsContext';
+import { useMetaMaskContext } from '../context/MetamaskContext';
 import { useMetaMask, useWebZjsActions } from '../hooks';
 import Loader from '../components/Loader/Loader';
 
@@ -10,14 +11,16 @@ const Home: React.FC = () => {
   const { state, dispatch } = useWebZjsContext();
   const { getAccountData, connectWebZjsSnap } = useWebZjsActions();
   const { installedSnap } = useMetaMask();
+  const { isPendingRequest } = useMetaMaskContext();
   const [showResetInstructions, setShowResetInstructions] = useState(false);
-
 
   const handleConnectButton: React.MouseEventHandler<
     HTMLButtonElement
   > = async (e) => {
     e.preventDefault();
     await connectWebZjsSnap();
+    // Navigate to dashboard after successful connection
+    navigate('/dashboard/account-summary');
   };
 
   useEffect(() => {
@@ -47,7 +50,7 @@ const Home: React.FC = () => {
       };
       homeReload();
     };
-  }, [navigate, getAccountData, state.activeAccount, state.loading]);
+  }, [navigate, getAccountData, state.activeAccount, state.loading, installedSnap, dispatch]);
 
   return (
     <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">
@@ -82,13 +85,21 @@ const Home: React.FC = () => {
               </details>
             </div>
           )}
+          {isPendingRequest && (
+            <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-sm">
+              <div className="font-medium">MetaMask request pending</div>
+              <div className="mt-1">
+                Check MetaMask for a pending approval request. If you switched between MetaMask versions (e.g., Flask to regular), refresh the page and try again.
+              </div>
+            </div>
+          )}
           <button
-            disabled={state.loading}
+            disabled={state.loading || isPendingRequest}
             onClick={handleConnectButton}
-            className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${state.loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${state.loading || isPendingRequest ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
           >
-            <span>{state.loading ? 'Wallet Initializing...' : 'Connect MetaMask Snap'}</span>
-            {state.loading && (
+            <span>{state.loading ? 'Wallet Initializing...' : isPendingRequest ? 'Waiting for MetaMask...' : 'Connect MetaMask Snap'}</span>
+            {(state.loading || isPendingRequest) && (
               <div className="ml-3">
                 <Loader />
               </div>

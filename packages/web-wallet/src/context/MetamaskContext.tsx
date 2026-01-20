@@ -10,20 +10,24 @@ type MetaMaskContextType = {
   provider: MetaMaskInpageProvider | null;
   installedSnap: Snap | null;
   error: Error | null;
+  isPendingRequest: boolean;
   snapState: SnapState | null;
   setSnapState: (SnapState: SnapState) => void;
   setInstalledSnap: (snap: Snap | null) => void;
   setError: (error: Error) => void;
+  setIsPendingRequest: (isPending: boolean) => void;
 };
 
 const MetaMaskContext = createContext<MetaMaskContextType>({
   provider: null,
   installedSnap: null,
   error: null,
+  isPendingRequest: false,
   snapState: null,
   setSnapState: () => {},
   setInstalledSnap: () => {},
   setError: () => {},
+  setIsPendingRequest: () => {},
 });
 
 /**
@@ -39,6 +43,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
   const [provider, setProvider] = useState<MetaMaskInpageProvider | null>(null);
   const [installedSnap, setInstalledSnap] = useState<Snap | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [isPendingRequest, setIsPendingRequest] = useState<boolean>(false);
   const [snapState, setSnapState] = useState<SnapState | null>(null);
 
   useEffect(() => {
@@ -47,13 +52,20 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (error) {
+      // Track if this is a pending request error
+      const isPending = (error as any)?.code === -32002 || (error as any)?.isPendingRequest === true;
+      setIsPendingRequest(isPending);
+
       const timeout = setTimeout(() => {
         setError(null);
+        setIsPendingRequest(false);
       }, 10000);
 
       return () => {
         clearTimeout(timeout);
       };
+    } else {
+      setIsPendingRequest(false);
     }
 
     return undefined;
@@ -64,9 +76,11 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
       value={{
         provider,
         error,
+        isPendingRequest,
         snapState,
         setSnapState,
         setError,
+        setIsPendingRequest,
         installedSnap,
         setInstalledSnap,
       }}

@@ -16,10 +16,10 @@ codegen-units = 1
 
 [workspace.dependencies]
 ## Web dependencies
-wasm-bindgen = "0.2.99" # higher versions has an issues with attachment of the file: webzjs-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js
-js-sys = "0.3.77"
-wasm-bindgen-futures = "0.4.43"
-web-sys = { version = "0.3.70", features = [
+wasm-bindgen = "=0.2.100" # PINNED: 0.2.108+ has TextEncoder.encodeInto issues with MetaMask Snap sandbox
+js-sys = "=0.3.77"
+wasm-bindgen-futures = "=0.4.50"
+web-sys = { version = "=0.3.77", features = [
     "console",
 ] }
 wasm-bindgen-rayon = { version = "1.3" } # Update to higher version cause playwright test in chtomium fail
@@ -30,20 +30,20 @@ console_error_panic_hook = { version = "0.1.7" }
 tonic-web-wasm-client = "0.8.0"
 tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "sync", "macros", "time"] }
 
-## Zcash dependencies
+## Zcash dependencies - Using local librustzcash with fixes (commit 0a75d32f6, 2026-01-10)
 
-zcash_keys = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", default-features = false, features = ["sync", "lightwalletd-tonic", "orchard"] }
-zcash_client_memory = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", features = ["orchard", "transparent-inputs"] }
-zcash_primitives = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5" }
-zcash_transparent = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", default-features = false}
-zcash_address = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5" }
-zcash_proofs = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", default-features = false, features = ["bundled-prover", "multicore"] }
-zip321 = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5" }
+zcash_keys = { path = "/home/skynet/librustzcash/zcash_keys", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { path = "/home/skynet/librustzcash/zcash_client_backend", default-features = false, features = ["sync", "lightwalletd-tonic", "orchard"] }
+zcash_client_memory = { path = "/home/skynet/librustzcash/zcash_client_memory", features = ["orchard", "transparent-inputs"] }
+zcash_primitives = { path = "/home/skynet/librustzcash/zcash_primitives" }
+zcash_transparent = { path = "/home/skynet/librustzcash/zcash_transparent", default-features = false }
+zcash_address = { path = "/home/skynet/librustzcash/components/zcash_address" }
+zcash_proofs = { path = "/home/skynet/librustzcash/zcash_proofs", default-features = false, features = ["bundled-prover", "multicore"] }
+zip321 = { path = "/home/skynet/librustzcash/components/zip321" }
 zip32 = { version = "0.2" }
-zcash_protocol = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", default-features = false }
-pczt = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", default-features = false, features = ["orchard", "sapling", "transparent"] }
-sapling = { package = "sapling-crypto", version = "0.5", default-features = false }
+zcash_protocol = { path = "/home/skynet/librustzcash/components/zcash_protocol", default-features = false }
+pczt = { path = "/home/skynet/librustzcash/pczt", default-features = false, features = ["orchard", "sapling", "transparent"] }
+sapling = { package = "sapling-crypto", version = "0.6", default-features = false }
 bip32 = { version = "=0.6.0-pre.1", default-features = false, features = ["alloc"] }
 ## gRPC Web dependencies
 prost = { version = "0.14", default-features = false }
@@ -51,7 +51,7 @@ tonic = { version = "0.14", default-features = false }
 
 
 # Used in Native tests
-zcash_client_sqlite = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", default-features = false, features = ["unstable", "orchard"] }
+zcash_client_sqlite = { path = "/home/skynet/librustzcash/zcash_client_sqlite", default-features = false, features = ["unstable", "orchard"] }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
@@ -75,7 +75,7 @@ serde = { version = "1", features = ["derive"], default-features = false }
 postcard = { version = "1.0.10", features = ["alloc"] }
 serde-wasm-bindgen = "0.6.5"
 
-wasm-bindgen-test = "0.3.43"
+wasm-bindgen-test = "=0.3.50"
 tempfile = "3.12"
 # Used in Native tests
 tokio = { version = "1.0", features = ["rt", "macros"] }
@@ -91,13 +91,4 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(wasm_bindgen)', 'cfg(wasm_bindgen_unstable_test_coverage)'] }
 
-#[patch.'https://github.com/chainsafe/librustzcash']
-#zcash_address = { path = "../librustzcash/components/zcash_address" }
-#zcash_client_backend = { path = "../librustzcash/zcash_client_backend" }
-#zcash_client_sqlite = { path = "../librustzcash/zcash_client_sqlite" }
-#zcash_client_memory = { path = "../librustzcash/zcash_client_memory" }
-#zcash_keys = { path = "../librustzcash/zcash_keys" }
-#zcash_primitives = { path = "../librustzcash/zcash_primitives" }
-#zcash_proofs = { path = "../librustzcash/zcash_proofs" }
-#zcash_protocol = { path = "../librustzcash/components/zcash_protocol" }
-#pczt = { path = "../librustzcash/pczt" }
+# Local fork paths configured above in workspace.dependencies

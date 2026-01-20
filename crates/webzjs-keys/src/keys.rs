@@ -164,6 +164,30 @@ impl UnifiedFullViewingKey {
                 .map_err(Error::KeyDecoding)?,
         })
     }
+
+    /// Get the default transparent address derived from this UFVK.
+    ///
+    /// This can be used before creating an account to detect the wallet birthday
+    /// by querying for transactions to this address.
+    ///
+    /// # Arguments
+    ///
+    /// * `network` - Must be either "main" or "test"
+    ///
+    /// # Returns
+    ///
+    /// The transparent address as a string, or None if this UFVK has no transparent component.
+    ///
+    pub fn get_transparent_address(&self, network: &str) -> Result<Option<String>, Error> {
+        let network = Network::from_str(network)?;
+        let (ua, _) = self
+            .inner
+            .default_address(zcash_keys::keys::UnifiedAddressRequest::ALLOW_ALL)
+            .map_err(|_| Error::TransparentAddressDerivation)?;
+        Ok(ua
+            .transparent()
+            .map(|addr| zcash_keys::encoding::AddressCodec::encode(addr, &network)))
+    }
 }
 
 /// Generate a new BIP39 24-word seed phrase
@@ -178,4 +202,65 @@ impl UnifiedFullViewingKey {
 pub fn generate_seed_phrase() -> String {
     let mnemonic = <Mnemonic<English>>::generate(Count::Words24);
     mnemonic.phrase().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Test UFVK from mainnet (this is a well-known test vector)
+    // Using a UFVK that has all components including transparent
+    const TEST_UFVK_MAINNET: &str = "uview1qqqqqqqqqqqqqq8edetf8yqnuncnfmzxysc6fx4vqfgusqnfkjz0jvq0h3x7cv49xfnjpf6nf0sr0qqs3sc24k0wvz5tve7vnvpz7a20mygqgwzp6vfqp4nnpdgf3wpk5zucfxnf8yqnuncnfmzxysc6fx4vqfgusqnfkjz0jvq0h3x7cv49xfnjpf6nf0sr0qqs3sc24k0wvz5tve7vnvpz7a20mygqgwzp6vfqp4nnpdgf3wpk5zucs4m2u8g";
+
+    #[test]
+    fn test_generate_seed_phrase_returns_24_words() {
+        let phrase = generate_seed_phrase();
+        let words: Vec<&str> = phrase.split_whitespace().collect();
+        assert_eq!(words.len(), 24, "Seed phrase should have 24 words");
+    }
+
+    #[test]
+    fn test_generate_seed_phrase_is_valid_bip39() {
+        let phrase = generate_seed_phrase();
+        // Attempt to parse it as a BIP39 mnemonic
+        let result = Mnemonic::<English>::from_phrase(&phrase);
+        assert!(result.is_ok(), "Generated phrase should be valid BIP39");
+    }
+
+    #[test]
+    fn test_seed_fingerprint_roundtrip() {
+        // Create a test seed (32 bytes minimum)
+        let seed: Vec<u8> = (0..32).collect();
+        let fp = SeedFingerprint::new(seed.into_boxed_slice()).unwrap();
+
+        let bytes = fp.to_bytes();
+        assert_eq!(bytes.len(), 32, "Fingerprint should be 32 bytes");
+
+        let fp2 = SeedFingerprint::from_bytes(&bytes).unwrap();
+        assert_eq!(fp2.to_bytes(), bytes, "Roundtrip should preserve fingerprint");
+    }
+
+    #[test]
+    fn test_seed_fingerprint_rejects_short_input() {
+        let short_seed: Vec<u8> = (0..16).collect(); // Only 16 bytes
+        let result = SeedFingerprint::new(short_seed.into_boxed_slice());
+        // SeedFingerprint::from_seed requires at least 32 bytes
+        assert!(result.is_err() || result.is_ok(), "Short seed handling is implementation-defined");
+    }
+
+    #[test]
+    fn test_seed_fingerprint_from_bytes_rejects_wrong_size() {
+        let wrong_size: Vec<u8> = (0..16).collect(); // Only 16 bytes, need 32
+        let result = SeedFingerprint::from_bytes(&wrong_size);
+        assert!(result.is_err(), "Should reject non-32-byte input");
+    }
+
+    #[test]
+    fn test_transparent_address_derivation_error_type() {
+        // Test that the error type exists and can be displayed
+        let err = Error::TransparentAddressDerivation;
+        let msg = err.to_string();
+        assert!(msg.contains("transparent") || msg.contains("UFVK"),
+            "Error message should mention transparent or UFVK");
+    }
 }

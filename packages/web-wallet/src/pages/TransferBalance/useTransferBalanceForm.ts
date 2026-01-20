@@ -20,6 +20,7 @@ export interface TransferBalanceFormType {
   currentStep: number;
   formData: TransferBalanceFormData;
   pcztTransferStatus: PcztTransferStatus;
+  lastError: string | null;
   nextStep: () => void;
   handleChange: TransferBalanceFormHandleChange;
   submitForm: () => void;
@@ -33,7 +34,7 @@ export enum TransferStep {
 }
 
 const useTransferBalanceForm = (): TransferBalanceFormType => {
-  const { handlePcztTransaction, pcztTransferStatus  } = usePczt();
+  const { handlePcztTransaction, pcztTransferStatus, lastError } = usePczt();
   const [currentStep, setCurrentStep] = useState<TransferStep>(0);
   const [formData, setFormData] = useState<TransferBalanceFormData>({
     amount: '',
@@ -69,6 +70,7 @@ const useTransferBalanceForm = (): TransferBalanceFormType => {
     currentStep,
     formData,
     pcztTransferStatus,
+    lastError,
     nextStep,
     handleChange,
     submitForm,

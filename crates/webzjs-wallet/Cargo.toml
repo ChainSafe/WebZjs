@@ -43,6 +43,9 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 tonic-web-wasm-client = "0.8.0"
 tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "sync", "macros", "time"] }
 
+## Time with WASM support (enables JavaScript Date API for time::OffsetDateTime::now_utc())
+time = { version = "0.3.22", features = ["wasm-bindgen"] }
+
 ## Zcash dependencies
 
 zcash_keys = { workspace = true, features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
@@ -61,7 +64,7 @@ zcash_proofs = { workspace = true, default-features = false, features = ["bundle
 zip321 = { workspace = true }
 zip32 = { workspace = true }
 pczt = { workspace = true, default-features = false, features = ["orchard", "sapling", "transparent"] }
-orchard = { version = "0.11", default-features = false }
+orchard = { version = "0.12", default-features = false }
 sapling = { workspace = true }
 bip32.workspace = true
 ## gRPC Web dependencies
@@ -70,10 +73,7 @@ tonic = { version = "0.14", default-features = false, features = ["codegen"] }
 
 # Used in Native tests
 tokio.workspace = true
-zcash_client_sqlite = { git = "https://github.com/zcash/librustzcash", rev = "a40ee353bba84d1cb3eaf1889df433d3be9c79e5", default-features = false, features = [
-    "unstable",
-    "orchard",
-], optional = true }
+zcash_client_sqlite = { workspace = true, optional = true }
 
 getrandom = { workspace = true, features = ["js"] }
 thiserror.workspace = true
@@ -99,6 +99,9 @@ http = { version = "1.1.0", default-features = false }
 serde.workspace = true
 postcard = { version = "1.0.10", features = ["alloc"] }
 serde-wasm-bindgen.workspace = true
+
+[dev-dependencies]
+serde_json = "1.0"
 
 [lints]
 workspace = true

@@ -18,6 +18,7 @@ interface IUsePczt {
     value: string,
   ) => void;
   pcztTransferStatus: PcztTransferStatus;
+  lastError: string | null;
 }
 
 export enum PcztTransferStatus {
@@ -39,6 +40,7 @@ export const usePczt = (): IUsePczt => {
 
   const [pcztTransferStatus, setPcztTransferStatus] =
     useState<PcztTransferStatus>(PcztTransferStatus.CHECK_WALLET);
+  const [lastError, setLastError] = useState<string | null>(null);
 
   const createPCZT = async (
     accountId: number,
@@ -111,6 +113,7 @@ export const usePczt = (): IUsePczt => {
     ) => Promise<Pczt>,
   ) => {
     if (!state.webWallet) return;
+    setLastError(null); // Clear any previous error
     try {
       const chainHeight = await state.webWallet.get_latest_block();
       const isSynced =
@@ -142,8 +145,17 @@ export const usePczt = (): IUsePczt => {
 
       await triggerRescan();
     } catch (error) {
-      console.error(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Transaction error:', errorMessage);
+      setLastError(errorMessage);
       setPcztTransferStatus(PcztTransferStatus.SEND_ERROR);
+      // Rescan to detect notes are still unspent on-chain
+      // This prevents the "stuck funds" issue when broadcast fails
+      try {
+        await triggerRescan();
+      } catch (rescanError) {
+        console.error('Rescan after error failed:', rescanError);
+      }
     }
   };
 
@@ -172,5 +184,6 @@ export const usePczt = (): IUsePczt => {
     handlePcztTransaction,
     handlePcztShieldTransaction,
     pcztTransferStatus,
+    lastError,
   };
 };

@@ -34,7 +34,7 @@ pczt = { workspace = true, default-features = false, features = [
     "transparent",
     "tx-extractor",
 ] }
-orchard = { version = "0.11", default-features = false }
+orchard = { version = "0.12", default-features = false }
 wasm-bindgen-futures = "0.4.43"
 
 # fixes "failed to resolve: use of undeclared crate or module `imp`" error

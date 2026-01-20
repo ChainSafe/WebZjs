@@ -16,8 +16,10 @@ use webzjs_keys::{ProofGenerationKey, SeedFingerprint};
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::{AccountPurpose, InputSource, WalletRead, Zip32Derivation};
 use zcash_client_backend::proto::service::{
-    compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
+    compact_tx_streamer_client::CompactTxStreamerClient, BlockId, BlockRange, ChainSpec,
+    TransparentAddressBlockFilter,
 };
+use futures_util::TryStreamExt;
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::encoding::AddressCodec;
 use zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey};
@@ -284,12 +286,26 @@ impl WebWallet {
                 );
 
                 let db = db;
-                db.sync().await.unwrap_throw();
+                // Convert error to String since Error isn't Send (contains JsValue)
+                db.sync().await.map_err(|e| e.to_string())
             })
             .unwrap_throw()
             .join_async();
-        sync_handler.await.unwrap();
-        Ok(())
+
+        // sync_handler.await returns Result<Result<(), String>, Box<dyn Any + Send>>
+        // The outer Result is for the join (thread panics), inner is sync result
+        match sync_handler.await {
+            Ok(Ok(())) => Ok(()),
+            Ok(Err(err_string)) => {
+                tracing::error!("Sync error: {}", err_string);
+                Err(Error::Sync(err_string))
+            }
+            Err(panic_error) => {
+                let msg = format!("Sync thread panicked: {:?}", panic_error);
+                tracing::error!("{}", msg);
+                Err(Error::Sync(msg))
+            }
+        }
     }
 
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
@@ -548,6 +564,59 @@ impl WebWallet {
             .map(|response| response.into_inner().height)
             .map_err(Error::from)
     }
+
+    /// Detect the wallet birthday by querying for the first transaction to a transparent address.
+    ///
+    /// This queries the lightwalletd server for all transactions to the given transparent address
+    /// and returns the block height of the earliest transaction, minus a safety buffer.
+    ///
+    /// # Arguments
+    ///
+    /// * `transparent_address` - A transparent Zcash address (t-address)
+    ///
+    /// # Returns
+    ///
+    /// The detected birthday height, or None if no transactions were found.
+    /// Returns the earliest transaction height minus 100 blocks as a safety buffer.
+    ///
+    pub async fn detect_birthday_from_transparent_address(
+        &self,
+        transparent_address: &str,
+    ) -> Result<Option<u32>, Error> {
+        let mut client = self.client();
+
+        // Query from Sapling activation to current tip
+        let filter = TransparentAddressBlockFilter {
+            address: transparent_address.to_string(),
+            range: Some(BlockRange {
+                start: Some(BlockId {
+                    height: 419200, // Sapling activation height
+                    hash: vec![],
+                }),
+                end: Some(BlockId {
+                    height: u64::MAX,
+                    hash: vec![],
+                }),
+                pool_types: vec![], // Empty = all pools
+            }),
+        };
+
+        let response = client.get_taddress_txids(filter).await?;
+        let mut stream = response.into_inner();
+
+        // Find the minimum height from all returned transactions
+        let mut min_height: Option<u64> = None;
+        while let Some(raw_tx) = stream.try_next().await? {
+            let height = raw_tx.height;
+            min_height = Some(min_height.map_or(height, |m| m.min(height)));
+        }
+
+        // Return with 100-block safety buffer
+        Ok(min_height.map(|h| {
+            let safe_height = h.saturating_sub(100);
+            safe_height as u32
+        }))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -574,6 +643,10 @@ pub struct AccountBalance {
     pub sapling_balance: u64,
     pub orchard_balance: u64,
     pub unshielded_balance: u64,
+    /// Change from sent transactions waiting for mining confirmation
+    pub pending_change: u64,
+    /// Received notes waiting for required confirmations to become spendable
+    pub pending_spendable: u64,
 }
 
 impl From<zcash_client_backend::data_api::AccountBalance> for AccountBalance {
@@ -581,7 +654,9 @@ impl From<zcash_client_backend::data_api::AccountBalance> for AccountBalance {
         AccountBalance {
             sapling_balance: balance.sapling_balance().spendable_value().into(),
             orchard_balance: balance.orchard_balance().spendable_value().into(),
-            unshielded_balance: balance.unshielded().into(),
+            unshielded_balance: balance.unshielded_balance().spendable_value().into(),
+            pending_change: balance.change_pending_confirmation().into(),
+            pending_spendable: balance.value_pending_spendability().into(),
         }
     }
 }
@@ -606,5 +681,174 @@ where
             next_sapling_subtree_index: summary.next_sapling_subtree_index(),
             next_orchard_subtree_index: summary.next_orchard_subtree_index(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_account_balance_struct_fields() {
+        let balance = AccountBalance {
+            sapling_balance: 100_000_000,
+            orchard_balance: 200_000_000,
+            unshielded_balance: 50_000_000,
+            pending_change: 10_000_000,
+            pending_spendable: 25_000_000,
+        };
+
+        assert_eq!(balance.sapling_balance, 100_000_000);
+        assert_eq!(balance.orchard_balance, 200_000_000);
+        assert_eq!(balance.unshielded_balance, 50_000_000);
+        assert_eq!(balance.pending_change, 10_000_000);
+        assert_eq!(balance.pending_spendable, 25_000_000);
+    }
+
+    #[test]
+    fn test_account_balance_zero_values() {
+        let balance = AccountBalance {
+            sapling_balance: 0,
+            orchard_balance: 0,
+            unshielded_balance: 0,
+            pending_change: 0,
+            pending_spendable: 0,
+        };
+
+        assert_eq!(balance.sapling_balance, 0);
+        assert_eq!(balance.orchard_balance, 0);
+        assert_eq!(balance.unshielded_balance, 0);
+        assert_eq!(balance.pending_change, 0);
+        assert_eq!(balance.pending_spendable, 0);
+    }
+
+    #[test]
+    fn test_account_balance_max_values() {
+        let balance = AccountBalance {
+            sapling_balance: u64::MAX,
+            orchard_balance: u64::MAX,
+            unshielded_balance: u64::MAX,
+            pending_change: u64::MAX,
+            pending_spendable: u64::MAX,
+        };
+
+        assert_eq!(balance.sapling_balance, u64::MAX);
+        assert_eq!(balance.orchard_balance, u64::MAX);
+    }
+
+    #[test]
+    fn test_account_balance_serialization_roundtrip() {
+        let balance = AccountBalance {
+            sapling_balance: 100_000_000,
+            orchard_balance: 200_000_000,
+            unshielded_balance: 50_000_000,
+            pending_change: 10_000_000,
+            pending_spendable: 25_000_000,
+        };
+
+        // Serialize to JSON
+        let json = serde_json::to_string(&balance).expect("serialization should succeed");
+
+        // Deserialize back
+        let deserialized: AccountBalance = serde_json::from_str(&json).expect("deserialization should succeed");
+
+        assert_eq!(balance.sapling_balance, deserialized.sapling_balance);
+        assert_eq!(balance.orchard_balance, deserialized.orchard_balance);
+        assert_eq!(balance.unshielded_balance, deserialized.unshielded_balance);
+        assert_eq!(balance.pending_change, deserialized.pending_change);
+        assert_eq!(balance.pending_spendable, deserialized.pending_spendable);
+    }
+
+    #[test]
+    fn test_account_balance_json_structure() {
+        let balance = AccountBalance {
+            sapling_balance: 1,
+            orchard_balance: 2,
+            unshielded_balance: 3,
+            pending_change: 4,
+            pending_spendable: 5,
+        };
+
+        let json = serde_json::to_string(&balance).expect("serialization should succeed");
+
+        // Verify JSON contains expected fields
+        assert!(json.contains("sapling_balance"));
+        assert!(json.contains("orchard_balance"));
+        assert!(json.contains("unshielded_balance"));
+        assert!(json.contains("pending_change"));
+        assert!(json.contains("pending_spendable"));
+    }
+
+    #[test]
+    fn test_account_balance_debug_impl() {
+        let balance = AccountBalance {
+            sapling_balance: 100,
+            orchard_balance: 200,
+            unshielded_balance: 50,
+            pending_change: 10,
+            pending_spendable: 25,
+        };
+
+        let debug_str = format!("{:?}", balance);
+        assert!(debug_str.contains("AccountBalance"));
+        assert!(debug_str.contains("100"));
+        assert!(debug_str.contains("200"));
+    }
+
+    #[test]
+    fn test_wallet_summary_struct() {
+        let summary = WalletSummary {
+            account_balances: vec![
+                (0, AccountBalance {
+                    sapling_balance: 100,
+                    orchard_balance: 200,
+                    unshielded_balance: 50,
+                    pending_change: 10,
+                    pending_spendable: 25,
+                }),
+            ],
+            chain_tip_height: 2700000,
+            fully_scanned_height: 2699990,
+            next_sapling_subtree_index: 100,
+            next_orchard_subtree_index: 50,
+        };
+
+        assert_eq!(summary.chain_tip_height, 2700000);
+        assert_eq!(summary.fully_scanned_height, 2699990);
+        assert_eq!(summary.next_sapling_subtree_index, 100);
+        assert_eq!(summary.next_orchard_subtree_index, 50);
+        assert_eq!(summary.account_balances.len(), 1);
+    }
+
+    #[test]
+    fn test_wallet_summary_multiple_accounts() {
+        let summary = WalletSummary {
+            account_balances: vec![
+                (0, AccountBalance {
+                    sapling_balance: 100,
+                    orchard_balance: 200,
+                    unshielded_balance: 0,
+                    pending_change: 0,
+                    pending_spendable: 0,
+                }),
+                (1, AccountBalance {
+                    sapling_balance: 300,
+                    orchard_balance: 400,
+                    unshielded_balance: 100,
+                    pending_change: 50,
+                    pending_spendable: 75,
+                }),
+            ],
+            chain_tip_height: 2700000,
+            fully_scanned_height: 2699990,
+            next_sapling_subtree_index: 100,
+            next_orchard_subtree_index: 50,
+        };
+
+        assert_eq!(summary.account_balances.len(), 2);
+        assert_eq!(summary.account_balances[0].0, 0);
+        assert_eq!(summary.account_balances[1].0, 1);
+        assert_eq!(summary.account_balances[0].1.sapling_balance, 100);
+        assert_eq!(summary.account_balances[1].1.sapling_balance, 300);
     }
 }

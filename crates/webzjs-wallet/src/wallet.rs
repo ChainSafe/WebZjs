@@ -57,7 +57,7 @@ use zcash_protocol::value::Zatoshis;
 use zip32;
 use zip32::fingerprint::SeedFingerprint;
 
-const BATCH_SIZE: u32 = 10000;
+const BATCH_SIZE: u32 = 25000; // Increased from 10K for 2.5x fewer HTTP round trips
 
 /// constant that signals what's the minimum transparent balance for proposing a
 /// shielding transaction
@@ -223,7 +223,7 @@ where
         purpose: AccountPurpose,
         key_source: Option<&str>,
     ) -> Result<AccountId, Error> {
-        tracing::info!("Importing account with Ufvk: {:?}", ufvk);
+        tracing::info!("Importing account");
         let mut client = self.client.clone();
         let birthday = match birthday_height {
             Some(height) => height,
@@ -343,7 +343,7 @@ where
             self.min_confirmations,
         )
         .map_err(|_e| Error::Generic("something bad happened when calling propose transfer. Possibly insufficient balance..".to_string()))?;
-        tracing::info!("Proposal: {:#?}", proposal);
+        tracing::info!("Transfer proposal created");
         Ok(proposal)
     }
 
@@ -531,7 +531,7 @@ where
             self.min_confirmations,
         )
             .map_err(|e| Error::Generic(format!("something bad happened when calling propose transfer. Possibly insufficient balance... {:?}", e)))?;
-        tracing::info!("Proposal: {:#?}", proposal);
+        tracing::info!("PCZT proposal created");
         let pczt = create_pczt_from_proposal::<
             _,
             _,

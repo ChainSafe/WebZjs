@@ -14,6 +14,8 @@ pub enum Error {
     PcztSign(String),
     #[error("Error attempting to get seed fingerprint.")]
     SeedFingerprint,
+    #[error("Failed to derive transparent address from UFVK")]
+    TransparentAddressDerivation,
 }
 
 impl From<Error> for JsValue {
