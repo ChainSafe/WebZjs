@@ -100,8 +100,5 @@ serde.workspace = true
 postcard = { version = "1.0.10", features = ["alloc"] }
 serde-wasm-bindgen.workspace = true
 
-[dev-dependencies]
-serde_json = "1.0"
-
 [lints]
 workspace = true

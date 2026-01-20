@@ -30,19 +30,18 @@ console_error_panic_hook = { version = "0.1.7" }
 tonic-web-wasm-client = "0.8.0"
 tokio_with_wasm = { version = "0.7.1", features = ["rt", "rt-multi-thread", "sync", "macros", "time"] }
 
-## Zcash dependencies - Using local librustzcash with fixes (commit 0a75d32f6, 2026-01-10)
-
-zcash_keys = { path = "/home/skynet/librustzcash/zcash_keys", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
-zcash_client_backend = { path = "/home/skynet/librustzcash/zcash_client_backend", default-features = false, features = ["sync", "lightwalletd-tonic", "orchard"] }
-zcash_client_memory = { path = "/home/skynet/librustzcash/zcash_client_memory", features = ["orchard", "transparent-inputs"] }
-zcash_primitives = { path = "/home/skynet/librustzcash/zcash_primitives" }
-zcash_transparent = { path = "/home/skynet/librustzcash/zcash_transparent", default-features = false }
-zcash_address = { path = "/home/skynet/librustzcash/components/zcash_address" }
-zcash_proofs = { path = "/home/skynet/librustzcash/zcash_proofs", default-features = false, features = ["bundled-prover", "multicore"] }
-zip321 = { path = "/home/skynet/librustzcash/components/zip321" }
+## Zcash dependencies - Using sqhell/librustzcash fork with NU6.1 fixes
+zcash_keys = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", features = ["transparent-inputs", "orchard", "sapling", "unstable"] }
+zcash_client_backend = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", default-features = false, features = ["sync", "lightwalletd-tonic", "orchard"] }
+zcash_client_memory = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", features = ["orchard", "transparent-inputs"] }
+zcash_primitives = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61" }
+zcash_transparent = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", default-features = false }
+zcash_address = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61" }
+zcash_proofs = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", default-features = false, features = ["bundled-prover", "multicore"] }
+zip321 = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61" }
 zip32 = { version = "0.2" }
-zcash_protocol = { path = "/home/skynet/librustzcash/components/zcash_protocol", default-features = false }
-pczt = { path = "/home/skynet/librustzcash/pczt", default-features = false, features = ["orchard", "sapling", "transparent"] }
+zcash_protocol = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", default-features = false }
+pczt = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", default-features = false, features = ["orchard", "sapling", "transparent"] }
 sapling = { package = "sapling-crypto", version = "0.6", default-features = false }
 bip32 = { version = "=0.6.0-pre.1", default-features = false, features = ["alloc"] }
 ## gRPC Web dependencies
@@ -51,7 +50,7 @@ tonic = { version = "0.14", default-features = false }
 
 
 # Used in Native tests
-zcash_client_sqlite = { path = "/home/skynet/librustzcash/zcash_client_sqlite", default-features = false, features = ["unstable", "orchard"] }
+zcash_client_sqlite = { git = "https://github.com/sqhell/librustzcash", branch = "feat/snap-nu61", default-features = false, features = ["unstable", "orchard"] }
 
 getrandom = { version = "0.2", features = ["js"] }
 thiserror = "1.0.63"
