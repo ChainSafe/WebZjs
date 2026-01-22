@@ -3,14 +3,14 @@ name: Check Snap Manifest
 on:
   pull_request:
     paths:
-      - 'packages/snap/snap.manifest.json'
+      - 'packages/snap/snap.manifest.base.json'
       - '.github/workflows/check-snap-manifest.yml'
   push:
     branches:
       - main
       - master
     paths:
-      - 'packages/snap/snap.manifest.json'
+      - 'packages/snap/snap.manifest.base.json'
       - '.github/workflows/check-snap-manifest.yml'
 
 jobs:
@@ -32,15 +32,15 @@ jobs:
           fi
           
           # Extract allowedOrigins from the manifest
-          ALLOWED_ORIGINS=$(jq -r '.initialPermissions."endowment:rpc".allowedOrigins[]' snap.manifest.json)
-          
-          echo "Current allowedOrigins in snap.manifest.json:"
+          ALLOWED_ORIGINS=$(jq -r '.initialPermissions."endowment:rpc".allowedOrigins[]' snap.manifest.base.json)
+
+          echo "Current allowedOrigins in snap.manifest.base.json:"
           echo "$ALLOWED_ORIGINS"
-          
+
           # Check if localhost is present
           if echo "$ALLOWED_ORIGINS" | grep -q "localhost"; then
             echo "❌ ERROR: localhost found in allowedOrigins. This should not be in production!"
-            echo "Please ensure snap.manifest.json only contains production URLs."
+            echo "Please ensure snap.manifest.base.json only contains production URLs."
             echo "Expected: [\"https://webzjs.chainsafe.dev\"]"
             exit 1
           fi
@@ -60,5 +60,5 @@ jobs:
             exit 1
           fi
           
-          echo "✅ SUCCESS: snap.manifest.json has correct allowedOrigins configuration"
+          echo "✅ SUCCESS: snap.manifest.base.json has correct allowedOrigins configuration"
           echo "Found: https://webzjs.chainsafe.dev" 

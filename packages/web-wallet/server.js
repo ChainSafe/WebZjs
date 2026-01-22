@@ -41,7 +41,7 @@ async function run() {
   app.use(history());
   app.use(express.static(join(__dirname, 'dist')));
 
-  const port = process.env.PORT || 3333;
+  const port = process.env.PORT || 3000;
   app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
   });

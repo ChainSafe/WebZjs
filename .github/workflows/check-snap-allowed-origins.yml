@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'packages/snap/snap.manifest.json'
+      - 'packages/snap/snap.manifest.base.json'
       - '.github/workflows/check-snap-allowed-origins.yml'
   push:
     branches: [ main ]
     paths:
-      - 'packages/snap/snap.manifest.json'
+      - 'packages/snap/snap.manifest.base.json'
 
 jobs:
   check-allowed-origins:
@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          FILE="packages/snap/snap.manifest.json"
+          FILE="packages/snap/snap.manifest.base.json"
 
           if [ ! -f "$FILE" ]; then
             echo "::error title=Missing file::$FILE not found"

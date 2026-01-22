@@ -23,8 +23,7 @@
     "endowment:webassembly": {},
     "endowment:rpc": {
       "allowedOrigins": [
-        "https://webzjs.chainsafe.dev",
-        "http://localhost:3333"
+        "https://webzjs.chainsafe.dev"
       ]
     },
     "snap_getBip44Entropy": [
