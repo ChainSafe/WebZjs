@@ -7,7 +7,7 @@
     "url": "https://github.com/ChainSafe/WebZjs.git"
   },
   "source": {
-    "shasum": "wTPZl0jiwxyFr3cUhss5/b0WjFGdZP9y/VIPafGtDAM=",
+    "shasum": "gR+0fkxHpNURVXHOtwC42+XPZys6n8nDX6ZdyQ3bwpo=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -29,6 +29,20 @@
     "snap_getBip44Entropy": [
       {
         "coinType": 133
+      }
+    ],
+    "snap_getBip32Entropy": [
+      {
+        "path": ["m", "48'", "133'"],
+        "curve": "secp256k1"
+      },
+      {
+        "path": ["m", "48'", "133'", "0'", "133000'", "0", "0"],
+        "curve": "secp256k1"
+      },
+      {
+        "path": ["m", "48'", "1'", "0'", "133000'", "0", "0"],
+        "curve": "secp256k1"
       }
     ],
     "snap_manageState": {}

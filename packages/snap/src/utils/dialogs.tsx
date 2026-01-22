@@ -1,3 +1,4 @@
+import type { JSX } from '@metamask/snaps-sdk/jsx';
 import { Box, Heading, Text, Link } from '@metamask/snaps-sdk/jsx';
 
 export const installDialog = async () => {
@@ -19,4 +20,27 @@ export const installDialog = async () => {
       ),
     },
   });
+};
+
+export const snapConfirm = async ({
+  title,
+  prompt
+}: {
+  title: string;
+  prompt: JSX.Element;
+}): Promise<boolean> => {
+  const result = await snap.request({
+    method: 'snap_dialog',
+    params: {
+      type: 'confirmation',
+      content: (
+        <Box>
+          <Heading>{title}</Heading>
+          {prompt}
+        </Box>
+      )
+    }
+  });
+
+  return Boolean(result);
 };
