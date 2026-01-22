@@ -9,7 +9,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      src: '/home/skynet/zcash_project/WebZjs/packages/web-wallet/src',
+      src: new URL('./src', import.meta.url).pathname,
     },
   },
 });

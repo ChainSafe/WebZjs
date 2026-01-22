@@ -722,6 +722,7 @@ checksum = "c7f84e12ccf0a7ddc17a6c41c93326024c42920d7ee630d04950e6926645c0fe"
 [[package]]
 name = "equihash"
 version = "0.2.2"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "blake2b_simd",
  "core2",
@@ -773,6 +774,7 @@ dependencies = [
 [[package]]
 name = "f4jumble"
 version = "0.1.1"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "blake2b_simd",
 ]
@@ -1766,6 +1768,7 @@ dependencies = [
 [[package]]
 name = "pczt"
 version = "0.5.0"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "blake2b_simd",
  "bls12_381",
@@ -3605,6 +3608,7 @@ dependencies = [
 [[package]]
 name = "zcash_address"
 version = "0.10.1"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "bech32",
  "bs58",
@@ -3617,6 +3621,7 @@ dependencies = [
 [[package]]
 name = "zcash_client_backend"
 version = "0.21.0"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "async-trait",
  "base64",
@@ -3671,6 +3676,7 @@ dependencies = [
 [[package]]
 name = "zcash_client_memory"
 version = "0.0.0"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "async-trait",
  "bip32",
@@ -3712,6 +3718,7 @@ dependencies = [
 [[package]]
 name = "zcash_client_sqlite"
 version = "0.19.1"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "bitflags",
  "bs58",
@@ -3754,6 +3761,7 @@ dependencies = [
 [[package]]
 name = "zcash_encoding"
 version = "0.3.0"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "core2",
  "hex",
@@ -3763,6 +3771,7 @@ dependencies = [
 [[package]]
 name = "zcash_keys"
 version = "0.12.0"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "bech32",
  "bip32",
@@ -3804,6 +3813,7 @@ dependencies = [
 [[package]]
 name = "zcash_primitives"
 version = "0.26.4"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "bip32",
  "blake2b_simd",
@@ -3845,6 +3855,7 @@ dependencies = [
 [[package]]
 name = "zcash_proofs"
 version = "0.26.1"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "bellman",
  "blake2b_simd",
@@ -3863,6 +3874,7 @@ dependencies = [
 [[package]]
 name = "zcash_protocol"
 version = "0.7.2"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "core2",
  "document-features",
@@ -3900,6 +3912,7 @@ dependencies = [
 [[package]]
 name = "zcash_transparent"
 version = "0.6.3"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "bip32",
  "blake2b_simd",
@@ -3977,6 +3990,7 @@ dependencies = [
 [[package]]
 name = "zip321"
 version = "0.6.0"
+source = "git+https://github.com/ChainSafe/librustzcash-nu61?branch=feat%2Fsnap-nu61#0ec0723e165bd16886a9e9cfd3606fcc54e551fe"
 dependencies = [
  "base64",
  "nom",

@@ -87,21 +87,5 @@ byte-unit = { version = "5.1.4", features = ["byte"] }
 # orchard = { git = "https://github.com/zcash/orchard.git", rev = "4fa6d3b549f8803016a309281404eab095d04de8" }
 # sapling = { package = "sapling-crypto", git = "https://github.com/zcash/sapling-crypto.git", rev = "3c2235747553da642fb142d1eeb9b1afa8391987" }
 
-# Use local librustzcash fork for development (comment out for CI/production)
-[patch."https://github.com/ChainSafe/librustzcash-nu61"]
-zcash_client_memory = { path = "/home/skynet/librustzcash/zcash_client_memory" }
-zcash_keys = { path = "/home/skynet/librustzcash/zcash_keys" }
-zcash_client_backend = { path = "/home/skynet/librustzcash/zcash_client_backend" }
-zcash_primitives = { path = "/home/skynet/librustzcash/zcash_primitives" }
-zcash_transparent = { path = "/home/skynet/librustzcash/zcash_transparent" }
-zcash_address = { path = "/home/skynet/librustzcash/components/zcash_address" }
-zcash_proofs = { path = "/home/skynet/librustzcash/zcash_proofs" }
-zip321 = { path = "/home/skynet/librustzcash/components/zip321" }
-zcash_protocol = { path = "/home/skynet/librustzcash/components/zcash_protocol" }
-pczt = { path = "/home/skynet/librustzcash/pczt" }
-zcash_client_sqlite = { path = "/home/skynet/librustzcash/zcash_client_sqlite" }
-
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(wasm_bindgen)', 'cfg(wasm_bindgen_unstable_test_coverage)'] }
-
-# Local fork paths configured above in workspace.dependencies

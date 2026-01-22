@@ -99,29 +99,29 @@ export function useWebZjsActions(): WebzjsActions {
       await requestSnap();
 
       if (state.webWallet === null) {
-        // dispatch({
-        //   type: 'set-error',
-        //   payload: new Error('Wallet not initialized'),
-        // });
         return;
       }
 
+      // Check if wallet already has accounts (restored from IndexedDB)
+      const existingSummary = await state.webWallet.get_wallet_summary();
+      if (existingSummary && existingSummary.account_balances.length > 0) {
+        // Account already exists - just set it as active and sync
+        const existingAccountId = existingSummary.account_balances[0][0];
+        dispatch({ type: 'set-active-account', payload: existingAccountId });
+        await syncStateWithWallet();
+        return;
+      }
+
+      // No existing account - create one
       const latestBlockBigInt = await state.webWallet.get_latest_block();
       const latestBlock = Number(latestBlockBigInt);
 
-      let birthdayBlock = (await invokeSnap({
-        method: 'setBirthdayBlock',
-        params: { latestBlock },
-      })) as number | null;
-
-      // in case user pressed "Close" instead of "Continue to wallet" on prompt, still allow account creation with latest block
-      if (birthdayBlock === null) {
-        await invokeSnap({
-          method: 'setSnapStete',
-          params: { webWalletSyncStartBlock: latestBlock },
-        });
-        birthdayBlock = latestBlock;
-      }
+      // Use latest block as birthday - no prompt needed
+      await invokeSnap({
+        method: 'setSnapStete',
+        params: { webWalletSyncStartBlock: latestBlock },
+      });
+      const birthdayBlock = latestBlock;
 
       const viewingKey = (await invokeSnap({
         method: 'getViewingKey',

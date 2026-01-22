@@ -42,11 +42,8 @@ const Home: React.FC = () => {
             dispatch({ type: 'set-error', payload: err instanceof Error ? err : new Error(String(err)) });
             setShowResetInstructions(true);
           }
-        } else {
-          dispatch({ type: 'set-error', payload: 'Active account is not set' });
-          setShowResetInstructions(true);
         }
-
+        // If no active account, do nothing - user will click Connect to proceed
       };
       homeReload();
     };
