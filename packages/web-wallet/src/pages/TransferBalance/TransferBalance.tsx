@@ -12,6 +12,7 @@ function TransferBalance(): React.JSX.Element {
     currentStep,
     formData,
     pcztTransferStatus,
+    lastError,
     nextStep,
     handleChange,
     resetForm,
@@ -58,6 +59,7 @@ function TransferBalance(): React.JSX.Element {
         <TransferResult
           pcztTransferStatus={pcztTransferStatus}
           resetForm={resetForm}
+          errorMessage={lastError}
         />)}
     </div>
   );

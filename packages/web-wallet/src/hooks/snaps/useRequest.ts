@@ -30,7 +30,17 @@ export const useRequest = () => {
         } as RequestArguments)) ?? null;
 
       return data;
-    } catch (requestError) {
+    } catch (requestError: any) {
+      // Handle "pending request" error specifically (code -32002)
+      if (requestError?.code === -32002) {
+        const pendingError = new Error(
+          'A MetaMask request is already pending. Please check MetaMask and approve or reject the pending request, then try again.'
+        );
+        (pendingError as any).code = -32002;
+        (pendingError as any).isPendingRequest = true;
+        setError(pendingError);
+        throw pendingError;
+      }
       setError(requestError as Error);
 
       throw requestError;

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useWebZjsActions } from '../../hooks';
+import { useWebZjsContext } from '../../context/WebzjsContext';
 import QrCode from './QrCode';
 import PageHeading from '../../components/PageHeading/PageHeading';
 import Loader from '../../components/Loader/Loader';
@@ -11,7 +12,8 @@ enum AddressType {
 }
 
 function Receive(): React.JSX.Element {
-  const [loading, setLoading] = useState(true);
+  const { state } = useWebZjsContext();
+  const { getAccountData } = useWebZjsActions();
   const [activeTab, setActiveTab] = useState<AddressType>(AddressType.UNIFIED);
   const [addresses, setAddresses] = useState<{
     unifiedAddress: string;
@@ -20,20 +22,31 @@ function Receive(): React.JSX.Element {
     unifiedAddress: '',
     transparentAddress: '',
   });
-  const { getAccountData } = useWebZjsActions();
 
+  // Fetch addresses when account becomes available
   useEffect(() => {
+    // Don't try to fetch if no account yet
+    if (state.activeAccount === null || state.activeAccount === undefined) {
+      return;
+    }
+
     const fetchData = async () => {
       const data = await getAccountData();
-      if (data)
+      if (data) {
         setAddresses({
           unifiedAddress: data.unifiedAddress,
           transparentAddress: data.transparentAddress,
         });
-      setLoading(false);
+      }
     };
     fetchData();
-  }, [getAccountData]);
+  }, [state.activeAccount, getAccountData]);
+
+  // Show loader if no account yet OR no addresses loaded yet
+  const loading =
+    state.activeAccount === null ||
+    state.activeAccount === undefined ||
+    !addresses.unifiedAddress;
 
   const tabs = {
     [AddressType.UNIFIED]: {

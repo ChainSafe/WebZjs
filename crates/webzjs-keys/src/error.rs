@@ -5,7 +5,7 @@ pub enum Error {
     #[error("webzjs-common crate gives error: {0}")]
     WebzJSCommon(#[from] webzjs_common::Error),
     #[error("Invalid account id")]
-    AccountIdConversion(#[from] zcash_primitives::zip32::TryFromIntError),
+    AccountIdConversion(#[from] zip32::TryFromIntError),
     #[error("Failed to derive key from seed")]
     Derivation(#[from] zcash_keys::keys::DerivationError),
     #[error("Error attempting to decode key: {0}")]
@@ -14,6 +14,8 @@ pub enum Error {
     PcztSign(String),
     #[error("Error attempting to get seed fingerprint.")]
     SeedFingerprint,
+    #[error("Failed to derive transparent address from UFVK")]
+    TransparentAddressDerivation,
 }
 
 impl From<Error> for JsValue {

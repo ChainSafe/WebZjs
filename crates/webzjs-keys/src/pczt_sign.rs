@@ -7,8 +7,8 @@ use std::convert::Infallible;
 use std::str::FromStr;
 use wasm_bindgen::prelude::wasm_bindgen;
 use webzjs_common::{Network, Pczt};
-use zcash_primitives::consensus::{NetworkConstants, Parameters};
-use zcash_primitives::legacy::keys::{NonHardenedChildIndex, TransparentKeyScope};
+use zcash_protocol::consensus::{NetworkConstants, Parameters};
+use zcash_transparent::keys::{NonHardenedChildIndex, TransparentKeyScope};
 
 /// Signs and applies signatures to a PCZT.
 /// Should in a secure environment (e.g. Metamask snap).
@@ -57,7 +57,7 @@ pub async fn pczt_sign_inner(
             address_index: NonHardenedChildIndex,
         },
     }
-    let mut keys = BTreeMap::<zcash_primitives::zip32::AccountId, Vec<KeyRef>>::new();
+    let mut keys = BTreeMap::<zip32::AccountId, Vec<KeyRef>>::new();
     let pczt = Verifier::new(pczt)
         .with_orchard::<Infallible, _>(|bundle| {
             for (index, action) in bundle.actions().iter().enumerate() {
@@ -69,9 +69,7 @@ pub async fn pczt_sign_inner(
                         .and_then(|derivation| {
                             derivation.extract_account_index(
                                 &seed_fp,
-                                zcash_primitives::zip32::ChildIndex::hardened(
-                                    network.network_type().coin_type(),
-                                ),
+                                zip32::ChildIndex::hardened(network.network_type().coin_type()),
                             )
                         })
                 {
@@ -89,9 +87,7 @@ pub async fn pczt_sign_inner(
                     spend.zip32_derivation().as_ref().and_then(|derivation| {
                         derivation.extract_account_index(
                             &seed_fp,
-                            zcash_primitives::zip32::ChildIndex::hardened(
-                                network.network_type().coin_type(),
-                            ),
+                            zip32::ChildIndex::hardened(network.network_type().coin_type()),
                         )
                     })
                 {

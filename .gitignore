@@ -26,3 +26,6 @@ packages/web-wallet/dist/*
 !packages/web-wallet/dist/_headers
 !packages/web-wallet/dist/_redirects
 
+# Generated snap manifest (production uses snap.manifest.base.json)
+packages/snap/snap.manifest.json
+

@@ -11,12 +11,14 @@ interface TransferResultProps {
   pcztTransferStatus: PcztTransferStatus;
   resetForm: TransferBalanceFormType['resetForm'];
   isShieldTransaction?: boolean;
+  errorMessage?: string | null;
 }
 
 export function TransferResult({
   pcztTransferStatus,
   resetForm,
   isShieldTransaction,
+  errorMessage,
 }: TransferResultProps): React.JSX.Element {
   const navigate = useNavigate();
 
@@ -48,7 +50,7 @@ export function TransferResult({
     case PcztTransferStatus.SEND_ERROR:
       return <TransactionStatusCard
         headText={`${actionWord} incomplete`}
-        statusMessage={`Your transaction has not been sent.`}
+        statusMessage={errorMessage || 'Your transaction has not been sent.'}
         icon={<WarningSVG />}
       >
 
@@ -63,7 +65,7 @@ export function TransferResult({
 
     default:
       return <TransactionStatusCard
-        headText={`${actionWord} in progres...`}
+        headText={`${actionWord} in progress...`}
         statusMessage={pcztTransferStatus}
         icon={<Loader />}
       />
