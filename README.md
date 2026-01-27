@@ -34,13 +34,15 @@ Once this has been done we can create a WebWallet instance. You can theoreticall
 > When constructing a WebWallet it requires a lightwalletd URL. To work in the web these need to be a special gRPC-web proxy to a regular lightwalletd instance. Using an unproxied URL (e.g. https://zec.rocks) will NOT work. ChainSafe currently hosts a gRPC-web lightwalletd proxy and it is easy to deploy more. You can also run your own proxy locally by running `docker-compose up` in this repo.
 
 ```javascript
-let wallet = new WebWallet("main", "https://zcash-mainnet.chainsafe.dev", 1);
+// Parameters: network, lightwalletd_url, min_confirmations_trusted, min_confirmations_untrusted, db_bytes (optional)
+let wallet = new WebWallet("main", "https://zcash-mainnet.chainsafe.dev", 1, 1, null);
 ```
 
 Once you have a wallet instance it needs an account. Accounts can be added in a number of different ways. Here an account will be added from a 24 word seed phrase
 
 ```javascript
-await wallet.create_account("<24 words here>", 0, birthdayHeight);
+// Parameters: account_name, seed_phrase, account_hd_index, birthday_height (optional)
+await wallet.create_account("my-account", "<24 words here>", 0, birthdayHeight);
 ```
 
 and once an account is added the wallet can sync to the network.

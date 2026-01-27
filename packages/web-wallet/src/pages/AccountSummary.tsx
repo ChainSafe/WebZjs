@@ -2,6 +2,7 @@ import React from 'react';
 import { zatsToZec } from '../utils';
 import { CoinsSvg, ShieldDividedSvg, ShieldSvg } from '../assets';
 import useBalance from '../hooks/useBalance';
+import { usePendingTransactions } from '../hooks/usePendingTransactions';
 import { useWebZjsContext } from 'src/context/WebzjsContext';
 import { BlockHeightCard } from 'src/components/BlockHeightCard/BlockHeightCard';
 import { useMetaMaskContext } from 'src/context/MetamaskContext';
@@ -14,14 +15,15 @@ interface BalanceCard {
 }
 
 function AccountSummary() {
-  const { totalBalance, unshieldedBalance, shieldedBalance, totalPending, hasPending } = useBalance();
+  const { totalBalance, spendableBalance, unshieldedBalance, shieldedBalance, hasPending } = useBalance();
+  const { pendingTxs } = usePendingTransactions();
   const { state } = useWebZjsContext();
   const { snapState } = useMetaMaskContext();
   const { fullResync } = useWebZjsActions();
 
   const BalanceCards: BalanceCard[] = [
     {
-      name: 'Account Balance',
+      name: 'Total Balance',
       icon: <CoinsSvg />,
       balance: totalBalance,
     },
@@ -52,6 +54,11 @@ function AccountSummary() {
             {zatsToZec(balance)} ZEC
           </div>
         </div>
+        {name === 'Total Balance' && hasPending && (
+          <div className="text-[#595959] text-sm font-inter">
+            {zatsToZec(spendableBalance)} ZEC spendable
+          </div>
+        )}
       </div>
     );
   };
@@ -72,17 +79,16 @@ function AccountSummary() {
       >
         {BalanceCards.map((card) => renderBalanceCard(card))}
       </div>
-      {hasPending && (
-        <div className="w-full p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
-          <span className="text-amber-600 text-lg">⏳</span>
-          <div className="flex flex-col">
-            <span className="text-amber-800 font-medium">
-              Pending: {zatsToZec(totalPending)} ZEC
-            </span>
-            <span className="text-amber-600 text-sm">
-              Balance will update when transaction is confirmed
-            </span>
-          </div>
+      {pendingTxs.length > 0 && (
+        <div className="w-full p-4 bg-amber-50 border border-amber-200 rounded-xl flex flex-col gap-2">
+          {pendingTxs.map((tx) => (
+            <div key={tx.txid} className="flex items-center gap-3">
+              <span className="text-amber-600 text-lg">⏳</span>
+              <span className="text-amber-800 font-medium">
+                {tx.tx_type} {zatsToZec(tx.value)} ZEC — waiting for confirmation
+              </span>
+            </div>
+          ))}
         </div>
       )}
       <BlockHeightCard

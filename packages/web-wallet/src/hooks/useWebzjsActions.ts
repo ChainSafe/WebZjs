@@ -1,6 +1,7 @@
 import { set, del } from 'idb-keyval';
 import { useCallback } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
+import { useMetaMaskContext } from '../context/MetamaskContext';
 import { useMetaMask } from './snaps/useMetaMask';
 import { useInvokeSnap } from './snaps/useInvokeSnap';
 import { useRequestSnap } from './snaps/useRequestSnap';
@@ -8,20 +9,26 @@ import { SeedFingerprint, WebWallet } from '@chainsafe/webzjs-wallet';
 import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
 import { SnapState } from '../types/snap';
 
+interface SyncOptions {
+  skipBalanceCache?: boolean;
+}
+
 interface WebzjsActions {
   getAccountData: () => Promise<
     { unifiedAddress: string; transparentAddress: string } | undefined
   >;
   triggerRescan: () => Promise<void>;
   flushDbToStore: () => Promise<void>;
-  syncStateWithWallet: () => Promise<void>;
+  syncStateWithWallet: (options?: SyncOptions) => Promise<void>;
   connectWebZjsSnap: () => Promise<void>;
   fullResync: (customBirthday?: number) => Promise<void>;
+  recoverWallet: () => Promise<void>;
 }
 
 export function useWebZjsActions(): WebzjsActions {
   const { state, dispatch } = useWebZjsContext();
   const { installedSnap } = useMetaMask();
+  const { refreshSnapState } = useMetaMaskContext();
   const invokeSnap = useInvokeSnap();
   const requestSnap = useRequestSnap();
 
@@ -52,7 +59,62 @@ export function useWebZjsActions(): WebzjsActions {
     }
   }, [dispatch, state.activeAccount, state.webWallet]);
 
-  const syncStateWithWallet = useCallback(async () => {
+  /**
+   * Caches the current total balance (confirmed + pending) in snap state for recovery
+   * after cookie/IndexedDB clears. Since totalBalance now includes pending amounts
+   * (per ZIP 315), the cache always reflects the correct total — no flags needed.
+   *
+   * Zero-protection: won't overwrite a positive cache with zeros (wallet may be
+   * recovering). Pass force=true to bypass (used by fullResync).
+   */
+  const cacheBalanceInSnap = useCallback(async (balanceReport: {
+    sapling_balance?: number;
+    orchard_balance?: number;
+    unshielded_balance?: number;
+    pending_change?: number;
+    pending_spendable?: number;
+  } | null, force = false) => {
+    if (!balanceReport) return;
+
+    const confirmed = (balanceReport.sapling_balance ?? 0) + (balanceReport.orchard_balance ?? 0);
+    const unshielded = balanceReport.unshielded_balance ?? 0;
+    const pending = (balanceReport.pending_change ?? 0) + (balanceReport.pending_spendable ?? 0);
+    const total = confirmed + unshielded + pending;
+
+    try {
+      const existingState = await invokeSnap({ method: 'getSnapStete' }) as SnapState | null;
+
+      // Don't overwrite positive cache with zeros (wallet may be recovering)
+      // fullResync passes force=true to bypass this
+      if (!force && total === 0 && existingState?.lastKnownBalance) {
+        const existingTotal = existingState.lastKnownBalance.shielded + existingState.lastKnownBalance.unshielded;
+        if (existingTotal > 0) {
+          console.info('Skipping balance cache: not replacing positive cache with zeros');
+          return;
+        }
+      }
+
+      // Cache: shielded = confirmed shielded + all pending (pending resolves to shielded)
+      await invokeSnap({
+        method: 'setSnapStete',
+        params: {
+          webWalletSyncStartBlock: existingState?.webWalletSyncStartBlock ?? '',
+          hasPendingTx: null, // No longer used, kept for snap state compatibility
+          lastKnownBalance: {
+            shielded: confirmed + pending,
+            unshielded,
+            timestamp: Date.now(),
+          },
+        },
+      });
+      await refreshSnapState();
+      console.info('Cached balance in snap state:', { shielded: confirmed + pending, unshielded, total });
+    } catch (error) {
+      console.warn('Failed to cache balance in snap state:', error);
+    }
+  }, [invokeSnap, refreshSnapState]);
+
+  const syncStateWithWallet = useCallback(async (options?: SyncOptions) => {
     if (!state.webWallet) {
       // dispatch({
       //   type: 'set-error',
@@ -64,6 +126,14 @@ export function useWebZjsActions(): WebzjsActions {
       const summary = await state.webWallet.get_wallet_summary();
       if (summary) {
         dispatch({ type: 'set-summary', payload: summary });
+
+        // Cache balance in snap state for recovery after cookie clears
+        if (summary.account_balances?.length > 0 && !options?.skipBalanceCache) {
+          const [, balanceReport] = summary.account_balances[0];
+          await cacheBalanceInSnap(balanceReport);
+        } else if (options?.skipBalanceCache) {
+          console.info('Skipping balance cache update (transaction in progress)');
+        }
       }
       const chainHeight = await state.webWallet.get_latest_block();
       if (chainHeight) {
@@ -73,7 +143,7 @@ export function useWebZjsActions(): WebzjsActions {
       console.error('Error syncing state with wallet:', error);
       dispatch({ type: 'set-error', payload: String(error) });
     }
-  }, [state.webWallet, dispatch]);
+  }, [state.webWallet, dispatch, cacheBalanceInSnap]);
 
   const flushDbToStore = useCallback(async () => {
     if (!state.webWallet) {
@@ -99,6 +169,10 @@ export function useWebZjsActions(): WebzjsActions {
       await requestSnap();
 
       if (state.webWallet === null) {
+        // dispatch({
+        //   type: 'set-error',
+        //   payload: new Error('Wallet not initialized'),
+        // });
         return;
       }
 
@@ -116,27 +190,38 @@ export function useWebZjsActions(): WebzjsActions {
       const latestBlockBigInt = await state.webWallet.get_latest_block();
       const latestBlock = Number(latestBlockBigInt);
 
-      // Use latest block as birthday - no prompt needed
-      await invokeSnap({
-        method: 'setSnapStete',
-        params: { webWalletSyncStartBlock: latestBlock },
-      });
-      const birthdayBlock = latestBlock;
+      let birthdayBlock = (await invokeSnap({
+        method: 'setBirthdayBlock',
+        params: { latestBlock },
+      })) as number | null;
+
+      // in case user pressed "Close" instead of "Continue to wallet" on prompt, still allow account creation with latest block
+      if (birthdayBlock === null) {
+        await invokeSnap({
+          method: 'setSnapStete',
+          params: { webWalletSyncStartBlock: latestBlock },
+        });
+        await refreshSnapState();
+        birthdayBlock = latestBlock;
+      }
 
       const viewingKey = (await invokeSnap({
         method: 'getViewingKey',
       })) as string;
 
-      const seedFingerprintHexString = (await invokeSnap({
+      const seedFingerprintResult = await invokeSnap({
         method: 'getSeedFingerprint',
-      })) as string;
+      });
 
-      const seedFingerprintBuffer = Buffer.from(
-        seedFingerprintHexString,
-        'hex',
+      const hexString = typeof seedFingerprintResult === 'string'
+        ? seedFingerprintResult
+        : typeof seedFingerprintResult === 'object' && seedFingerprintResult !== null && 'data' in seedFingerprintResult
+          ? Array.from(seedFingerprintResult.data as number[]).map((b: number) => b.toString(16).padStart(2, '0')).join('')
+          : String(seedFingerprintResult);
+
+      const seedFingerprintUint8Array = new Uint8Array(
+        (hexString.match(/.{1,2}/g) || []).map((byte: string) => parseInt(byte, 16)),
       );
-
-      const seedFingerprintUint8Array = new Uint8Array(seedFingerprintBuffer);
 
       const seedFingerprint = SeedFingerprint.from_bytes(
         seedFingerprintUint8Array,
@@ -170,6 +255,8 @@ export function useWebZjsActions(): WebzjsActions {
     dispatch,
     syncStateWithWallet,
     flushDbToStore,
+    refreshSnapState,
+    requestSnap,
   ]);
 
   const triggerRescan = useCallback(async () => {
@@ -207,7 +294,7 @@ export function useWebZjsActions(): WebzjsActions {
         if (latestBlock && latestBlock !== state.chainHeight) {
           dispatch({ type: 'set-chain-height', payload: latestBlock });
           // Only sync if chain has advanced
-          if (fullySyncedHeight < Number(latestBlock) - 2) {
+          if (fullySyncedHeight < Number(latestBlock)) {
             dispatch({ type: 'set-sync-in-progress', payload: true });
             try {
               await state.webWallet.sync();
@@ -281,17 +368,33 @@ export function useWebZjsActions(): WebzjsActions {
         ? Number(snapState.webWalletSyncStartBlock)
         : undefined);
 
+      // Save the new birthday to snap state if custom one was provided
+      if (customBirthday) {
+        await invokeSnap({
+          method: 'setSnapStete',
+          params: { webWalletSyncStartBlock: customBirthday },
+        });
+        await refreshSnapState();
+      }
+
       // 2. Get credentials from snap
       const viewingKey = (await invokeSnap({
         method: 'getViewingKey',
       })) as string;
 
-      const seedFingerprintHexString = (await invokeSnap({
+      const seedFingerprintResult = await invokeSnap({
         method: 'getSeedFingerprint',
-      })) as string;
+      });
 
-      const seedFingerprintBuffer = Buffer.from(seedFingerprintHexString, 'hex');
-      const seedFingerprintUint8Array = new Uint8Array(seedFingerprintBuffer);
+      const hexString = typeof seedFingerprintResult === 'string'
+        ? seedFingerprintResult
+        : typeof seedFingerprintResult === 'object' && seedFingerprintResult !== null && 'data' in seedFingerprintResult
+          ? Array.from(seedFingerprintResult.data as number[]).map((b: number) => b.toString(16).padStart(2, '0')).join('')
+          : String(seedFingerprintResult);
+
+      const seedFingerprintUint8Array = new Uint8Array(
+        (hexString.match(/.{1,2}/g) || []).map((byte: string) => parseInt(byte, 16)),
+      );
       const seedFingerprint = SeedFingerprint.from_bytes(seedFingerprintUint8Array);
 
       // 3. Clear the cached wallet from IndexedDB
@@ -322,6 +425,12 @@ export function useWebZjsActions(): WebzjsActions {
       const summary = await freshWallet.get_wallet_summary();
       if (summary) {
         dispatch({ type: 'set-summary', payload: summary });
+
+        // Cache balance in snap state — force update after full resync
+        if (summary.account_balances?.length > 0) {
+          const [, balanceReport] = summary.account_balances[0];
+          await cacheBalanceInSnap(balanceReport, true);
+        }
       }
 
       const chainHeight = await freshWallet.get_latest_block();
@@ -340,7 +449,73 @@ export function useWebZjsActions(): WebzjsActions {
     } finally {
       dispatch({ type: 'set-sync-in-progress', payload: false });
     }
-  }, [installedSnap, state.syncInProgress, invokeSnap, dispatch]);
+  }, [installedSnap, state.syncInProgress, invokeSnap, dispatch, refreshSnapState, cacheBalanceInSnap]);
+
+  /**
+   * Recovers the wallet from snap credentials when IndexedDB data is empty or incompatible.
+   * This is used for auto-recovery when the snap is reinstalled or upgraded.
+   *
+   * Key insight: Snap credentials (viewing key, seed fingerprint) are derived from
+   * MetaMask's BIP44 seed - they survive reinstallation.
+   */
+  const recoverWallet = useCallback(async () => {
+    if (!state.webWallet) {
+      throw new Error('Wallet not initialized');
+    }
+
+    console.info('Auto-recovery: Attempting to recover wallet from snap credentials');
+
+    // 1. Get credentials from snap (derived from MetaMask seed)
+    const viewingKey = (await invokeSnap({ method: 'getViewingKey' })) as string;
+    const seedFingerprintResult = await invokeSnap({ method: 'getSeedFingerprint' });
+
+    const seedFingerprintHex = typeof seedFingerprintResult === 'string'
+      ? seedFingerprintResult
+      : typeof seedFingerprintResult === 'object' && seedFingerprintResult !== null && 'data' in seedFingerprintResult
+        ? Array.from(seedFingerprintResult.data as number[]).map((b: number) => b.toString(16).padStart(2, '0')).join('')
+        : String(seedFingerprintResult);
+
+    const seedFingerprint = SeedFingerprint.from_bytes(new Uint8Array(
+      (seedFingerprintHex.match(/.{1,2}/g) || []).map((byte: string) => parseInt(byte, 16)),
+    ));
+
+    // 2. Get birthday from snap state, or use latest block as fallback
+    const snapState = (await invokeSnap({ method: 'getSnapStete' })) as SnapState | null;
+
+    let birthdayBlock = snapState?.webWalletSyncStartBlock
+      ? Number(snapState.webWalletSyncStartBlock)
+      : undefined;
+
+    if (!birthdayBlock) {
+      console.info('Auto-recovery: No stored birthday, using latest block');
+      const latestBlock = await state.webWallet.get_latest_block();
+      birthdayBlock = Number(latestBlock);
+
+      // Store for future
+      await invokeSnap({
+        method: 'setSnapStete',
+        params: { webWalletSyncStartBlock: birthdayBlock },
+      });
+      await refreshSnapState();
+    }
+
+    // 3. Create account with recovered credentials
+    const accountId = await state.webWallet.create_account_ufvk(
+      'account-0',
+      viewingKey,
+      seedFingerprint,
+      0,
+      birthdayBlock,
+    );
+
+    dispatch({ type: 'set-active-account', payload: accountId });
+
+    // 4. Sync state and persist
+    await syncStateWithWallet();
+    await flushDbToStore();
+
+    console.info('Auto-recovery: Wallet recovered successfully');
+  }, [state.webWallet, invokeSnap, dispatch, syncStateWithWallet, flushDbToStore, refreshSnapState]);
 
   return {
     getAccountData,
@@ -349,5 +524,6 @@ export function useWebZjsActions(): WebzjsActions {
     syncStateWithWallet,
     connectWebZjsSnap,
     fullResync,
+    recoverWallet,
   };
 }

@@ -550,6 +550,48 @@ impl WebWallet {
         }
     }
 
+    /// Get transaction history for an account
+    ///
+    /// # Arguments
+    ///
+    /// * `account_id` - The ID of the account to get transaction history for
+    /// * `limit` - Maximum number of transactions to return (default: 50)
+    /// * `offset` - Number of transactions to skip for pagination (default: 0)
+    ///
+    /// # Returns
+    ///
+    /// A TransactionHistoryResponse containing the list of transactions, total count, and pagination info
+    ///
+    /// # Examples
+    ///
+    /// ```javascript
+    /// const history = await wallet.get_transaction_history(0, 50, 0);
+    /// console.log(history.transactions);
+    /// ```
+    pub async fn get_transaction_history(
+        &self,
+        account_id: u32,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Result<super::transaction_history::TransactionHistoryResponse, Error> {
+        let db = self.inner.db.read().await;
+        let chain_tip_height = self
+            .inner
+            .get_wallet_summary()
+            .await
+            .ok()
+            .flatten()
+            .map(|s| s.chain_tip_height().into());
+
+        super::transaction_history::extract_transaction_history(
+            &db,
+            account_id,
+            chain_tip_height,
+            limit.unwrap_or(50),
+            offset.unwrap_or(0),
+        )
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////
     // lightwalletd gRPC methods
     ///////////////////////////////////////////////////////////////////////////////////////

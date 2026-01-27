@@ -398,12 +398,29 @@ where
             let response = client.send_transaction(raw_tx).await?.into_inner();
 
             if response.error_code != 0 {
+                tracing::error!(
+                    "Transaction rejected by network: code={}, reason={}",
+                    response.error_code,
+                    response.error_message
+                );
+
+                // Provide actionable hint for common rejection reasons
+                let hint = if response.error_message.contains("unknown-anchor") {
+                    " (Wallet out of sync - try resyncing)"
+                } else if response.error_message.contains("missingorspent") {
+                    " (UTXO already spent - try resyncing)"
+                } else if response.error_message.contains("duplicate-nullifier") {
+                    " (Note already spent - try resyncing)"
+                } else {
+                    ""
+                };
+
                 return Err(Error::SendFailed {
                     code: response.error_code,
-                    reason: response.error_message,
+                    reason: format!("{}{}", response.error_message, hint),
                 });
             } else {
-                tracing::info!("Transaction {} send successfully :)", txid);
+                tracing::info!("Transaction {} sent successfully :)", txid);
             }
         }
         Ok(())
@@ -433,6 +450,39 @@ where
     }
 
     pub async fn pczt_shield(&self, account_id: AccountId) -> Result<Pczt, Error> {
+        tracing::info!("pczt_shield: Starting for account {:?}", account_id);
+
+        // Ensure wallet is synced to latest block before creating transaction
+        // This prevents anchor mismatch errors where the commitment tree is out of sync
+        let mut client = self.client.clone();
+        let chain_tip: u32 = client
+            .get_latest_block(service::ChainSpec::default())
+            .await?
+            .into_inner()
+            .height
+            .try_into()
+            .expect("block heights must fit into u32");
+
+        let wallet_height = self.db.read().await.chain_height()?;
+        if let Some(wallet_height) = wallet_height {
+            let wallet_height_u32: u32 = wallet_height.into();
+            if chain_tip.saturating_sub(wallet_height_u32) > 10 {
+                tracing::warn!(
+                    "Wallet not fully synced: wallet={} < chain_tip={}. Syncing now...",
+                    wallet_height_u32,
+                    chain_tip
+                );
+                // Trigger sync before proceeding to ensure valid anchors
+                drop(client); // Release client before sync
+                self.sync().await?;
+                tracing::info!("pczt_shield: Sync completed, proceeding with transaction creation");
+            }
+        } else {
+            return Err(Error::Generic(
+                "Wallet has not been synced yet. Please sync before shielding.".to_string(),
+            ));
+        }
+
         let change_strategy = MultiOutputChangeStrategy::new(
             StandardFeeRule::Zip317,
             None,
@@ -450,9 +500,13 @@ where
 
         // Shield all funds immediately
         let max_height = match db.chain_height()? {
-            Some(max_height) => max_height,
+            Some(max_height) => {
+                tracing::info!("pczt_shield: max_height = {:?}", max_height);
+                max_height
+            }
             // If we haven't scanned anything, there's nothing to do.
             None => {
+                tracing::error!("pczt_shield: No chain height - haven't scanned yet");
                 return Err(Error::Generic(
                     "Havent scanned yet, cant shield".to_string(),
                 ))
@@ -461,8 +515,18 @@ where
 
         let transparent_balances =
             db.get_transparent_balances(account_id, max_height.into(), self.min_confirmations)?;
-        let from_addrs = transparent_balances.into_keys().collect::<Vec<_>>();
+        tracing::info!("pczt_shield: transparent_balances count: {}", transparent_balances.len());
+        for (addr, balance) in &transparent_balances {
+            tracing::info!("pczt_shield: address {:?} has balance {:?}", addr, balance);
+        }
 
+        let from_addrs = transparent_balances.into_keys().collect::<Vec<_>>();
+        tracing::info!("pczt_shield: from_addrs count: {}", from_addrs.len());
+        for addr in &from_addrs {
+            tracing::info!("pczt_shield: shielding from address {:?}", addr);
+        }
+
+        tracing::info!("pczt_shield: Calling propose_shielding with threshold {:?}", SHIELDING_THRESHOLD);
         let proposal = propose_shielding::<_, _, _, _, <W as WalletCommitmentTrees>::Error>(
             &mut *db,
             &self.network,
@@ -473,8 +537,13 @@ where
             account_id,
             self.min_confirmations, // librustzcash operates under the assumption of zero or one conf being the same but that could change.
         )
-        .map_err(|e| Error::Generic(format!("Error when shielding: {:?}", e)))?;
+        .map_err(|e| {
+            tracing::error!("pczt_shield: propose_shielding failed: {:?}", e);
+            Error::Generic(format!("Error when shielding: {:?}", e))
+        })?;
+        tracing::info!("pczt_shield: proposal created successfully");
 
+        tracing::info!("pczt_shield: Creating PCZT from proposal");
         let pczt = create_pczt_from_proposal::<
             _,
             _,
@@ -489,7 +558,11 @@ where
             OvkPolicy::Sender,
             &proposal,
         )
-        .map_err(|_| Error::PcztCreate)?;
+        .map_err(|e| {
+            tracing::error!("pczt_shield: create_pczt_from_proposal failed: {:?}", e);
+            Error::PcztCreate
+        })?;
+        tracing::info!("pczt_shield: PCZT created from proposal successfully");
 
         Ok(pczt)
     }
@@ -612,6 +685,46 @@ where
     }
 
     pub async fn pczt_send(&self, pczt: Pczt) -> Result<(), Error> {
+        // Verify the wallet is sufficiently synced before sending
+        // The network only accepts anchors within the last 100 blocks
+        let mut client = self.client.clone();
+        let chain_tip: u32 = client
+            .get_latest_block(service::ChainSpec::default())
+            .await?
+            .into_inner()
+            .height
+            .try_into()
+            .expect("block heights must fit into u32");
+
+        let db_read = self.db.read().await;
+        let fully_scanned = db_read.chain_height()?;
+        drop(db_read);
+
+        if let Some(scanned_height) = fully_scanned {
+            let scanned_height_u32: u32 = scanned_height.into();
+            let blocks_behind = chain_tip.saturating_sub(scanned_height_u32);
+            if blocks_behind > 100 {
+                tracing::error!(
+                    "Wallet too far behind: scanned={}, chain_tip={}, blocks_behind={}",
+                    scanned_height_u32,
+                    chain_tip,
+                    blocks_behind
+                );
+                return Err(Error::Generic(format!(
+                    "Wallet is {} blocks behind the chain tip. Please sync before sending (max allowed: 100 blocks).",
+                    blocks_behind
+                )));
+            }
+            tracing::info!(
+                "pczt_send: Anchor validation passed. Wallet is {} blocks behind chain tip.",
+                blocks_behind
+            );
+        } else {
+            return Err(Error::Generic(
+                "Wallet has not been synced yet. Please sync before sending.".to_string(),
+            ));
+        }
+
         let prover = LocalTxProver::bundled();
         let (spend_vk, output_vk) = prover.verifying_keys();
         let mut db = self.db.write().await;

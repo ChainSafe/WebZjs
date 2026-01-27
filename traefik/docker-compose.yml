@@ -6,8 +6,8 @@ services:
     container_name: "traefik"
     ports:
       - "1234:80"
-      - "8080:8080"
+      - "8081:8080"  # Dashboard moved to 8081 to avoid conflict with snap
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
-      - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./dynamic.yml:/etc/traefik/dynamic.yml:ro"
+      - "./traefik.yml:/etc/traefik/traefik.yml:ro"

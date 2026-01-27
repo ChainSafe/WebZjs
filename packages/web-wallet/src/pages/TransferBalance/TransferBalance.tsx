@@ -7,7 +7,7 @@ import { zatsToZec } from '../../utils';
 import { TransferInput, TransferConfirm, TransferResult } from 'src/components/TransferCards';
 
 function TransferBalance(): React.JSX.Element {
-  const { shieldedBalance, totalPending, hasPending } = useBalance();
+  const { shieldedBalance } = useBalance();
   const {
     currentStep,
     formData,
@@ -38,14 +38,6 @@ function TransferBalance(): React.JSX.Element {
                 {zatsToZec(shieldedBalance)} ZEC
               </span>
             </div>
-            {hasPending && (
-              <div className="px-4 py-2 bg-amber-50 border border-amber-200 rounded-3xl flex items-center gap-2">
-                <span className="text-amber-600">⏳</span>
-                <span className="text-amber-700 text-sm font-medium">
-                  {zatsToZec(totalPending)} ZEC pending
-                </span>
-              </div>
-            )}
           </div>
         </PageHeading>
       )}

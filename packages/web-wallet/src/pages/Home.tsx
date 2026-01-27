@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ZcashYellowPNG, FormTransferSvg, MetaMaskLogoPNG } from '../assets';
 import { useNavigate } from 'react-router-dom';
 import { useWebZjsContext } from '../context/WebzjsContext';
@@ -9,10 +9,12 @@ import Loader from '../components/Loader/Loader';
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { state, dispatch } = useWebZjsContext();
-  const { getAccountData, connectWebZjsSnap } = useWebZjsActions();
+  const { getAccountData, connectWebZjsSnap, recoverWallet } = useWebZjsActions();
   const { installedSnap } = useMetaMask();
   const { isPendingRequest } = useMetaMaskContext();
   const [showResetInstructions, setShowResetInstructions] = useState(false);
+  const [recovering, setRecovering] = useState(false);
+  const recoveryAttemptedRef = useRef(false);
 
   const handleConnectButton: React.MouseEventHandler<
     HTMLButtonElement
@@ -24,30 +26,46 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    if (state.loading) {
-      return;
-    }
-    if (installedSnap) {
-      const homeReload = async () => {
-        if (state.activeAccount !== null && state.activeAccount !== undefined) {
-          try {
-            const accountData = await getAccountData();
-            if (accountData?.unifiedAddress) {
-              navigate('/dashboard/account-summary');
-            } else {
-              dispatch({ type: 'set-error', payload: 'Unified address not available for the active account' });
-              setShowResetInstructions(true);
-            }
-          } catch (err) {
-            dispatch({ type: 'set-error', payload: err instanceof Error ? err : new Error(String(err)) });
+    if (state.loading) return;
+    if (!installedSnap) return;
+
+    const homeReload = async () => {
+      // Case 1: Account exists - go to dashboard
+      if (state.activeAccount !== null && state.activeAccount !== undefined) {
+        try {
+          const accountData = await getAccountData();
+          if (accountData?.unifiedAddress) {
+            navigate('/dashboard/account-summary');
+          } else {
+            dispatch({ type: 'set-error', payload: 'Unified address not available for the active account' });
             setShowResetInstructions(true);
           }
+        } catch (err) {
+          dispatch({ type: 'set-error', payload: err instanceof Error ? err : new Error(String(err)) });
+          setShowResetInstructions(true);
         }
-        // If no active account, do nothing - user will click Connect to proceed
-      };
-      homeReload();
+        return;
+      }
+
+      // Case 2: No account but snap is installed - auto-recover (once only)
+      if (!recoveryAttemptedRef.current) {
+        recoveryAttemptedRef.current = true;
+        try {
+          setRecovering(true);
+          await recoverWallet();
+          navigate('/dashboard/account-summary');
+        } catch (err) {
+          console.error('Auto-recovery failed:', err);
+          dispatch({ type: 'set-error', payload: err instanceof Error ? err : new Error(String(err)) });
+          setShowResetInstructions(true);
+        } finally {
+          setRecovering(false);
+        }
+      }
     };
-  }, [navigate, getAccountData, state.activeAccount, state.loading, installedSnap, dispatch]);
+
+    homeReload();
+  }, [state.loading, state.activeAccount, installedSnap, navigate, dispatch, getAccountData, recoverWallet]);
 
   return (
     <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">
@@ -91,12 +109,12 @@ const Home: React.FC = () => {
             </div>
           )}
           <button
-            disabled={state.loading || isPendingRequest}
+            disabled={state.loading || isPendingRequest || recovering}
             onClick={handleConnectButton}
-            className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${state.loading || isPendingRequest ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+            className={`flex items-center bg-button-black-gradient hover:bg-button-black-gradient-hover text-white px-6 py-3 rounded-[2rem] ${state.loading || isPendingRequest || recovering ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
           >
-            <span>{state.loading ? 'Wallet Initializing...' : isPendingRequest ? 'Waiting for MetaMask...' : 'Connect MetaMask Snap'}</span>
-            {(state.loading || isPendingRequest) && (
+            <span>{state.loading ? 'Wallet Initializing...' : recovering ? 'Recovering Wallet...' : isPendingRequest ? 'Waiting for MetaMask...' : 'Connect MetaMask Snap'}</span>
+            {(state.loading || isPendingRequest || recovering) && (
               <div className="ml-3">
                 <Loader />
               </div>

@@ -45,7 +45,7 @@ pub enum Error {
     InvalidMinConformations,
     #[error("Error parsing zatoshi amount: {0}")]
     InvalidAmount(#[from] zcash_protocol::value::BalanceError),
-    #[error("Failed to send transaction")]
+    #[error("Failed to send transaction (code: {code}): {reason}")]
     SendFailed { code: i32, reason: String },
     #[error("Failed to parse key: {0}")]
     KeyParse(String),

@@ -1,10 +1,11 @@
 import type { MetaMaskInpageProvider } from '@metamask/providers';
 import type { ReactNode } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import type { Snap } from '../types';
 import { getSnapsProvider } from '../utils';
 import { SnapState } from 'src/hooks/snaps/useGetSnapState';
+import { defaultSnapOrigin } from '../config';
 
 type MetaMaskContextType = {
   provider: MetaMaskInpageProvider | null;
@@ -16,6 +17,7 @@ type MetaMaskContextType = {
   setInstalledSnap: (snap: Snap | null) => void;
   setError: (error: Error) => void;
   setIsPendingRequest: (isPending: boolean) => void;
+  refreshSnapState: () => Promise<void>;
 };
 
 const MetaMaskContext = createContext<MetaMaskContextType>({
@@ -28,6 +30,7 @@ const MetaMaskContext = createContext<MetaMaskContextType>({
   setInstalledSnap: () => {},
   setError: () => {},
   setIsPendingRequest: () => {},
+  refreshSnapState: async () => {},
 });
 
 /**
@@ -46,9 +49,46 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
   const [isPendingRequest, setIsPendingRequest] = useState<boolean>(false);
   const [snapState, setSnapState] = useState<SnapState | null>(null);
 
+  const refreshSnapState = useCallback(async () => {
+    if (!installedSnap || !provider) return;
+    try {
+      const state = await provider.request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId: defaultSnapOrigin,
+          request: { method: 'getSnapStete' },
+        },
+      });
+      if (state) {
+        setSnapState(state as SnapState);
+      }
+    } catch (err) {
+      console.error('Failed to refresh snap state:', err);
+    }
+  }, [installedSnap, provider]);
+
   useEffect(() => {
     getSnapsProvider().then(setProvider).catch(console.error);
   }, []);
+
+  // Fetch snap state when snap is installed (for birthday block display)
+  useEffect(() => {
+    if (installedSnap && provider) {
+      provider.request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId: defaultSnapOrigin,
+          request: { method: 'getSnapStete' },
+        },
+      }).then((state) => {
+        if (state) {
+          setSnapState(state as SnapState);
+        }
+      }).catch((err) => {
+        console.warn('Could not fetch snap state:', err);
+      });
+    }
+  }, [installedSnap, provider]);
 
   useEffect(() => {
     if (error) {
@@ -83,6 +123,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
         setIsPendingRequest,
         installedSnap,
         setInstalledSnap,
+        refreshSnapState,
       }}
     >
       {children}
