@@ -509,13 +509,16 @@ where
                 tracing::error!("pczt_shield: No chain height - haven't scanned yet");
                 return Err(Error::Generic(
                     "Havent scanned yet, cant shield".to_string(),
-                ))
+                ));
             }
         };
 
         let transparent_balances =
             db.get_transparent_balances(account_id, max_height.into(), self.min_confirmations)?;
-        tracing::info!("pczt_shield: transparent_balances count: {}", transparent_balances.len());
+        tracing::info!(
+            "pczt_shield: transparent_balances count: {}",
+            transparent_balances.len()
+        );
         for (addr, balance) in &transparent_balances {
             tracing::info!("pczt_shield: address {:?} has balance {:?}", addr, balance);
         }
@@ -526,7 +529,10 @@ where
             tracing::info!("pczt_shield: shielding from address {:?}", addr);
         }
 
-        tracing::info!("pczt_shield: Calling propose_shielding with threshold {:?}", SHIELDING_THRESHOLD);
+        tracing::info!(
+            "pczt_shield: Calling propose_shielding with threshold {:?}",
+            SHIELDING_THRESHOLD
+        );
         let proposal = propose_shielding::<_, _, _, _, <W as WalletCommitmentTrees>::Error>(
             &mut *db,
             &self.network,

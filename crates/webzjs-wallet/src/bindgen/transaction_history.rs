@@ -9,8 +9,8 @@ use zcash_client_memory::MemoryWalletDb;
 use zcash_protocol::consensus::BlockHeight;
 use zcash_protocol::TxId;
 
-use crate::error::Error;
 use super::wallet::AccountId;
+use crate::error::Error;
 use webzjs_common::Network;
 
 /// The type of transaction
@@ -142,7 +142,6 @@ impl TransactionHistoryResponse {
         self.has_more
     }
 }
-
 
 /// Internal struct to accumulate transaction data
 #[derive(Debug, Default)]
@@ -281,7 +280,10 @@ pub fn extract_transaction_history(
             let pool = if acc.pools.len() > 1 {
                 "mixed".to_string()
             } else {
-                acc.pools.into_iter().next().unwrap_or_else(|| "unknown".to_string())
+                acc.pools
+                    .into_iter()
+                    .next()
+                    .unwrap_or_else(|| "unknown".to_string())
             };
 
             // Calculate confirmations
@@ -319,7 +321,8 @@ pub fn extract_transaction_history(
             };
 
             // Get actual timestamp from block data (not estimated)
-            let timestamp = acc.block_height
+            let timestamp = acc
+                .block_height
                 .and_then(|height| db.get_block_time(height))
                 .map(|t| t as u64);
 
