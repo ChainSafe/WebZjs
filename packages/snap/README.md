@@ -18,32 +18,22 @@ Snap uses a Rust library [WebZjs](https://github.com/ChainSafe/WebZjs) compiled 
 
 ## 🔨 Development
 
-For local development, you need to add `http://localhost:3000` to the `allowedOrigins` in `snap.manifest.json`. The `endowment:rpc` section should look like this:
-
-```json
-"endowment:rpc": {
-  "allowedOrigins": ["https://webzjs.chainsafe.dev", "http://localhost:3000"]
-}
-```
+The snap manifest (`snap.manifest.json`) controls which origins can communicate with the snap via `allowedOrigins`. A script (`scripts/generate-manifest.js`) handles switching between dev and production origins automatically — you should not need to edit the manifest by hand.
 
 ### Build Scripts
 
-- **`yarn build`** - Standard build for production (only allows production origins)
-- **`yarn build:local`** - Build for local development (automatically adds localhost:3000 to allowedOrigins)
-- **`yarn build:prePublish`** - Pre-publish build that ensures `allowedOrigins` is reset to `["https://webzjs.chainsafe.dev"]` and then runs `mm-snap build`
-
-The `build:local` script will:
-1. Create a backup of the original `snap.manifest.json`
-2. Modify the manifest to include `http://localhost:3000` in allowedOrigins
-3. Run the build process
-
-The `build:prePublish` script will:
-1. Overwrite `allowedOrigins` in `snap.manifest.json` to only `["https://webzjs.chainsafe.dev"]`
-2. Run the production build via `mm-snap build`
+- **`yarn dev`** / **`yarn start`** - Adds `http://localhost:3000` to `allowedOrigins`, then watches for changes
+- **`yarn build`** - Strips any localhost origins from `allowedOrigins` and runs a production build
 
 ### Development Steps
 
 1. Install dependencies with `yarn install`
-2. For local development: Build with `yarn build:local`
-3. For production: Build with `yarn build`
-4. Host snap on localhost http://localhost:8080 `yarn serve`
+2. For local development: `yarn dev` (automatically adds localhost to allowed origins)
+3. For production: `yarn build` (automatically removes localhost from allowed origins)
+4. Host snap on localhost http://localhost:8080 with `yarn serve`
+
+### CI: Allowed Origins Check
+
+Two CI workflows (`check-snap-manifest.yml` and `check-snap-allowed-origins.yml`) verify that `snap.manifest.json` on `main` only contains the production origin `["https://webzjs.chainsafe.dev"]`. If localhost is present, the check will fail.
+
+**Do not commit `snap.manifest.json` after running `yarn dev`** — it will contain `http://localhost:3000`. Run `yarn build` or `yarn manifest:prod` first to reset it before committing.
