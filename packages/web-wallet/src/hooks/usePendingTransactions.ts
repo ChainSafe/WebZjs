@@ -53,9 +53,12 @@ export function usePendingTransactions(): UsePendingTransactionsResult {
   }, [state.webWallet, state.activeAccount]);
 
   // Check on mount, when wallet/account changes, or when summary updates (after transactions)
+  // Skip during active sync — data is stale mid-sync and the WASM call competes with sync() for CPU
   useEffect(() => {
-    checkPendingTransactions();
-  }, [checkPendingTransactions, state.summary]);
+    if (!state.syncInProgress) {
+      checkPendingTransactions();
+    }
+  }, [checkPendingTransactions, state.summary?.fully_scanned_height, state.syncInProgress]);
 
   const totalPending = pendingTxs.reduce((sum, tx) => sum + tx.value, 0);
   const hasPending = pendingTxs.length > 0;

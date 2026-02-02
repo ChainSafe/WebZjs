@@ -11,10 +11,11 @@ function App() {
   const { installedSnap } = useMetaMaskContext();
   const { state } = useWebZjsContext();
 
-  // Guard: Don't auto-sync if sync is in progress or there's an error (recovery in progress)
+  const interval = installedSnap && !state.syncInProgress ? RESCAN_INTERVAL : null;
+
   useInterval(() => {
     triggerRescan();
-  }, installedSnap && !state.syncInProgress && !state.error ? RESCAN_INTERVAL : null);
+  }, interval);
 
   return (
     <Layout>

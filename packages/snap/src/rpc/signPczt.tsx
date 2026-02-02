@@ -18,7 +18,7 @@ export async function signPczt({ pcztHexTring, signDetails }: SignPcztParams, or
       type: 'confirmation',
       content: (
         <Box>
-          <Heading>Sing PCZT</Heading>
+          <Heading>Sign PCZT</Heading>
           <Divider />
           <Text>Origin: {origin}</Text>
           <Text>Recipient: {signDetails.recipient}</Text>

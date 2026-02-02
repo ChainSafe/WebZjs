@@ -23,8 +23,6 @@ interface IUsePczt {
 
 export enum PcztTransferStatus {
   CHECK_WALLET = 'Checking wallet',
-  CHECK_LATEST_BLOCK = 'Checking synced block height',
-  SYNCING_CHAIN = 'Syncing chain',
   CREATING_PCZT = 'Creating transaction',
   SIGNING_PCZT = 'Signing transaction',
   PROVING_PCZT = 'Proving transaction',
@@ -36,7 +34,7 @@ export enum PcztTransferStatus {
 export const usePczt = (): IUsePczt => {
   const { state } = useWebZjsContext();
   const invokeSnap = useInvokeSnap();
-  const { triggerRescan, flushDbToStore, syncStateWithWallet } = useWebZjsActions();
+  const { flushDbToStore, syncStateWithWallet } = useWebZjsActions();
 
   const [pcztTransferStatus, setPcztTransferStatus] =
     useState<PcztTransferStatus>(PcztTransferStatus.CHECK_WALLET);
@@ -128,21 +126,8 @@ export const usePczt = (): IUsePczt => {
     setLastError(null); // Clear any previous error
     console.info('Shield: Starting transaction flow');
     try {
-      const chainHeight = await state.webWallet.get_latest_block();
-      console.info('Shield: Chain height:', chainHeight.toString());
-      console.info('Shield: Fully scanned:', state.summary?.fully_scanned_height);
-      const isSynced =
-        chainHeight.toString() ===
-        state.summary?.fully_scanned_height.toString();
-      console.info('Shield: Is synced:', isSynced);
-      setPcztTransferStatus(PcztTransferStatus.CHECK_LATEST_BLOCK);
-      if (!isSynced) {
-        console.info('Shield: Starting resync before transaction');
-        setPcztTransferStatus(PcztTransferStatus.SYNCING_CHAIN);
-        await triggerRescan();
-        console.info('Shield: Resync complete');
-      }
-
+      // Rust's pczt_shield/pczt_send handle sync validation internally
+      // (checks if behind and syncs if needed), so no JS-layer pre-check required
       setPcztTransferStatus(PcztTransferStatus.CREATING_PCZT);
       console.info('Shield: Creating PCZT for account', accountId);
       const pczt = await createPcztFunc(accountId, toAddress, value);
@@ -189,23 +174,21 @@ export const usePczt = (): IUsePczt => {
       setPcztTransferStatus(PcztTransferStatus.SEND_SUCCESSFUL);
 
       // Refresh wallet state — totalBalance now includes pending amounts,
-      // so the displayed balance stays correct without special post-tx handling
+      // so the displayed balance stays correct without special post-tx handling.
+      // Auto-sync interval handles catching up with new blocks.
       await syncStateWithWallet();
-
-      // Trigger background rescan to pick up the pending transaction when mined
-      await triggerRescan();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('Transaction error:', errorMessage);
+      const rawMessage = error instanceof Error ? error.message : String(error);
+      console.error('Transaction error:', rawMessage);
+
+      let errorMessage = rawMessage;
+      if (rawMessage.includes('InsufficientFunds')) {
+        errorMessage = 'Insufficient balance. Your wallet may still be syncing — please wait for sync to complete or try a Full Resync from the Account Summary page.';
+      }
+
       setLastError(errorMessage);
       setPcztTransferStatus(PcztTransferStatus.SEND_ERROR);
-      // Rescan to detect notes are still unspent on-chain
-      // This prevents the "stuck funds" issue when broadcast fails
-      try {
-        await triggerRescan();
-      } catch (rescanError) {
-        console.error('Rescan after error failed:', rescanError);
-      }
+      // Auto-sync interval will detect notes are still unspent on-chain
     }
   };
 

@@ -2,14 +2,18 @@ const fs = require('fs');
 const path = require('path');
 
 const isDev = process.argv.includes('--dev');
-const baseManifestPath = path.join(__dirname, '../snap.manifest.base.json');
-const outputManifestPath = path.join(__dirname, '../snap.manifest.json');
-
-const base = JSON.parse(fs.readFileSync(baseManifestPath, 'utf8'));
+const manifestPath = path.join(__dirname, '../snap.manifest.json');
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+const origins = manifest.initialPermissions['endowment:rpc'].allowedOrigins;
 
 if (isDev) {
-  base.initialPermissions['endowment:rpc'].allowedOrigins.push('http://localhost:3000');
+  if (!origins.includes('http://localhost:3000')) {
+    origins.push('http://localhost:3000');
+  }
+} else {
+  manifest.initialPermissions['endowment:rpc'].allowedOrigins =
+    origins.filter(o => !o.includes('localhost'));
 }
 
-fs.writeFileSync(outputManifestPath, JSON.stringify(base, null, 2) + '\n');
-console.log(`Generated snap.manifest.json (dev: ${isDev})`);
+fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+console.log(`Updated snap.manifest.json (dev: ${isDev})`);

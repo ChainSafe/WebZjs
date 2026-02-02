@@ -15,14 +15,19 @@ const Home: React.FC = () => {
   const [showResetInstructions, setShowResetInstructions] = useState(false);
   const [recovering, setRecovering] = useState(false);
   const recoveryAttemptedRef = useRef(false);
+  const connectingRef = useRef(false);
 
   const handleConnectButton: React.MouseEventHandler<
     HTMLButtonElement
   > = async (e) => {
     e.preventDefault();
-    await connectWebZjsSnap();
-    // Navigate to dashboard after successful connection
-    navigate('/dashboard/account-summary');
+    connectingRef.current = true;
+    try {
+      await connectWebZjsSnap();
+      navigate('/dashboard/account-summary');
+    } finally {
+      connectingRef.current = false;
+    }
   };
 
   useEffect(() => {
@@ -48,7 +53,8 @@ const Home: React.FC = () => {
       }
 
       // Case 2: No account but snap is installed - auto-recover (once only)
-      if (!recoveryAttemptedRef.current) {
+      // Skip if connect is in progress to avoid duplicate viewingKey prompts
+      if (!recoveryAttemptedRef.current && !connectingRef.current) {
         recoveryAttemptedRef.current = true;
         try {
           setRecovering(true);
@@ -88,8 +94,8 @@ const Home: React.FC = () => {
               <div>Error occurred while loading the wallet data, please reset the wallet</div>
               <div>To reset manually:</div>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Open DevTools ➛ Application ➛ IndexedDB ➛ keyval-store ➛ Delete database</li>
-                <li>Opem Metamask ➛ ⋮ ➛ Snaps ➛ Zcash Shielded Wallet ➛ Remove Zcash Shielded Wallet ➛ Remove Snap</li>
+                <li>Open DevTools ➛ Application ➛ IndexedDB ➛ keyval-store ➛ Delete database(s)</li>
+                <li>Open Metamask ➛ ⋮ ➛ Snaps ➛ Zcash Shielded Wallet ➛ Remove Zcash Shielded Wallet ➛ Remove Snap</li>
                 <li>Refresh the page and start installation again</li>
               </ul>
               <details className="mt-2">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
 import { useMetaMaskContext } from '../context/MetamaskContext';
 
@@ -33,47 +33,18 @@ const useBalance = () => {
   const { state } = useWebZjsContext();
   const { snapState } = useMetaMaskContext();
 
-  const [balances, setBalances] = useState<BalanceType>({
-    shieldedBalance: 0,
-    unshieldedBalance: 0,
-    totalBalance: 0,
-    spendableBalance: 0,
-    saplingBalance: 0,
-    orchardBalance: 0,
-    pendingChange: 0,
-    pendingSpendable: 0,
-    totalPending: 0,
-    hasPending: false,
-    loading: true,
-    error: null,
-    isCached: false,
-    cacheAge: null,
-  });
-
   const activeBalanceReport = useMemo(() => {
     return state.summary?.account_balances.find(
       ([accountId]: [number]) => accountId === state.activeAccount,
     );
-  }, [state.activeAccount, state.chainHeight, state.summary?.account_balances]);
+  }, [state.activeAccount, state.summary?.account_balances]);
 
   // Compute balances following ZIP 315:
   // - totalBalance = confirmed + pending (what the user "has")
   // - spendableBalance = confirmed only (what they can spend right now)
   // Falls back to snap cache when wallet hasn't loaded yet (e.g. page refresh)
-  const {
-    shieldedBalance,
-    unshieldedBalance,
-    totalBalance,
-    spendableBalance,
-    saplingBalance,
-    orchardBalance,
-    pendingChange,
-    pendingSpendable,
-    totalPending,
-    hasPending,
-    isCached,
-    cacheAge,
-  } = useMemo(() => {
+  // Returns directly from useMemo — no useState/useEffect copy to avoid extra render cycle.
+  const balances = useMemo((): BalanceType => {
     // Calculate live wallet balances if available
     let confirmedShielded = 0;
     let confirmedUnshielded = 0;
@@ -113,6 +84,8 @@ const useBalance = () => {
         pendingSpendable: livePendingSpendable,
         totalPending: pendingTotal,
         hasPending: pendingTotal > 0,
+        loading: false,
+        error: null,
         isCached: false,
         cacheAge: null,
       };
@@ -132,6 +105,8 @@ const useBalance = () => {
         pendingSpendable: livePendingSpendable,
         totalPending: pendingTotal,
         hasPending: pendingTotal > 0,
+        loading: false,
+        error: null,
         isCached: true,
         cacheAge: age,
       };
@@ -150,12 +125,14 @@ const useBalance = () => {
         pendingSpendable: livePendingSpendable,
         totalPending: pendingTotal,
         hasPending: pendingTotal > 0,
+        loading: false,
+        error: null,
         isCached: false,
         cacheAge: null,
       };
     }
 
-    // 4. No data at all
+    // 4. No data at all — loading if wallet hasn't initialized yet
     return {
       shieldedBalance: 0,
       unshieldedBalance: 0,
@@ -167,42 +144,12 @@ const useBalance = () => {
       pendingSpendable: 0,
       totalPending: 0,
       hasPending: false,
+      loading: !state.webWallet,
+      error: null,
       isCached: false,
       cacheAge: null,
     };
-  }, [activeBalanceReport, snapState?.lastKnownBalance]);
-
-  useEffect(() => {
-    setBalances({
-      shieldedBalance,
-      unshieldedBalance,
-      totalBalance,
-      spendableBalance,
-      saplingBalance,
-      orchardBalance,
-      pendingChange,
-      pendingSpendable,
-      totalPending,
-      hasPending,
-      loading: false,
-      error: null,
-      isCached,
-      cacheAge,
-    });
-  }, [
-    shieldedBalance,
-    unshieldedBalance,
-    totalBalance,
-    spendableBalance,
-    saplingBalance,
-    orchardBalance,
-    pendingChange,
-    pendingSpendable,
-    totalPending,
-    hasPending,
-    isCached,
-    cacheAge,
-  ]);
+  }, [activeBalanceReport, snapState?.lastKnownBalance, state.webWallet]);
 
   return balances;
 };

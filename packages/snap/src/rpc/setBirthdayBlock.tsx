@@ -98,11 +98,16 @@ export async function setBirthdayBlock({
 
   const webWalletSyncStartBlock = setSyncBlockHeight(customBirthdayBlock, latestBlock);
 
+  const existing = await snap.request({
+    method: 'snap_manageState',
+    params: { operation: 'get' },
+  }) as Record<string, unknown> | null;
+
   await snap.request({
     method: 'snap_manageState',
     params: {
       operation: 'update',
-      newState: { webWalletSyncStartBlock },
+      newState: { ...existing, webWalletSyncStartBlock },
     },
   });
 

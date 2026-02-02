@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - 'packages/snap/snap.manifest.base.json'
+      - 'packages/snap/snap.manifest.json'
       - '.github/workflows/check-snap-allowed-origins.yml'
   push:
     branches: [ main ]
     paths:
-      - 'packages/snap/snap.manifest.base.json'
+      - 'packages/snap/snap.manifest.json'
 
 jobs:
   check-allowed-origins:
@@ -18,16 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify allowedOrigins in snap.manifest.json
+      - name: Verify allowedOrigins in snap manifest
         shell: bash
         run: |
           set -euo pipefail
-          FILE="packages/snap/snap.manifest.base.json"
-
-          if [ ! -f "$FILE" ]; then
-            echo "::error title=Missing file::$FILE not found"
-            exit 1
-          fi
 
           if ! command -v jq >/dev/null 2>&1; then
             echo "Installing jq..."
@@ -36,18 +30,19 @@ jobs:
           fi
 
           expected='["https://webzjs.chainsafe.dev"]'
-          actual=$(jq -c '.initialPermissions["endowment:rpc"].allowedOrigins' "$FILE")
+          MANIFEST="packages/snap/snap.manifest.json"
 
-          echo "allowedOrigins in manifest: $actual"
+          if [ ! -f "$MANIFEST" ]; then
+            echo "::error title=Missing file::$MANIFEST not found"
+            exit 1
+          fi
+
+          actual=$(jq -c '.initialPermissions["endowment:rpc"].allowedOrigins' "$MANIFEST")
+          echo "allowedOrigins in $MANIFEST: $actual"
 
           if [ "$actual" != "$expected" ]; then
             echo "::error title=Invalid allowedOrigins::For merges to main, allowedOrigins must be $expected. Found: $actual"
-            if echo "$actual" | grep -qi "localhost"; then
-              echo "::error title=localhost detected::Remove any localhost origins from allowedOrigins."
-            fi
             exit 1
           fi
 
           echo "allowedOrigins are valid."
-
-

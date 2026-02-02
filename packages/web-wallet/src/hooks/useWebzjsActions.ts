@@ -1,5 +1,5 @@
-import { set, del } from 'idb-keyval';
-import { useCallback } from 'react';
+import { set, get } from 'idb-keyval';
+import { useCallback, useRef } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
 import { useMetaMaskContext } from '../context/MetamaskContext';
 import { useMetaMask } from './snaps/useMetaMask';
@@ -8,6 +8,10 @@ import { useRequestSnap } from './snaps/useRequestSnap';
 import { SeedFingerprint, WebWallet } from '@chainsafe/webzjs-wallet';
 import { MAINNET_LIGHTWALLETD_PROXY } from '../config/constants';
 import { SnapState } from '../types/snap';
+
+// Synchronous guard: prevents triggerRescan from overlapping with fullResync.
+// Module-level so it's shared across all hook instances and immune to stale closures.
+let _fullResyncActive = false;
 
 interface SyncOptions {
   skipBalanceCache?: boolean;
@@ -25,12 +29,71 @@ interface WebzjsActions {
   recoverWallet: () => Promise<void>;
 }
 
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  { retries = 3, baseDelay = 2000, label = 'operation' } = {}
+): Promise<T> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      console.warn(`${label} failed (attempt ${attempt}/${retries}), retrying in ${delay}ms:`, err);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw new Error('unreachable');
+}
+
 export function useWebZjsActions(): WebzjsActions {
   const { state, dispatch } = useWebZjsContext();
   const { installedSnap } = useMetaMask();
   const { refreshSnapState } = useMetaMaskContext();
   const invokeSnap = useInvokeSnap();
   const requestSnap = useRequestSnap();
+
+  // Refs for values read inside triggerRescan but that shouldn't cause it to be recreated
+  const fullySyncedRef = useRef(state.summary?.fully_scanned_height);
+  const chainHeightRef = useRef(state.chainHeight);
+  fullySyncedRef.current = state.summary?.fully_scanned_height;
+  chainHeightRef.current = state.chainHeight;
+
+  /**
+   * Read-merge-write helper for snap state. Always reads existing state first,
+   * merges the partial update, then writes the complete object back.
+   * This prevents partial writes from wiping unrelated fields.
+   *
+   * If snap state lost webWalletSyncStartBlock (e.g. snap reinstall), restores
+   * it from IndexedDB where it's also persisted.
+   */
+  const updateSnapState = useCallback(async (partial: Partial<SnapState>) => {
+    const existing = await invokeSnap({ method: 'getSnapStete' }) as SnapState | null;
+
+    // Restore birthday from IndexedDB if snap state lost it (e.g. snap reinstall)
+    let birthday = existing?.webWalletSyncStartBlock;
+    if (!birthday && !partial.webWalletSyncStartBlock) {
+      const idbBirthday = await get('birthdayBlock') as string | undefined;
+      if (idbBirthday) {
+        birthday = idbBirthday;
+      }
+    }
+
+    const merged: SnapState = {
+      webWalletSyncStartBlock: birthday ?? '',
+      lastKnownBalance: existing?.lastKnownBalance ?? null,
+      hasPendingTx: existing?.hasPendingTx ?? null,
+      ...partial,
+    };
+
+    // Also persist birthday to IndexedDB whenever it's being written to snap
+    if (merged.webWalletSyncStartBlock) {
+      await set('birthdayBlock', String(merged.webWalletSyncStartBlock));
+    }
+
+    await invokeSnap({ method: 'setSnapStete', params: merged });
+    await refreshSnapState();
+  }, [invokeSnap, refreshSnapState]);
 
   const getAccountData = useCallback(async () => {
     try {
@@ -66,7 +129,12 @@ export function useWebZjsActions(): WebzjsActions {
    *
    * Zero-protection: won't overwrite a positive cache with zeros (wallet may be
    * recovering). Pass force=true to bypass (used by fullResync).
+   *
+   * Dedup: skips snap IPC when shielded/unshielded haven't changed since last cache
+   * (common at chain tip during repeated syncs with no new transactions).
    */
+  const lastCachedBalanceRef = useRef<{ shielded: number; unshielded: number } | null>(null);
+
   const cacheBalanceInSnap = useCallback(async (balanceReport: {
     sapling_balance?: number;
     orchard_balance?: number;
@@ -81,38 +149,36 @@ export function useWebZjsActions(): WebzjsActions {
     const pending = (balanceReport.pending_change ?? 0) + (balanceReport.pending_spendable ?? 0);
     const total = confirmed + unshielded + pending;
 
+    // Don't overwrite cache with zeros (wallet may be recovering)
+    // fullResync passes force=true to bypass this
+    if (!force && total === 0) {
+      console.info('Skipping balance cache: not caching zero balance (pass force=true to override)');
+      return;
+    }
+
+    // Skip snap IPC if balance hasn't changed (avoids 3 round-trips + context re-render)
+    const shieldedForCache = confirmed + pending;
+    if (!force && lastCachedBalanceRef.current &&
+        lastCachedBalanceRef.current.shielded === shieldedForCache &&
+        lastCachedBalanceRef.current.unshielded === unshielded) {
+      return;
+    }
+
     try {
-      const existingState = await invokeSnap({ method: 'getSnapStete' }) as SnapState | null;
-
-      // Don't overwrite positive cache with zeros (wallet may be recovering)
-      // fullResync passes force=true to bypass this
-      if (!force && total === 0 && existingState?.lastKnownBalance) {
-        const existingTotal = existingState.lastKnownBalance.shielded + existingState.lastKnownBalance.unshielded;
-        if (existingTotal > 0) {
-          console.info('Skipping balance cache: not replacing positive cache with zeros');
-          return;
-        }
-      }
-
       // Cache: shielded = confirmed shielded + all pending (pending resolves to shielded)
-      await invokeSnap({
-        method: 'setSnapStete',
-        params: {
-          webWalletSyncStartBlock: existingState?.webWalletSyncStartBlock ?? '',
-          hasPendingTx: null, // No longer used, kept for snap state compatibility
-          lastKnownBalance: {
-            shielded: confirmed + pending,
-            unshielded,
-            timestamp: Date.now(),
-          },
+      await updateSnapState({
+        lastKnownBalance: {
+          shielded: shieldedForCache,
+          unshielded,
+          timestamp: Date.now(),
         },
       });
-      await refreshSnapState();
-      console.info('Cached balance in snap state:', { shielded: confirmed + pending, unshielded, total });
+      lastCachedBalanceRef.current = { shielded: shieldedForCache, unshielded };
+      console.info('Cached balance in snap state:', { shielded: shieldedForCache, unshielded, total });
     } catch (error) {
       console.warn('Failed to cache balance in snap state:', error);
     }
-  }, [invokeSnap, refreshSnapState]);
+  }, [updateSnapState]);
 
   const syncStateWithWallet = useCallback(async (options?: SyncOptions) => {
     if (!state.webWallet) {
@@ -135,13 +201,8 @@ export function useWebZjsActions(): WebzjsActions {
           console.info('Skipping balance cache update (transaction in progress)');
         }
       }
-      const chainHeight = await state.webWallet.get_latest_block();
-      if (chainHeight) {
-        dispatch({ type: 'set-chain-height', payload: chainHeight });
-      }
     } catch (error) {
-      console.error('Error syncing state with wallet:', error);
-      dispatch({ type: 'set-error', payload: String(error) });
+      console.warn('Failed to sync state (will retry next interval):', error);
     }
   }, [state.webWallet, dispatch, cacheBalanceInSnap]);
 
@@ -186,24 +247,14 @@ export function useWebZjsActions(): WebzjsActions {
         return;
       }
 
-      // No existing account - create one
+      // No existing account - create one using latest block as birthday
+      // Users can do a full resync from the app if they need an earlier birthday
       const latestBlockBigInt = await state.webWallet.get_latest_block();
       const latestBlock = Number(latestBlockBigInt);
+      const birthdayBlock = latestBlock;
 
-      let birthdayBlock = (await invokeSnap({
-        method: 'setBirthdayBlock',
-        params: { latestBlock },
-      })) as number | null;
-
-      // in case user pressed "Close" instead of "Continue to wallet" on prompt, still allow account creation with latest block
-      if (birthdayBlock === null) {
-        await invokeSnap({
-          method: 'setSnapStete',
-          params: { webWalletSyncStartBlock: latestBlock },
-        });
-        await refreshSnapState();
-        birthdayBlock = latestBlock;
-      }
+      await set('birthdayBlock', String(birthdayBlock));
+      await updateSnapState({ webWalletSyncStartBlock: String(latestBlock) });
 
       const viewingKey = (await invokeSnap({
         method: 'getViewingKey',
@@ -255,7 +306,7 @@ export function useWebZjsActions(): WebzjsActions {
     dispatch,
     syncStateWithWallet,
     flushDbToStore,
-    refreshSnapState,
+    updateSnapState,
     requestSnap,
   ]);
 
@@ -279,25 +330,25 @@ export function useWebZjsActions(): WebzjsActions {
       // No account yet - user needs to connect first. Not an error.
       return;
     }
-    if (state.syncInProgress) {
+    if (state.syncInProgress || _fullResyncActive) {
       return;
     }
 
     // Check if we're already at chain tip - skip redundant syncs
     // Allow a small buffer (2 blocks) for network propagation
-    const fullySyncedHeight = state.summary?.fully_scanned_height;
-    const chainHeight = state.chainHeight ? Number(state.chainHeight) : 0;
+    const fullySyncedHeight = fullySyncedRef.current;
+    const chainHeight = chainHeightRef.current ? Number(chainHeightRef.current) : 0;
     if (fullySyncedHeight && chainHeight && fullySyncedHeight >= chainHeight - 2) {
       // Already synced to chain tip, just refresh the chain height
       try {
         const latestBlock = await state.webWallet.get_latest_block();
-        if (latestBlock && latestBlock !== state.chainHeight) {
+        if (latestBlock && latestBlock !== chainHeightRef.current) {
           dispatch({ type: 'set-chain-height', payload: latestBlock });
           // Only sync if chain has advanced
           if (fullySyncedHeight < Number(latestBlock)) {
             dispatch({ type: 'set-sync-in-progress', payload: true });
             try {
-              await state.webWallet.sync();
+              await withRetry(() => state.webWallet!.sync(), { label: 'sync', retries: 2, baseDelay: 3000 });
               await syncStateWithWallet();
               await flushDbToStore();
             } finally {
@@ -314,12 +365,11 @@ export function useWebZjsActions(): WebzjsActions {
     dispatch({ type: 'set-sync-in-progress', payload: true });
 
     try {
-      await state.webWallet.sync();
+      await withRetry(() => state.webWallet!.sync(), { label: 'sync', retries: 2, baseDelay: 3000 });
       await syncStateWithWallet();
       await flushDbToStore();
     } catch (err: unknown) {
-      console.error('Error during rescan:', err);
-      dispatch({ type: 'set-error', payload: String(err) });
+      console.warn('Sync failed (will retry next interval):', err);
     } finally {
       dispatch({ type: 'set-sync-in-progress', payload: false });
     }
@@ -329,8 +379,6 @@ export function useWebZjsActions(): WebzjsActions {
     state.webWallet,
     state.activeAccount,
     state.syncInProgress,
-    state.summary?.fully_scanned_height,
-    state.chainHeight,
     dispatch,
     syncStateWithWallet,
     flushDbToStore,
@@ -338,11 +386,12 @@ export function useWebZjsActions(): WebzjsActions {
 
   /**
    * Performs a full wallet resync by:
-   * 1. Clearing the cached wallet data from IndexedDB
-   * 2. Creating a fresh wallet instance
-   * 3. Re-importing the account with the original birthday
-   * 4. Triggering a full sync from birthday
+   * 1. Creating a fresh wallet in a local variable (old wallet stays in state)
+   * 2. Re-importing the account with the original birthday
+   * 3. Syncing from birthday with retry
+   * 4. Only on success: swapping the new wallet into state + IndexedDB
    *
+   * If any gRPC call fails, the old wallet remains untouched in state and IndexedDB.
    * This is a user-initiated action for recovering from sync issues.
    */
   const fullResync = useCallback(async (customBirthday?: number) => {
@@ -355,6 +404,7 @@ export function useWebZjsActions(): WebzjsActions {
       return;
     }
 
+    _fullResyncActive = true;
     dispatch({ type: 'set-sync-in-progress', payload: true });
 
     try {
@@ -370,11 +420,7 @@ export function useWebZjsActions(): WebzjsActions {
 
       // Save the new birthday to snap state if custom one was provided
       if (customBirthday) {
-        await invokeSnap({
-          method: 'setSnapStete',
-          params: { webWalletSyncStartBlock: customBirthday },
-        });
-        await refreshSnapState();
+        await updateSnapState({ webWalletSyncStartBlock: String(customBirthday) });
       }
 
       // 2. Get credentials from snap
@@ -397,31 +443,69 @@ export function useWebZjsActions(): WebzjsActions {
       );
       const seedFingerprint = SeedFingerprint.from_bytes(seedFingerprintUint8Array);
 
-      // 3. Clear the cached wallet from IndexedDB
-      console.info('Full resync: Clearing wallet from IndexedDB');
-      await del('wallet');
-
-      // 4. Create a fresh wallet instance
-      console.info('Full resync: Creating fresh wallet');
+      // 3. Create fresh wallet in LOCAL variable — old wallet stays in React state + IndexedDB
+      console.info('Full resync: Creating fresh wallet (old wallet preserved as fallback)');
       const freshWallet = new WebWallet('main', MAINNET_LIGHTWALLETD_PROXY, 1, 1, null);
-      dispatch({ type: 'set-web-wallet', payload: freshWallet });
 
-      // 5. Re-import the account with the original birthday
+      // 4. Re-import the account with retry (makes GetTreeState gRPC call)
       console.info(`Full resync: Re-importing account with birthday ${birthdayBlock}`);
-      const accountId = await freshWallet.create_account_ufvk(
-        'account-0',
-        viewingKey,
-        seedFingerprint,
-        0,
-        birthdayBlock,
+      const accountId = await withRetry(
+        () => freshWallet.create_account_ufvk('account-0', viewingKey, seedFingerprint, 0, birthdayBlock),
+        { label: 'create_account_ufvk', retries: 3, baseDelay: 2000 },
       );
+
+      // 5. Sync from birthday in a loop — each sync() makes incremental progress
+      //    The Rust WASM wallet resumes from where it left off on each call.
+      //    With many blocks to scan, one sync() call can't finish before the
+      //    lightwalletd proxy drops the connection, so we keep calling it.
+      console.info('Full resync: Starting sync from birthday');
+      const MAX_SYNC_ROUNDS = 20;
+      const SYNC_ROUND_DELAY = 2000; // ms between rounds to let proxy recover
+      let consecutiveFailures = 0;
+      const MAX_CONSECUTIVE_FAILURES = 4;
+
+      for (let round = 1; round <= MAX_SYNC_ROUNDS; round++) {
+        try {
+          console.info(`Full resync: sync round ${round}/${MAX_SYNC_ROUNDS}`);
+          await freshWallet.sync();
+          consecutiveFailures = 0;
+
+          // Check if fully synced
+          const summary = await freshWallet.get_wallet_summary();
+          const chainTip = Number(await freshWallet.get_latest_block());
+          const scannedHeight = summary?.fully_scanned_height ?? 0;
+
+          console.info(`Full resync: scanned to ${scannedHeight} / ${chainTip}`);
+
+          if (scannedHeight >= chainTip - 2) {
+            console.info('Full resync: Fully synced');
+            break;
+          }
+
+          // Not done yet — pause before next round
+          if (round < MAX_SYNC_ROUNDS) {
+            await new Promise(r => setTimeout(r, SYNC_ROUND_DELAY));
+          }
+        } catch (syncErr) {
+          consecutiveFailures++;
+          console.warn(`Full resync: sync round ${round} failed (${consecutiveFailures}/${MAX_CONSECUTIVE_FAILURES}):`, syncErr);
+
+          if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+            throw syncErr; // give up after too many consecutive failures
+          }
+
+          // Back off longer after failures
+          const backoff = SYNC_ROUND_DELAY * Math.pow(2, consecutiveFailures - 1);
+          console.info(`Full resync: backing off ${backoff}ms before retry`);
+          await new Promise(r => setTimeout(r, backoff));
+        }
+      }
+
+      // 6. SUCCESS — now swap the fresh wallet into state and IndexedDB
+      console.info('Full resync: Sync succeeded, swapping wallet into state');
+      dispatch({ type: 'set-web-wallet', payload: freshWallet });
       dispatch({ type: 'set-active-account', payload: accountId });
 
-      // 6. Sync from birthday
-      console.info('Full resync: Starting sync from birthday');
-      await freshWallet.sync();
-
-      // 7. Update state and persist
       const summary = await freshWallet.get_wallet_summary();
       if (summary) {
         dispatch({ type: 'set-summary', payload: summary });
@@ -438,18 +522,20 @@ export function useWebZjsActions(): WebzjsActions {
         dispatch({ type: 'set-chain-height', payload: chainHeight });
       }
 
-      // 8. Persist the fresh wallet state
+      // 7. Persist — overwrites old data (no need to del() first)
       const bytes = await freshWallet.db_to_bytes();
       await set('wallet', bytes);
 
       console.info('Full resync: Complete');
     } catch (err: unknown) {
-      console.error('Full resync failed:', err);
+      // FAILURE — old wallet remains in state + IndexedDB, user sees last known balances
+      console.error('Full resync failed (old wallet preserved):', err);
       dispatch({ type: 'set-error', payload: String(err) });
     } finally {
+      _fullResyncActive = false;
       dispatch({ type: 'set-sync-in-progress', payload: false });
     }
-  }, [installedSnap, state.syncInProgress, invokeSnap, dispatch, refreshSnapState, cacheBalanceInSnap]);
+  }, [installedSnap, state.syncInProgress, invokeSnap, dispatch, updateSnapState, cacheBalanceInSnap]);
 
   /**
    * Recovers the wallet from snap credentials when IndexedDB data is empty or incompatible.
@@ -491,12 +577,8 @@ export function useWebZjsActions(): WebzjsActions {
       const latestBlock = await state.webWallet.get_latest_block();
       birthdayBlock = Number(latestBlock);
 
-      // Store for future
-      await invokeSnap({
-        method: 'setSnapStete',
-        params: { webWalletSyncStartBlock: birthdayBlock },
-      });
-      await refreshSnapState();
+      // Store for future (read-merge-write preserves lastKnownBalance)
+      await updateSnapState({ webWalletSyncStartBlock: String(birthdayBlock) });
     }
 
     // 3. Create account with recovered credentials
@@ -510,12 +592,12 @@ export function useWebZjsActions(): WebzjsActions {
 
     dispatch({ type: 'set-active-account', payload: accountId });
 
-    // 4. Sync state and persist
-    await syncStateWithWallet();
+    // 4. Sync state and persist (skip balance cache — wallet hasn't synced, balance is 0)
+    await syncStateWithWallet({ skipBalanceCache: true });
     await flushDbToStore();
 
     console.info('Auto-recovery: Wallet recovered successfully');
-  }, [state.webWallet, invokeSnap, dispatch, syncStateWithWallet, flushDbToStore, refreshSnapState]);
+  }, [state.webWallet, invokeSnap, dispatch, syncStateWithWallet, flushDbToStore, updateSnapState]);
 
   return {
     getAccountData,

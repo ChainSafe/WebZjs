@@ -57,7 +57,7 @@ use zcash_protocol::value::Zatoshis;
 use zip32;
 use zip32::fingerprint::SeedFingerprint;
 
-const BATCH_SIZE: u32 = 25000; // Increased from 10K for 2.5x fewer HTTP round trips
+const BATCH_SIZE: u32 = 10000; // Smaller batches = shorter CPU bursts with I/O pauses between them
 
 /// constant that signals what's the minimum transparent balance for proposing a
 /// shielding transaction
@@ -581,6 +581,35 @@ where
         to_address: ZcashAddress,
         value: u64,
     ) -> Result<Pczt, Error> {
+        // Ensure wallet is synced before creating transaction to prevent expiry errors
+        let mut client = self.client.clone();
+        let chain_tip: u32 = client
+            .get_latest_block(service::ChainSpec::default())
+            .await?
+            .into_inner()
+            .height
+            .try_into()
+            .expect("block heights must fit into u32");
+
+        let wallet_height = self.db.read().await.chain_height()?;
+        if let Some(wallet_height) = wallet_height {
+            let wallet_height_u32: u32 = wallet_height.into();
+            if chain_tip.saturating_sub(wallet_height_u32) > 10 {
+                tracing::warn!(
+                    "pczt_create: Wallet not fully synced: wallet={} < chain_tip={}. Syncing now...",
+                    wallet_height_u32,
+                    chain_tip
+                );
+                drop(client);
+                self.sync().await?;
+                tracing::info!("pczt_create: Sync completed, proceeding with transaction creation");
+            }
+        } else {
+            return Err(Error::Generic(
+                "Wallet has not been synced yet. Please sync before transferring.".to_string(),
+            ));
+        }
+
         // Create the PCZT.
         let change_strategy = MultiOutputChangeStrategy::new(
             StandardFeeRule::Zip317,

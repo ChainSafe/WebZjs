@@ -137,9 +137,13 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
 
-      const chainHeight = await wallet.get_latest_block();
-      if (chainHeight) {
-        dispatch({ type: 'set-chain-height', payload: chainHeight });
+      try {
+        const chainHeight = await wallet.get_latest_block();
+        if (chainHeight) {
+          dispatch({ type: 'set-chain-height', payload: chainHeight });
+        }
+      } catch (err) {
+        console.warn('Could not fetch chain height on startup (will retry on first sync):', err);
       }
 
       dispatch({ type: 'set-loading', payload: false });

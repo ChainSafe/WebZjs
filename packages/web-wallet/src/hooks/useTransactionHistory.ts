@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useWebZjsContext } from '../context/WebzjsContext';
 import type { TransactionHistoryEntry, TransactionHistoryResponse } from '../types/transaction';
 
@@ -63,12 +63,24 @@ export function useTransactionHistory(
     }
   }, [state.webWallet, state.activeAccount, pageSize]);
 
+  // Dedup guard: skip fetch when fully_scanned_height hasn't advanced since last fetch
+  const lastFetchedHeightRef = useRef<number | undefined>(undefined);
+  const currentHeight = state.summary?.fully_scanned_height;
+
   // Initial load and refresh on sync completion
+  // Skip during active sync — tx history is stale mid-sync and the WASM call competes with sync() for CPU
+  // Only fetches when fully_scanned_height actually advances (prevents redundant WASM calls)
   useEffect(() => {
-    if (state.webWallet && state.activeAccount !== null && state.activeAccount !== undefined) {
+    if (
+      state.webWallet && state.activeAccount !== null && state.activeAccount !== undefined &&
+      !state.syncInProgress &&
+      currentHeight !== undefined &&
+      currentHeight !== lastFetchedHeightRef.current
+    ) {
+      lastFetchedHeightRef.current = currentHeight;
       fetchTransactions(0, false);
     }
-  }, [state.webWallet, state.activeAccount, state.chainHeight, fetchTransactions]);
+  }, [state.webWallet, state.activeAccount, state.syncInProgress, currentHeight, fetchTransactions]);
 
   const loadMore = useCallback(async () => {
     if (!loading && hasMore) {
@@ -77,6 +89,7 @@ export function useTransactionHistory(
   }, [loading, hasMore, offset, fetchTransactions]);
 
   const refresh = useCallback(async () => {
+    lastFetchedHeightRef.current = undefined;
     setOffset(0);
     await fetchTransactions(0, false);
   }, [fetchTransactions]);
