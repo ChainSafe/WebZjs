@@ -4,14 +4,18 @@ import { RESCAN_INTERVAL } from './config/constants';
 import { useWebZjsActions } from './hooks';
 import Layout from './components/Layout/Layout';
 import { useMetaMaskContext } from './context/MetamaskContext';
+import { useWebZjsContext } from './context/WebzjsContext';
 
 function App() {
   const { triggerRescan } = useWebZjsActions();
   const { installedSnap } = useMetaMaskContext();
+  const { state } = useWebZjsContext();
+
+  const interval = installedSnap && !state.syncInProgress ? RESCAN_INTERVAL : null;
 
   useInterval(() => {
     triggerRescan();
-  }, installedSnap ? RESCAN_INTERVAL : null);
+  }, interval);
 
   return (
     <div className="flex flex-col min-h-screen">

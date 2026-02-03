@@ -15,16 +15,17 @@
   ],
   "scripts": {
     "allow-scripts": "yarn workspace root allow-scripts",
-    "build": "mm-snap build",
+    "manifest:dev": "node scripts/generate-manifest.js --dev",
+    "manifest:prod": "node scripts/generate-manifest.js",
+    "build": "yarn manifest:prod && mm-snap build",
     "build:clean": "yarn clean && yarn build",
-    "build:prePublish": "bash ./build_prePublish.sh",
-    "build:local": "./build_local.sh",
     "clean": "rimraf dist",
     "lint": "eslint --color --ext .ts src/",
     "lint:fix": "yarn run lint --fix",
     "prepublishOnly": "mm-snap manifest",
     "serve": "mm-snap serve",
-    "start": "mm-snap watch",
+    "start": "yarn manifest:dev && mm-snap watch",
+    "dev": "yarn manifest:dev && mm-snap watch",
     "test": "jest"
   },
   "dependencies": {

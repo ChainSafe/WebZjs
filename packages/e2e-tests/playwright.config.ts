@@ -32,11 +32,19 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
+  /* Increase timeout for WASM loading */
+  timeout: 120000,
+
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: ['--enable-features=SharedArrayBuffer']
+        }
+      },
     },
 
     {
@@ -74,6 +82,7 @@ export default defineConfig({
   webServer: {
     command: 'serve -l 8081 ./dist -c ./serve.json',
     url: 'http://127.0.0.1:8081',
-    // reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+    reuseExistingServer: !process.env.CI,
   },
 });

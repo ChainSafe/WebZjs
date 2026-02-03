@@ -1,29 +1,29 @@
-use std::num::NonZeroU32;
 use std::str::FromStr;
 
 use nonempty::NonEmpty;
-use prost::Message;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use tonic_web_wasm_client::Client;
 
 use crate::error::Error;
+use crate::validation::validate_confirmations_policy;
 use crate::wallet::usk_from_seed_str;
 use crate::{bindgen::proposal::Proposal, Wallet, PRUNING_DEPTH};
+use futures_util::TryStreamExt;
 use wasm_thread as thread;
 use webzjs_common::{Network, Pczt};
-use webzjs_keys::{ProofGenerationKey, SeedFingerprint, UnifiedSpendingKey};
+use webzjs_keys::{ProofGenerationKey, SeedFingerprint};
 use zcash_address::ZcashAddress;
 use zcash_client_backend::data_api::{AccountPurpose, InputSource, WalletRead, Zip32Derivation};
 use zcash_client_backend::proto::service::{
-    compact_tx_streamer_client::CompactTxStreamerClient, ChainSpec,
+    compact_tx_streamer_client::CompactTxStreamerClient, BlockId, BlockRange, ChainSpec,
+    TransparentAddressBlockFilter,
 };
 use zcash_client_memory::MemoryWalletDb;
 use zcash_keys::encoding::AddressCodec;
-use zcash_keys::keys::UnifiedFullViewingKey;
+use zcash_keys::keys::{UnifiedAddressRequest, UnifiedFullViewingKey};
 use zcash_primitives::transaction::TxId;
-use zcash_primitives::zip32;
 
 pub type MemoryWallet<T> = Wallet<MemoryWalletDb<Network>, T>;
 pub type AccountId = <MemoryWalletDb<Network> as WalletRead>::AccountId;
@@ -130,12 +130,17 @@ impl WebWallet {
     pub fn new(
         network: &str,
         lightwalletd_url: &str,
-        min_confirmations: u32,
+        min_confirmations_trusted: u32,
+        min_confirmations_untrusted: u32,
         db_bytes: Option<Box<[u8]>>,
     ) -> Result<WebWallet, Error> {
         let network = Network::from_str(network)?;
-        let min_confirmations = NonZeroU32::try_from(min_confirmations)
-            .map_err(|_| Error::InvalidMinConformations(min_confirmations))?;
+        let min_confirmations = validate_confirmations_policy(
+            min_confirmations_trusted,
+            min_confirmations_untrusted,
+            true,
+        )
+        .map_err(|_| Error::InvalidMinConformations)?;
         let client = Client::new(lightwalletd_url.to_string());
 
         let db = match db_bytes {
@@ -281,12 +286,26 @@ impl WebWallet {
                 );
 
                 let db = db;
-                db.sync().await.unwrap_throw();
+                // Convert error to String since Error isn't Send (contains JsValue)
+                db.sync().await.map_err(|e| e.to_string())
             })
             .unwrap_throw()
             .join_async();
-        sync_handler.await.unwrap();
-        Ok(())
+
+        // sync_handler.await returns Result<Result<(), String>, Box<dyn Any + Send>>
+        // The outer Result is for the join (thread panics), inner is sync result
+        match sync_handler.await {
+            Ok(Ok(())) => Ok(()),
+            Ok(Err(err_string)) => {
+                tracing::error!("Sync error: {}", err_string);
+                Err(Error::Sync(err_string))
+            }
+            Err(panic_error) => {
+                let msg = format!("Sync thread panicked: {:?}", panic_error);
+                tracing::error!("{}", msg);
+                Err(Error::Sync(msg))
+            }
+        }
     }
 
     pub async fn get_wallet_summary(&self) -> Result<Option<WalletSummary>, Error> {
@@ -432,7 +451,10 @@ impl WebWallet {
     ///
     pub async fn get_current_address(&self, account_id: u32) -> Result<String, Error> {
         let db = self.inner.db.read().await;
-        if let Some(address) = db.get_current_address(account_id.into())? {
+        if let Some(address) = db.get_last_generated_address_matching(
+            account_id.into(),
+            UnifiedAddressRequest::ALLOW_ALL,
+        )? {
             Ok(address.encode(&self.inner.network))
         } else {
             Err(Error::AccountNotFound(account_id))
@@ -518,11 +540,56 @@ impl WebWallet {
     ///
     pub async fn get_current_address_transparent(&self, account_id: u32) -> Result<String, Error> {
         let db = self.inner.db.read().await;
-        if let Some(address) = db.get_current_address(account_id.into())? {
+        if let Some(address) = db.get_last_generated_address_matching(
+            account_id.into(),
+            UnifiedAddressRequest::ALLOW_ALL,
+        )? {
             Ok(address.transparent().unwrap().encode(&self.inner.network))
         } else {
             Err(Error::AccountNotFound(account_id))
         }
+    }
+
+    /// Get transaction history for an account
+    ///
+    /// # Arguments
+    ///
+    /// * `account_id` - The ID of the account to get transaction history for
+    /// * `limit` - Maximum number of transactions to return (default: 50)
+    /// * `offset` - Number of transactions to skip for pagination (default: 0)
+    ///
+    /// # Returns
+    ///
+    /// A TransactionHistoryResponse containing the list of transactions, total count, and pagination info
+    ///
+    /// # Examples
+    ///
+    /// ```javascript
+    /// const history = await wallet.get_transaction_history(0, 50, 0);
+    /// console.log(history.transactions);
+    /// ```
+    pub async fn get_transaction_history(
+        &self,
+        account_id: u32,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Result<super::transaction_history::TransactionHistoryResponse, Error> {
+        let db = self.inner.db.read().await;
+        let chain_tip_height = self
+            .inner
+            .get_wallet_summary()
+            .await
+            .ok()
+            .flatten()
+            .map(|s| s.chain_tip_height().into());
+
+        super::transaction_history::extract_transaction_history(
+            &db,
+            account_id,
+            chain_tip_height,
+            limit.unwrap_or(50),
+            offset.unwrap_or(0),
+        )
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -538,6 +605,59 @@ impl WebWallet {
             .await
             .map(|response| response.into_inner().height)
             .map_err(Error::from)
+    }
+
+    /// Detect the wallet birthday by querying for the first transaction to a transparent address.
+    ///
+    /// This queries the lightwalletd server for all transactions to the given transparent address
+    /// and returns the block height of the earliest transaction, minus a safety buffer.
+    ///
+    /// # Arguments
+    ///
+    /// * `transparent_address` - A transparent Zcash address (t-address)
+    ///
+    /// # Returns
+    ///
+    /// The detected birthday height, or None if no transactions were found.
+    /// Returns the earliest transaction height minus 100 blocks as a safety buffer.
+    ///
+    pub async fn detect_birthday_from_transparent_address(
+        &self,
+        transparent_address: &str,
+    ) -> Result<Option<u32>, Error> {
+        let mut client = self.client();
+
+        // Query from Sapling activation to current tip
+        let filter = TransparentAddressBlockFilter {
+            address: transparent_address.to_string(),
+            range: Some(BlockRange {
+                start: Some(BlockId {
+                    height: 419200, // Sapling activation height
+                    hash: vec![],
+                }),
+                end: Some(BlockId {
+                    height: u64::MAX,
+                    hash: vec![],
+                }),
+                pool_types: vec![], // Empty = all pools
+            }),
+        };
+
+        let response = client.get_taddress_txids(filter).await?;
+        let mut stream = response.into_inner();
+
+        // Find the minimum height from all returned transactions
+        let mut min_height: Option<u64> = None;
+        while let Some(raw_tx) = stream.try_next().await? {
+            let height = raw_tx.height;
+            min_height = Some(min_height.map_or(height, |m| m.min(height)));
+        }
+
+        // Return with 100-block safety buffer
+        Ok(min_height.map(|h| {
+            let safe_height = h.saturating_sub(100);
+            safe_height as u32
+        }))
     }
 }
 
@@ -565,6 +685,10 @@ pub struct AccountBalance {
     pub sapling_balance: u64,
     pub orchard_balance: u64,
     pub unshielded_balance: u64,
+    /// Change from sent transactions waiting for mining confirmation
+    pub pending_change: u64,
+    /// Received notes waiting for required confirmations to become spendable
+    pub pending_spendable: u64,
 }
 
 impl From<zcash_client_backend::data_api::AccountBalance> for AccountBalance {
@@ -572,7 +696,9 @@ impl From<zcash_client_backend::data_api::AccountBalance> for AccountBalance {
         AccountBalance {
             sapling_balance: balance.sapling_balance().spendable_value().into(),
             orchard_balance: balance.orchard_balance().spendable_value().into(),
-            unshielded_balance: balance.unshielded().into(),
+            unshielded_balance: balance.unshielded_balance().spendable_value().into(),
+            pending_change: balance.change_pending_confirmation().into(),
+            pending_spendable: balance.value_pending_spendability().into(),
         }
     }
 }

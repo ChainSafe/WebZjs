@@ -7,7 +7,7 @@ use wasm_bindgen::prelude::*;
 use crate::error::Error;
 use bip0039::{Count, English, Mnemonic};
 use webzjs_common::Network;
-use zcash_primitives::zip32::AccountId;
+use zip32::AccountId;
 
 /// A ZIP32 seed fingerprint. Essentially a Blake2b hash of the seed.
 ///
@@ -163,6 +163,30 @@ impl UnifiedFullViewingKey {
             inner: zcash_keys::keys::UnifiedFullViewingKey::decode(&network, encoding)
                 .map_err(Error::KeyDecoding)?,
         })
+    }
+
+    /// Get the default transparent address derived from this UFVK.
+    ///
+    /// This can be used before creating an account to detect the wallet birthday
+    /// by querying for transactions to this address.
+    ///
+    /// # Arguments
+    ///
+    /// * `network` - Must be either "main" or "test"
+    ///
+    /// # Returns
+    ///
+    /// The transparent address as a string, or None if this UFVK has no transparent component.
+    ///
+    pub fn get_transparent_address(&self, network: &str) -> Result<Option<String>, Error> {
+        let network = Network::from_str(network)?;
+        let (ua, _) = self
+            .inner
+            .default_address(zcash_keys::keys::UnifiedAddressRequest::ALLOW_ALL)
+            .map_err(|_| Error::TransparentAddressDerivation)?;
+        Ok(ua
+            .transparent()
+            .map(|addr| zcash_keys::encoding::AddressCodec::encode(addr, &network)))
     }
 }
 

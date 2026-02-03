@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
-
 pub mod proposal;
+pub mod transaction_history;
 pub mod wallet;

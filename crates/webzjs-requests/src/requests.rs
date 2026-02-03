@@ -4,7 +4,7 @@
 use crate::error::Error;
 use wasm_bindgen::prelude::*;
 use zcash_address::ZcashAddress;
-use zcash_primitives::memo::MemoBytes;
+use zcash_protocol::memo::MemoBytes;
 
 /// A [ZIP-321](https://zips.z.cash/zip-0321) transaction request
 ///
@@ -39,8 +39,9 @@ impl TransactionRequest {
     }
 
     /// Returns the total value of the payments in this transaction request, in zatoshis.
-    pub fn total(&self) -> Result<u64, Error> {
-        Ok(self.0.total()?.into())
+    /// Returns None if any payment has an unspecified amount.
+    pub fn total(&self) -> Result<Option<u64>, Error> {
+        Ok(self.0.total()?.map(|z| z.into()))
     }
 
     /// Decode a transaction request from a "zcash:" URI string.
@@ -82,7 +83,7 @@ impl PaymentRequest {
         other_params: JsValue,
     ) -> Result<PaymentRequest, Error> {
         let address = ZcashAddress::try_from_encoded(recipient_address)?;
-        let amount = amount.try_into()?;
+        let amount: zcash_protocol::value::Zatoshis = amount.try_into()?;
         let memo = if let Some(memo_bytes) = memo {
             Some(MemoBytes::from_bytes(&memo_bytes)?)
         } else {
@@ -91,7 +92,7 @@ impl PaymentRequest {
         let other_params = serde_wasm_bindgen::from_value(other_params)?;
 
         if let Some(payment) =
-            zip321::Payment::new(address, amount, memo, label, message, other_params)
+            zip321::Payment::new(address, Some(amount), memo, label, message, other_params)
         {
             Ok(PaymentRequest(payment))
         } else {
@@ -102,7 +103,7 @@ impl PaymentRequest {
     /// Helper method to construct a simple payment request with no memo, label, message, or other parameters.
     pub fn simple_payment(recipient_address: &str, amount: u64) -> Result<PaymentRequest, Error> {
         let address = ZcashAddress::try_from_encoded(recipient_address)?;
-        let amount = amount.try_into()?;
+        let amount: zcash_protocol::value::Zatoshis = amount.try_into()?;
         Ok(PaymentRequest(zip321::Payment::without_memo(
             address, amount,
         )))
@@ -114,8 +115,9 @@ impl PaymentRequest {
     }
 
     /// Returns the value of the payment that is being requested, in zatoshis.
-    pub fn amount(&self) -> u64 {
-        self.0.amount().into()
+    /// Returns None if the amount is not specified.
+    pub fn amount(&self) -> Option<u64> {
+        self.0.amount().map(|z| z.into())
     }
 
     /// Returns the memo that, if included, must be provided with the payment.

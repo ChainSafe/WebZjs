@@ -26,3 +26,5 @@ packages/web-wallet/dist/*
 !packages/web-wallet/dist/_headers
 !packages/web-wallet/dist/_redirects
 
+# Local env overrides (dev proxy, etc.)
+.env*.local
