@@ -1,6 +1,6 @@
 {
   "name": "@chainsafe/webzjs-zcash-snap",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Zcash Metmamask Snap that utilizes WebZjs.",
   "repository": {
     "type": "git",
