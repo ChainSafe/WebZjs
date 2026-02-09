@@ -7,8 +7,14 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const origins = manifest.initialPermissions['endowment:rpc'].allowedOrigins;
 
 if (isDev) {
-  if (!origins.includes('http://localhost:3000')) {
-    origins.push('http://localhost:3000');
+  const devOrigins = [
+    'http://localhost:3000',
+    'http://app-provider.localhost:3000',
+  ];
+  for (const origin of devOrigins) {
+    if (!origins.includes(origin)) {
+      origins.push(origin);
+    }
   }
 } else {
   manifest.initialPermissions['endowment:rpc'].allowedOrigins =
