@@ -3,13 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "source": [
-    "index.html",
-    "../../node_modules/@chainsafe/webzjs-wallet/snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src/workerHelpers.worker.js"
-  ],
+  "source": "index.html",
   "scripts": {
     "dev": "node server.js",
-    "build": "parcel build index.html --dist-dir dist",
+    "build": "rm -rf dist && parcel build index.html --dist-dir dist",
     "test": "vitest run",
     "test:watch": "vitest"
   },
