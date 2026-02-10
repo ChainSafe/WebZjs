@@ -1,8 +1,3 @@
-[build]
-  base = "packages/web-wallet"
-  publish = "dist"
-  command = "npm run build"
-
 # Required for WASM multi-threading (SharedArrayBuffer)
 [[headers]]
   for = "/*"
