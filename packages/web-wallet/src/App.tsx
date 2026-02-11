@@ -11,7 +11,7 @@ function App() {
   const { installedSnap } = useMetaMaskContext();
   const { state } = useWebZjsContext();
 
-  const interval = installedSnap && !state.syncInProgress ? RESCAN_INTERVAL : null;
+  const interval = installedSnap && state.initialized && !state.syncInProgress ? RESCAN_INTERVAL : null;
 
   useInterval(() => {
     triggerRescan();
