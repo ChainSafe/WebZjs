@@ -4,6 +4,7 @@ import React, {
   useReducer,
   useEffect,
   useCallback,
+  useRef,
 } from 'react';
 import { get } from 'idb-keyval';
 
@@ -26,6 +27,7 @@ export interface WebZjsState {
   activeAccount?: number | null;
   syncInProgress: boolean;
   loading: boolean;
+  initialized: boolean;
 }
 
 type Action =
@@ -35,7 +37,8 @@ type Action =
   | { type: 'set-chain-height'; payload: bigint }
   | { type: 'set-active-account'; payload: number }
   | { type: 'set-sync-in-progress'; payload: boolean }
-  | { type: 'set-loading'; payload: boolean };
+  | { type: 'set-loading'; payload: boolean }
+  | { type: 'set-initialized'; payload: boolean };
 
 const initialState: WebZjsState = {
   webWallet: null,
@@ -45,7 +48,8 @@ const initialState: WebZjsState = {
   chainHeight: undefined,
   activeAccount: null,
   syncInProgress: false,
-  loading: true,
+  loading: false,
+  initialized: false,
 };
 
 function reducer(state: WebZjsState, action: Action): WebZjsState {
@@ -64,6 +68,8 @@ function reducer(state: WebZjsState, action: Action): WebZjsState {
       return { ...state, syncInProgress: action.payload };
     case 'set-loading':
       return { ...state, loading: action.payload };
+    case 'set-initialized':
+      return { ...state, initialized: action.payload };
     default:
       return state;
   }
@@ -72,11 +78,13 @@ function reducer(state: WebZjsState, action: Action): WebZjsState {
 interface WebZjsContextType {
   state: WebZjsState;
   dispatch: React.Dispatch<Action>;
+  initWallet: () => Promise<void>;
 }
 
 const WebZjsContext = createContext<WebZjsContextType>({
   state: initialState,
   dispatch: () => {},
+  initWallet: async () => {},
 });
 
 export function useWebZjsContext(): WebZjsContextType {
@@ -85,6 +93,7 @@ export function useWebZjsContext(): WebZjsContextType {
 
 export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const initializingRef = useRef(false);
 
   const initAll = useCallback(async () => {
     try {
@@ -147,6 +156,7 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       dispatch({ type: 'set-loading', payload: false });
+      dispatch({ type: 'set-initialized', payload: true });
     } catch (err) {
       console.error('Initialization error:', err);
       dispatch({ type: 'set-error', payload: Error(String(err)) });
@@ -154,9 +164,19 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  useEffect(() => {
-    initAll().catch(console.error);
-  }, [initAll]);
+  // Lazy-load WASM: call this when user wants to use wallet features
+  const initWallet = useCallback(async () => {
+    if (state.initialized || initializingRef.current) {
+      return; // Already initialized or in progress
+    }
+    initializingRef.current = true;
+    dispatch({ type: 'set-loading', payload: true });
+    try {
+      await initAll();
+    } finally {
+      initializingRef.current = false;
+    }
+  }, [state.initialized, initAll]);
 
   useEffect(() => {
     if (state.error) {
@@ -166,7 +186,7 @@ export const WebZjsProvider = ({ children }: { children: React.ReactNode }) => {
 
 
   return (
-    <WebZjsContext.Provider value={{ state, dispatch }}>
+    <WebZjsContext.Provider value={{ state, dispatch, initWallet }}>
       <Toaster />
       {children}
     </WebZjsContext.Provider>

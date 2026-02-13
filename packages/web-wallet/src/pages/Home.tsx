@@ -8,7 +8,7 @@ import Loader from '../components/Loader/Loader';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { state, dispatch } = useWebZjsContext();
+  const { state, dispatch, initWallet } = useWebZjsContext();
   const { getAccountData, connectWebZjsSnap, recoverWallet } = useWebZjsActions();
   const { installedSnap } = useMetaMask();
   const { isPendingRequest } = useMetaMaskContext();
@@ -23,8 +23,19 @@ const Home: React.FC = () => {
     e.preventDefault();
     connectingRef.current = true;
     try {
+      // Lazy-load WASM on first user interaction
+      await initWallet();
       await connectWebZjsSnap();
       navigate('/dashboard/account-summary');
+    } catch (err: any) {
+      // Handle user rejection gracefully (code 4001)
+      if (err?.code === 4001) {
+        console.log('User rejected MetaMask connection');
+        return;
+      }
+      // Other errors should be shown to user
+      console.error('Connection failed:', err);
+      dispatch({ type: 'set-error', payload: err instanceof Error ? err : new Error(String(err)) });
     } finally {
       connectingRef.current = false;
     }
@@ -52,9 +63,24 @@ const Home: React.FC = () => {
         return;
       }
 
-      // Case 2: No account but snap is installed - auto-recover (once only)
-      // Skip if connect is in progress to avoid duplicate viewingKey prompts
-      if (!recoveryAttemptedRef.current && !connectingRef.current) {
+      // Case 2: Wallet not initialized yet - initialize it first
+      if (!state.initialized && !connectingRef.current) {
+        try {
+          setRecovering(true);
+          await initWallet();
+          // After init completes, effect will re-run with updated state
+        } catch (err) {
+          console.error('Wallet initialization failed:', err);
+          dispatch({ type: 'set-error', payload: err instanceof Error ? err : new Error(String(err)) });
+          setShowResetInstructions(true);
+        } finally {
+          setRecovering(false);
+        }
+        return;
+      }
+
+      // Case 3: Wallet initialized but no account - attempt recovery (once only)
+      if (state.initialized && !recoveryAttemptedRef.current && !connectingRef.current) {
         recoveryAttemptedRef.current = true;
         try {
           setRecovering(true);
@@ -71,7 +97,7 @@ const Home: React.FC = () => {
     };
 
     homeReload();
-  }, [state.loading, state.activeAccount, installedSnap, navigate, dispatch, getAccountData, recoverWallet]);
+  }, [state.loading, state.activeAccount, state.initialized, installedSnap, navigate, dispatch, getAccountData, recoverWallet, initWallet]);
 
   return (
     <div className="home-page flex items-start md:items-center justify-center px-4 overflow-y-hidden">
