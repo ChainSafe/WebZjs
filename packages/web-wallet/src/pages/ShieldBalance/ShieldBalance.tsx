@@ -46,7 +46,7 @@ export function ShieldBalance(): React.JSX.Element {
   }
 
   const isMinimalShieldAmount = useMemo(()=>{
-    // Need at least 0.001 ZEC + fee buffer (0.00015 ZEC total minimum)
+    // Need at least 0.001 ZEC + fee buffer (0.0015 ZEC total minimum)
     // This accounts for the transaction fee which is deducted from the balance
     const MINIMUM_SHIELD_AMOUNT = 100000; // 0.001 ZEC
     const FEE_BUFFER = 50000; // 0.0005 ZEC conservative fee estimate
