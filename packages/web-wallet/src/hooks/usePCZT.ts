@@ -179,11 +179,40 @@ export const usePczt = (): IUsePczt => {
       await syncStateWithWallet();
     } catch (error) {
       const rawMessage = error instanceof Error ? error.message : String(error);
-      console.error('Transaction error:', rawMessage);
+
+      // Log full error details for debugging
+      console.error('=== Transaction Error Details ===');
+      console.error('Raw error:', error);
+      console.error('Error message:', rawMessage);
+      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+      if (error instanceof Error && error.stack) {
+        console.error('Stack trace:', error.stack);
+      }
+      console.error('================================');
 
       let errorMessage = rawMessage;
+
+      // Parse InsufficientFunds error to extract amounts
       if (rawMessage.includes('InsufficientFunds')) {
-        errorMessage = 'Insufficient balance. Your wallet may still be syncing — please wait for sync to complete or try a Full Resync from the Account Summary page.';
+        const availableMatch = rawMessage.match(/available:\s*Zatoshis\((\d+)\)/);
+        const requiredMatch = rawMessage.match(/required:\s*Zatoshis\((\d+)\)/);
+
+        if (availableMatch && requiredMatch) {
+          const available = parseInt(availableMatch[1]);
+          const required = parseInt(requiredMatch[1]);
+          const availableZec = (available / 100_000_000).toFixed(8);
+          const requiredZec = (required / 100_000_000).toFixed(8);
+          const shortfallZec = ((required - available) / 100_000_000).toFixed(8);
+
+          console.error('Insufficient Funds Breakdown:');
+          console.error(`  Available: ${available} zatoshis (${availableZec} ZEC)`);
+          console.error(`  Required:  ${required} zatoshis (${requiredZec} ZEC)`);
+          console.error(`  Shortfall: ${required - available} zatoshis (${shortfallZec} ZEC)`);
+
+          errorMessage = `Insufficient balance. Available: ${availableZec} ZEC, Required: ${requiredZec} ZEC (includes fees). You need ${shortfallZec} ZEC more to complete this transaction.`;
+        } else {
+          errorMessage = 'Insufficient balance. Your wallet may still be syncing — please wait for sync to complete or try a Full Resync from the Account Summary page.';
+        }
       }
 
       setLastError(errorMessage);

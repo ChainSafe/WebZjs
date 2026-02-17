@@ -566,7 +566,7 @@ where
         )
         .map_err(|e| {
             tracing::error!("pczt_shield: create_pczt_from_proposal failed: {:?}", e);
-            Error::PcztCreate
+            Error::PcztCreate(format!("{:?}", e))
         })?;
         tracing::info!("pczt_shield: PCZT created from proposal successfully");
 
@@ -654,7 +654,10 @@ where
             OvkPolicy::Sender,
             &proposal,
         )
-        .map_err(|_| Error::PcztCreate)?;
+        .map_err(|e| {
+            tracing::error!("pczt_create: create_pczt_from_proposal failed: {:?}", e);
+            Error::PcztCreate(format!("{:?}", e))
+        })?;
         Ok(pczt)
     }
 

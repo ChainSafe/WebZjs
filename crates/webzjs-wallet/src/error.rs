@@ -80,8 +80,8 @@ pub enum Error {
     SerdeWasmBindgen(#[from] serde_wasm_bindgen::Error),
     #[error("Fail to parse TxIds")]
     TxIdParse,
-    #[error("Failed to create Pczt")]
-    PcztCreate,
+    #[error("Failed to create Pczt: {0}")]
+    PcztCreate(String),
     #[error("Failed to prove Pczt: {0}")]
     PcztProve(String),
     #[error("Failed to send Pczt: {0}")]

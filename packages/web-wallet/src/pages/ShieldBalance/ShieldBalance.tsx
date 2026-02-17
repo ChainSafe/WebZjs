@@ -46,7 +46,11 @@ export function ShieldBalance(): React.JSX.Element {
   }
 
   const isMinimalShieldAmount = useMemo(()=>{
-    return unshieldedBalance > 100000;
+    // Need at least 0.001 ZEC + fee buffer (0.00015 ZEC total minimum)
+    // This accounts for the transaction fee which is deducted from the balance
+    const MINIMUM_SHIELD_AMOUNT = 100000; // 0.001 ZEC
+    const FEE_BUFFER = 50000; // 0.0005 ZEC conservative fee estimate
+    return unshieldedBalance > (MINIMUM_SHIELD_AMOUNT + FEE_BUFFER);
   },[unshieldedBalance])
 
   return (
@@ -100,7 +104,7 @@ export function ShieldBalance(): React.JSX.Element {
                 />
                 {!isMinimalShieldAmount && (
                   <div className="text-red-500 text-sm mt-2">
-                    The minimum shielding balance required is 0.001 ZEC.
+                    Minimum balance required: 0.0015 ZEC (includes transaction fees). Your balance: {zatsToZec(unshieldedBalance)} ZEC
                   </div>
                 )}
               </div>
