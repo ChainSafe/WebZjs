@@ -7,7 +7,7 @@
     "url": "https://github.com/ChainSafe/WebZjs.git"
   },
   "source": {
-    "shasum": "fkfBOAgj9Z8OQQSVDrF7AeCFsQ+CJaIYNA6T3ft5un4=",
+    "shasum": "qzUODaU2KfdU1JVKRMUDL+wReKvUPUX4sx5Jx58D76k=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -22,11 +22,7 @@
     "endowment:lifecycle-hooks": {},
     "endowment:webassembly": {},
     "endowment:rpc": {
-      "allowedOrigins": [
-        "https://webzjs.chainsafe.dev",
-        "http://localhost:3000",
-        "http://app-provider.localhost:3000"
-      ]
+      "allowedOrigins": ["https://webzjs.chainsafe.dev"]
     },
     "snap_getBip44Entropy": [
       {
