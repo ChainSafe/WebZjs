@@ -37,13 +37,18 @@ jobs:
         env: 
           SNAP_ORIGIN: npm:@chainsafe/webzjs-zcash-snap
 
+      - name: Get short SHA
+        id: sha
+        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
           publish-dir: './packages/web-wallet/dist'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions"
+          deploy-message: "Deploy from GitHub Actions (${{ steps.sha.outputs.short }})"
+          netlify-config-path: ./netlify.toml
           enable-pull-request-comment: false
           enable-commit-comment: true
           overwrites-pull-request-comment: true
