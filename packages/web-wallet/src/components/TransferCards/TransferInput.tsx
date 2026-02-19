@@ -5,6 +5,8 @@ import {
 } from '../../pages/TransferBalance/useTransferBalanceForm';
 import Input from '../Input/Input';
 import Button from '../Button/Button';
+import useBalance from '../../hooks/useBalance';
+import { zecToZats, zatsToZec } from '../../utils/balance';
 
 interface TransferInputProps {
   formData: TransferBalanceFormData;
@@ -17,6 +19,7 @@ export function TransferInput({
   nextStep,
   handleChange,
 }: TransferInputProps): React.JSX.Element {
+  const { spendableBalance } = useBalance();
 
   const [errors, setErrors] = useState({
     recipient: '',
@@ -35,8 +38,28 @@ export function TransferInput({
       newErrors.recipient = 'Please enter a valid address';
     }
 
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      newErrors.amount = 'Please enter an valid amount to transfer';
+    // Amount validation
+    if (!amount) {
+      newErrors.amount = 'Amount is required';
+    } else if (isNaN(Number(amount))) {
+      newErrors.amount = 'Please enter a valid number';
+    } else if (Number(amount) <= 0) {
+      newErrors.amount = 'Amount must be greater than 0';
+    } else {
+      // Balance validation with fee buffer
+      try {
+        const amountInZats = zecToZats(amount);
+        const FEE_BUFFER = 10_000; // Conservative estimate: 0.0001 ZEC buffer for fees
+        const totalRequired = Number(amountInZats) + FEE_BUFFER;
+
+        if (totalRequired > spendableBalance) {
+          const availableZec = zatsToZec(Math.max(0, spendableBalance - FEE_BUFFER));
+          newErrors.amount = `Insufficient balance. Available (after fees): ${availableZec.toFixed(8)} ZEC`;
+        }
+      } catch (error) {
+        // If conversion fails, let it pass - the error will be caught later
+        // This handles edge cases like invalid decimal formats
+      }
     }
 
     setErrors(newErrors);
